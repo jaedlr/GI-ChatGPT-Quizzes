@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hepatitis Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p {
+      margin: 8px 0;
+    }
+    .correct-text { color: var(--green-text); }
+    .incorrect-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .nav button, .reset {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f8fafc; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionMeta">Question 1 of 30</span>
+        <span id="topicMeta">Topic: GI Pharmacology</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button id="prevBtn">Previous</button>
+        <button class="reset" id="resetBtn">Reset quiz</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">GI Pharmacology quiz • 30 questions</div>
+  </div>
+
+  <script>
+    const questions = [
+    {
+        "id": 1,
+        "stem": "A 32 year old man develops fever, malaise, nausea, right upper quadrant discomfort, jaundice, and pruritus after a viral exposure. Labs show markedly elevated AST and ALT. Which additional test is emphasized for all patients with this shared acute viral hepatitis syndrome",
+        "topic": "Acute viral hepatitis severity assessment",
+        "options": {
+            "A": "Serum amylase",
+            "B": "Fecal leukocytes",
+            "C": "PT/INR",
+            "D": "Serum gastrin"
+        },
+        "correct": "C",
+        "explanation": "The Hepatitis section lists prodrome and classic symptoms of acute viral hepatitis and specifically emphasizes that all patients should have clotting function checked with PT/INR because decreased hepatic synthetic function marks fulminant disease and worse severity.",
+        "optionExplanations": {
+            "A": "Amylase evaluates pancreatitis, not the severity of acute viral hepatitis in this section.",
+            "B": "Fecal leukocytes help evaluate inflammatory diarrhea, not hepatic synthetic function.",
+            "C": "Correct. PT/INR tracks clotting function and hepatic synthetic failure in acute hepatitis.",
+            "D": "Serum gastrin is used in Zollinger-Ellison syndrome, not viral hepatitis severity."
+        }
+    },
+    {
+        "id": 2,
+        "stem": "A child is exposed to a fecal oral virus but has minimal symptoms. His father develops fatigue, anorexia, abdominal pain, nausea, fever, jaundice, dark urine, and clay colored stools. The virus is nonenveloped positive sense ssRNA in the Picornaviridae family. Which diagnostic marker best identifies acute infection",
+        "topic": "Hepatitis A diagnosis",
+        "options": {
+            "A": "Anti-HAV IgM",
+            "B": "HBsAg with anti-HBc IgM",
+            "C": "Anti-HCV antibody only",
+            "D": "HDV RNA"
+        },
+        "correct": "A",
+        "explanation": "HAV is a nonenveloped positive sense ssRNA Picornavirus transmitted fecal orally. The notes emphasize that children are often subclinical while adults are frequently symptomatic, and acute HAV is diagnosed with anti-HAV IgM.",
+        "optionExplanations": {
+            "A": "Correct. Anti-HAV IgM is the acute HAV marker listed in the section.",
+            "B": "HBsAg with anti-HBc IgM indicates acute HBV, not HAV.",
+            "C": "Anti-HCV antibody alone does not diagnose acute HAV and may not detect very early HCV.",
+            "D": "HDV RNA is used for hepatitis D, which requires HBV."
+        }
+    },
+    {
+        "id": 3,
+        "stem": "A 24 year old returns from travel and develops acute hepatitis. He reports eating contaminated food and later has a self limited illness. His physician explains that this infection never progresses to chronic hepatitis and usually requires only supportive care. Which virus best fits",
+        "topic": "HAV chronicity and treatment",
+        "options": {
+            "A": "Hepatitis C virus",
+            "B": "Hepatitis B virus",
+            "C": "Hepatitis D virus",
+            "D": "Hepatitis A virus"
+        },
+        "correct": "D",
+        "explanation": "HAV is fecal oral, commonly self limited, and the board pearls state that HAV never becomes chronic. Treatment is supportive only, with prevention by vaccination and hand hygiene.",
+        "optionExplanations": {
+            "A": "HCV commonly becomes chronic and is usually bloodborne/parenteral.",
+            "B": "HBV can become chronic, especially when acquired at a young age.",
+            "C": "HDV can become chronic, especially with superinfection of an HBsAg carrier.",
+            "D": "Correct. HAV is fecal oral, self limited, and never chronic."
+        }
+    },
+    {
+        "id": 4,
+        "stem": "A patient with acute hepatitis from a fecal oral virus has two episodes of classic symptoms within a 6 to 10 week period. Which clinical syndrome is being described",
+        "topic": "HAV relapsing syndrome",
+        "options": {
+            "A": "Fulminant hepatitis",
+            "B": "Relapsing hepatitis A",
+            "C": "Chronic hepatitis C flare",
+            "D": "HBV window period"
+        },
+        "correct": "B",
+        "explanation": "The HAV portion lists relapsing hepatitis as two or more episodes of classic symptoms within 6 to 10 weeks, occurring in a minority of HAV infections.",
+        "optionExplanations": {
+            "A": "Fulminant hepatitis involves encephalopathy, worsening jaundice, and decreased synthetic function, not separated recurrent episodes.",
+            "B": "Correct. Repeated classic HAV symptoms within 6-10 weeks is relapsing HAV.",
+            "C": "HCV can have periodic enzyme flares, but the 6-10 week repeated classic syndrome in this section is HAV relapse.",
+            "D": "The HBV window period is a serologic pattern, not repeated symptomatic episodes."
+        }
+    },
+    {
+        "id": 5,
+        "stem": "A man develops acute hepatitis with prolonged pruritus and persistent jaundice after a fecal oral viral infection. Which syndrome from the HAV section best matches this course",
+        "topic": "HAV cholestatic hepatitis",
+        "options": {
+            "A": "Serum sickness like reaction",
+            "B": "HDV superinfection",
+            "C": "Cholestatic hepatitis A",
+            "D": "Ground glass hepatocyte injury"
+        },
+        "correct": "C",
+        "explanation": "The HAV notes list a cholestatic syndrome with classic HAV symptoms plus prolonged itchiness and persistent jaundice.",
+        "optionExplanations": {
+            "A": "Serum sickness like reaction with rash and arthritis is associated with HBV immune complexes.",
+            "B": "HDV superinfection occurs in chronic HBV carriers and is often severe or fulminant.",
+            "C": "Correct. Prolonged pruritus and persistent jaundice after HAV describes cholestatic HAV.",
+            "D": "Ground glass hepatocytes are a hallmark of HBV due to HBsAg in cytoplasm."
+        }
+    },
+    {
+        "id": 6,
+        "stem": "A 22 year old medical student sustains a needlestick from a patient with a bloodborne hepatitis virus. The virus is enveloped, partially double stranded circular DNA, and replicates using reverse transcription. Which virus is most likely",
+        "topic": "HBV virology",
+        "options": {
+            "A": "Hepatitis A virus",
+            "B": "Hepatitis C virus",
+            "C": "Hepatitis E virus",
+            "D": "Hepatitis B virus"
+        },
+        "correct": "D",
+        "explanation": "HBV is a Hepadnavirus that is enveloped, partially double stranded gapped circular DNA, and uses reverse transcription. It is transmitted through blood and body fluids, including needlesticks.",
+        "optionExplanations": {
+            "A": "HAV is nonenveloped positive sense ssRNA and fecal oral.",
+            "B": "HCV is enveloped positive sense ssRNA in the Flaviviridae family.",
+            "C": "HEV is nonenveloped positive sense ssRNA and fecal oral.",
+            "D": "Correct. This virology and exposure are classic for HBV."
+        }
+    },
+    {
+        "id": 7,
+        "stem": "A neonate born to a mother with active hepatitis B infection has the highest risk of becoming chronically infected if not protected. Which statement best explains the age relationship for HBV chronicity in the section",
+        "topic": "HBV chronicity risk by age",
+        "options": {
+            "A": "Chronicity risk is highest with infant infection and much lower with adult infection",
+            "B": "Chronicity risk is highest with adult infection and absent in infants",
+            "C": "Chronicity risk is the same at all ages",
+            "D": "HBV never becomes chronic"
+        },
+        "correct": "A",
+        "explanation": "The Hepatitis section emphasizes that chronicity risk is highest when infected young: about 90% in infants, 25-50% at ages 1-5, and about 5% in adults.",
+        "optionExplanations": {
+            "A": "Correct. HBV chronicity is inversely related to age at acquisition.",
+            "B": "This reverses the pattern in the notes.",
+            "C": "The section gives strongly age-dependent chronicity rates.",
+            "D": "HAV never becomes chronic; HBV can become chronic."
+        }
+    },
+    {
+        "id": 8,
+        "stem": "A patient with acute HBV develops fever, rash, and arthritis before jaundice. Which mechanism from the section best explains these extrahepatic findings",
+        "topic": "HBV serum sickness like reaction",
+        "options": {
+            "A": "Direct viral cytolysis of synovium",
+            "B": "Enterotoxin mediated chloride secretion",
+            "C": "Immune complex deposition causing a type III reaction",
+            "D": "Defective viral envelope assembly without inflammation"
+        },
+        "correct": "C",
+        "explanation": "HBV is not cytolytic; injury is immune mediated. The section specifically lists a serum sickness like reaction due to immune complexes causing rash and arthritis, a type III hypersensitivity pattern.",
+        "optionExplanations": {
+            "A": "The notes emphasize that HBV is not directly cytolytic.",
+            "B": "Enterotoxin mediated chloride secretion is a diarrhea mechanism, not HBV rash and arthritis.",
+            "C": "Correct. HBV can cause immune complex mediated rash and arthritis.",
+            "D": "HDV requires HBV envelope, but this does not explain the serum sickness like syndrome."
+        }
+    },
+    {
+        "id": 9,
+        "stem": "A patient has acute hepatitis B serology during the window period. HBsAg has disappeared, but anti-HBs is not yet detectable. Which marker is expected to be the only positive marker emphasized in the board pearls",
+        "topic": "HBV window period",
+        "options": {
+            "A": "Anti-HAV IgM",
+            "B": "Anti-HBc IgM",
+            "C": "Anti-HCV IgG",
+            "D": "Anti-HEV IgM"
+        },
+        "correct": "B",
+        "explanation": "The board pearls state that the HBV window period equals anti-HBc IgM only. The section also notes IgM core indicates recent infection.",
+        "optionExplanations": {
+            "A": "Anti-HAV IgM indicates acute hepatitis A.",
+            "B": "Correct. Anti-HBc IgM is the key HBV window period marker.",
+            "C": "Anti-HCV does not define the HBV window period.",
+            "D": "Anti-HEV IgM suggests acute hepatitis E."
+        }
+    },
+    {
+        "id": 10,
+        "stem": "A 38 year old with chronic HBV has biopsy findings described as ground glass hepatocytes. Which viral component accounts for this hallmark finding in the section",
+        "topic": "HBV ground glass hepatocytes",
+        "options": {
+            "A": "HAV capsid protein in bile ducts",
+            "B": "HCV RNA in Kupffer cells",
+            "C": "HDV antigen in endothelial cells",
+            "D": "HBsAg in hepatocyte cytoplasm"
+        },
+        "correct": "D",
+        "explanation": "The hepatitis comparison table notes that ground glass hepatocytes are a hallmark of HBV and represent HBsAg in the cytoplasm.",
+        "optionExplanations": {
+            "A": "HAV is not associated with ground glass hepatocytes in the section.",
+            "B": "HCV is an RNA virus with immune-mediated chronic inflammation, not ground glass HBsAg cytoplasm.",
+            "C": "HDV requires HBsAg but the hallmark described is HBV surface antigen in hepatocytes.",
+            "D": "Correct. Cytoplasmic HBsAg gives the ground glass appearance."
+        }
+    },
+    {
+        "id": 11,
+        "stem": "A patient with hepatitis B asks why T cell problems increase the chance of chronic infection. Which pathogenesis statement best matches the uploaded section",
+        "topic": "HBV immune-mediated pathogenesis",
+        "options": {
+            "A": "HBV injury is mainly due to bacterial superinfection of bile ducts",
+            "B": "HBV directly lyses hepatocytes independent of immunity",
+            "C": "HBV inflammation is immune mediated, and cellular immunity is important for host response",
+            "D": "HBV is cleared only by neutrophil extracellular traps"
+        },
+        "correct": "C",
+        "explanation": "The HBV section states that HBV is not cytolytic; inflammation is immune mediated by CD8+ cells, and patients with depressed T lymphocyte function have increased frequency of chronic HBV infection.",
+        "optionExplanations": {
+            "A": "Bacterial biliary infection is not the HBV chronicity mechanism described.",
+            "B": "The notes explicitly say HBV is not cytolytic.",
+            "C": "Correct. T cell mediated host response is central to HBV control and injury.",
+            "D": "Neutrophil extracellular traps are not listed as the key HBV clearance mechanism."
+        }
+    },
+    {
+        "id": 12,
+        "stem": "A 55 year old born between 1945 and 1965 has mild fatigue and fluctuating liver enzymes with periodic returns to normal. Screening is positive for an enveloped positive sense ssRNA Flavivirus. Which additional test confirms active infection",
+        "topic": "HCV diagnosis",
+        "options": {
+            "A": "HCV RNA by PCR",
+            "B": "Anti-HAV IgM only",
+            "C": "HBsAg only",
+            "D": "Anti-HBs titer"
+        },
+        "correct": "A",
+        "explanation": "HCV is an enveloped positive sense ssRNA Flavivirus. The section lists anti-HCV screening plus HCV RNA/PCR for diagnosis of active infection, and notes periodic flares with liver enzymes rising and returning toward normal.",
+        "optionExplanations": {
+            "A": "Correct. HCV RNA/PCR confirms active HCV infection.",
+            "B": "Anti-HAV IgM diagnoses acute hepatitis A.",
+            "C": "HBsAg is for HBV infection, not HCV.",
+            "D": "Anti-HBs indicates immunity to HBV, not active HCV."
+        }
+    },
+    {
+        "id": 13,
+        "stem": "A patient with newly diagnosed HCV asks why the infection so often becomes chronic. Which virologic feature from the summary helps HCV evade immune clearance",
+        "topic": "HCV immune evasion",
+        "options": {
+            "A": "Partially double stranded DNA genome",
+            "B": "High mutation rates",
+            "C": "Requirement for HBsAg envelope",
+            "D": "Absence of an RNA phase"
+        },
+        "correct": "B",
+        "explanation": "The comparison table notes that HCV has high mutation rates that allow it to evade the immune system, contributing to its high chronicity rate.",
+        "optionExplanations": {
+            "A": "Partially double stranded DNA describes HBV, not HCV.",
+            "B": "Correct. HCV high mutation rate supports immune evasion and chronic infection.",
+            "C": "Requirement for HBsAg is a property of HDV.",
+            "D": "HCV is an RNA virus, so this is incorrect."
+        }
+    },
+    {
+        "id": 14,
+        "stem": "A patient with chronic hepatitis C is worried about long term complications. Which complication pattern is most consistent with the Hepatitis section",
+        "topic": "HCV complications",
+        "options": {
+            "A": "No chronic disease and no carrier state",
+            "B": "Fulminant disease mainly during pregnancy",
+            "C": "Cirrhosis over decades with risk of hepatocellular carcinoma",
+            "D": "Only cervical lymphadenopathy without liver cancer risk"
+        },
+        "correct": "C",
+        "explanation": "The HCV section states that chronic infection is common and complications include cirrhosis in 5-20% over 20-25 years and HCC at 0-3% per year. The board pearl is HCV equals silent infection leading to cirrhosis and HCC.",
+        "optionExplanations": {
+            "A": "This describes HAV, not HCV.",
+            "B": "Severe disease in pregnancy is a classic HEV concern.",
+            "C": "Correct. Chronic HCV can silently progress to cirrhosis and HCC.",
+            "D": "Cervical lymphadenopathy is listed under classic HAV findings, not HCV complications."
+        }
+    },
+    {
+        "id": 15,
+        "stem": "A patient with acute hepatitis C is offered treatment. Which management from the uploaded section is most appropriate for HCV",
+        "topic": "HCV treatment",
+        "options": {
+            "A": "Supportive care only because antivirals are contraindicated",
+            "B": "Direct acting antivirals for approximately 8 weeks with avoidance of alcohol",
+            "C": "HBIG alone after all exposures",
+            "D": "Inactivated two dose vaccine as definitive treatment"
+        },
+        "correct": "B",
+        "explanation": "The HCV section lists direct acting antivirals for about 8 weeks, high cure rates, and avoidance of alcohol. It also notes no vaccine for HCV in the more detailed acute hepatitis portion.",
+        "optionExplanations": {
+            "A": "Supportive care alone applies more to HAV and most HEV, not HCV when treating active infection.",
+            "B": "Correct. DAAs are the treatment emphasized for HCV.",
+            "C": "HBIG is for HBV postexposure prophylaxis, not HCV treatment.",
+            "D": "HAV has an inactivated vaccine; HCV does not have a vaccine in this section."
+        }
+    },
+    {
+        "id": 16,
+        "stem": "A patient with chronic HBV develops severe acute hepatitis after exposure to a defective circular RNA virus. Which statement best describes the new virus",
+        "topic": "HDV requirements",
+        "options": {
+            "A": "It requires HBsAg from HBV for its envelope",
+            "B": "It is a nonenveloped DNA virus spread fecal orally",
+            "C": "It causes disease only after HAV coinfection",
+            "D": "It is prevented by an HCV vaccine"
+        },
+        "correct": "A",
+        "explanation": "HDV is a satellite defective virus with circular negative sense ssRNA that requires the HBV envelope, specifically HBsAg. It only occurs in HBV-infected patients.",
+        "optionExplanations": {
+            "A": "Correct. HDV requires HBsAg, so preventing HBV prevents HDV.",
+            "B": "HDV is RNA and requires HBV; fecal oral nonenveloped viruses include HAV and HEV.",
+            "C": "HDV depends on HBV, not HAV.",
+            "D": "No HCV vaccine is listed; HBV vaccination prevents HDV."
+        }
+    },
+    {
+        "id": 17,
+        "stem": "Two patients have HDV. Patient 1 acquired HBV and HDV at the same time and later clears infection. Patient 2 was already a chronic HBsAg carrier and then acquired HDV, developing severe disease that becomes chronic. What distinction is being tested",
+        "topic": "HDV coinfection versus superinfection",
+        "options": {
+            "A": "HDV superinfection is usually more severe and chronic than coinfection",
+            "B": "HDV coinfection always causes chronic infection but superinfection never does",
+            "C": "HDV cannot infect patients with HBV",
+            "D": "HDV only causes asymptomatic acute infection"
+        },
+        "correct": "A",
+        "explanation": "The section states that HDV coinfection with HBV can cause severe acute hepatitis but often resolves, while HDV superinfection in a chronic HBsAg carrier is typically severe or fulminant and usually chronic.",
+        "optionExplanations": {
+            "A": "Correct. HDV superinfection of a chronic HBV carrier is the more dangerous chronic pattern.",
+            "B": "This reverses the section's distinction.",
+            "C": "HDV requires HBV infection.",
+            "D": "The section emphasizes severe acute hepatitis and increased cirrhosis risk, not purely asymptomatic disease."
+        }
+    },
+    {
+        "id": 18,
+        "stem": "A pregnant patient develops acute hepatitis after drinking fecally contaminated water while traveling. Which virus is especially dangerous in pregnancy according to the Hepatitis section",
+        "topic": "HEV pregnancy risk",
+        "options": {
+            "A": "Hepatitis C virus",
+            "B": "Hepatitis B virus",
+            "C": "Hepatitis A virus",
+            "D": "Hepatitis E virus"
+        },
+        "correct": "D",
+        "explanation": "HEV is a nonenveloped positive sense ssRNA Hepevirus transmitted by fecally contaminated water. The section highlights that HEV is fatal in pregnancy and the comparison table notes high mortality rates in pregnant women.",
+        "optionExplanations": {
+            "A": "HCV is typically bloodborne and notable for chronicity, not the classic pregnancy fatality clue.",
+            "B": "HBV is blood, sexual, and perinatal; pregnancy is important for transmission but HEV is the fatal-in-pregnancy pearl.",
+            "C": "HAV is fecal oral but generally benign and self limited without chronicity.",
+            "D": "Correct. Fecally contaminated water plus pregnancy danger points to HEV."
+        }
+    },
+    {
+        "id": 19,
+        "stem": "A 30 year old traveler develops an acute hepatitis syndrome after unsafe water exposure. Serology shows IgM anti-HEV. He is immunocompetent and not pregnant. Which management is most consistent with the section",
+        "topic": "HEV treatment",
+        "options": {
+            "A": "Pegylated interferon for all patients",
+            "B": "HBIG plus HBV vaccine",
+            "C": "Supportive care with avoidance of alcohol",
+            "D": "Immediate liver transplant for all cases"
+        },
+        "correct": "C",
+        "explanation": "HEV is usually mild and clears in immunocompetent patients. The section lists supportive care, passive immunization within 2 weeks in some contexts, and no alcohol; severe or fulminant cases need specialized care.",
+        "optionExplanations": {
+            "A": "Routine pegylated interferon for all HEV cases is not listed.",
+            "B": "HBIG plus vaccine is HBV postexposure prevention.",
+            "C": "Correct. Most immunocompetent HEV is managed supportively with alcohol avoidance.",
+            "D": "Transplant evaluation is reserved for acute liver failure, not all HEV cases."
+        }
+    },
+    {
+        "id": 20,
+        "stem": "A student makes a table grouping viral hepatitis by transmission. Which grouping matches the board pearls in the uploaded section",
+        "topic": "Transmission patterns",
+        "options": {
+            "A": "Fecal oral: HAV and HEV; blood or sex: HBV, HCV, and HDV",
+            "B": "Fecal oral: HBV and HCV; blood or sex: HAV and HEV",
+            "C": "Fecal oral: HDV only; blood or sex: HAV only",
+            "D": "All hepatitis viruses are transmitted only by respiratory droplets"
+        },
+        "correct": "A",
+        "explanation": "The board-style integration pearls explicitly state fecal oral transmission for HAV and HEV, and blood/sex transmission for HBV, HCV, and HDV.",
+        "optionExplanations": {
+            "A": "Correct. This is the exact transmission framework emphasized in the section.",
+            "B": "This reverses the main transmission categories.",
+            "C": "HDV is blood/body fluid associated because it requires HBV, not fecal oral.",
+            "D": "Respiratory droplets are not the main transmission route for the hepatitis viruses in this section."
+        }
+    },
+    {
+        "id": 21,
+        "stem": "A patient has chronic necroinflammation of the liver from a viral etiology with persistence beyond 6 months. Which set contains the main viral causes of chronic hepatitis emphasized in the section",
+        "topic": "Chronic hepatitis etiologies",
+        "options": {
+            "A": "HAV, norovirus, rotavirus",
+            "B": "HBV, HCV, HDV, and occasionally HEV in immunosuppressed patients",
+            "C": "HSV, EBV, CMV only",
+            "D": "Influenza and SARS-CoV-2 only"
+        },
+        "correct": "B",
+        "explanation": "The chronic hepatitis portion defines chronic necroinflammation and lists viral etiologies as HBV, HCV, HDV only in HBsAg carriers, and HEV generally not chronic except in immunosuppressed patients.",
+        "optionExplanations": {
+            "A": "HAV never becomes chronic and norovirus/rotavirus are enteric gastroenteritis viruses, not chronic hepatitis causes in this section.",
+            "B": "Correct. These are the chronic viral hepatitis etiologies highlighted.",
+            "C": "These may cause acute or other viral disease but are not the major chronic hepatitis etiologies emphasized.",
+            "D": "SARS-CoV-2 may accompany acute hepatitis but is not a chronic hepatitis virus in the section."
+        }
+    },
+    {
+        "id": 22,
+        "stem": "A patient with suspected acute viral hepatitis has ALT, AST, alkaline phosphatase, and INR ordered. Which first line serologic or molecular panel best matches the section's diagnostic approach",
+        "topic": "Acute viral hepatitis first line testing",
+        "options": {
+            "A": "Only stool ova and parasites",
+            "B": "Only anti-HBs and anti-HAV IgG",
+            "C": "Only serum lipase and fecal calprotectin",
+            "D": "Anti-HAV IgM, HBsAg plus anti-HBc IgM, anti-HCV antibody plus HCV RNA, and anti-HEV IgM"
+        },
+        "correct": "D",
+        "explanation": "The acute viral hepatitis diagnostic table lists first-line testing as anti-HAV IgM, HBsAg plus anti-HBc IgM, anti-HCV antibody plus HCV RNA, and anti-HEV IgM. ALT/AST/alk phos/INR assess pattern and severity.",
+        "optionExplanations": {
+            "A": "Ova and parasite testing evaluates parasitic GI disease, not first-line viral hepatitis.",
+            "B": "Anti-HBs and anti-HAV IgG mainly indicate immunity or past exposure, not acute diagnosis.",
+            "C": "Lipase and fecal calprotectin evaluate pancreatitis and intestinal inflammation, not viral hepatitis etiology.",
+            "D": "Correct. This is the section's first-line acute viral hepatitis testing panel."
+        }
+    },
+    {
+        "id": 23,
+        "stem": "A patient has acute HBV markers. The clinician orders HDV antigen or anti-HDV antibody as a second-line test. Which result pattern would support HDV superinfection rather than HBV-HDV coinfection according to the section",
+        "topic": "HDV serologic distinction",
+        "options": {
+            "A": "Anti-HAV IgM as the only marker",
+            "B": "Absence of anti-HBc IgM with detectable HDV RNA in an HBsAg carrier",
+            "C": "Isolated anti-HBs after vaccination",
+            "D": "HCV RNA positive with no HBV markers"
+        },
+        "correct": "B",
+        "explanation": "The detailed HDV portion states that coinfection has anti-HBc IgM because HBV is acute, whereas superinfection occurs in a chronic HBsAg carrier and lacks anti-HBc IgM; HDV RNA can be detectable before or during the episode.",
+        "optionExplanations": {
+            "A": "Anti-HAV IgM indicates acute HAV, not HDV superinfection.",
+            "B": "Correct. No anti-HBc IgM in an HBsAg carrier with HDV RNA supports HDV superinfection.",
+            "C": "Isolated anti-HBs suggests HBV vaccine immunity, not HDV.",
+            "D": "HCV RNA indicates active HCV, not HDV."
+        }
+    },
+    {
+        "id": 24,
+        "stem": "A patient with HBV exposure is nonimmune. Which prevention strategy from the section applies after exposure, and what is the vaccine type used for routine prevention",
+        "topic": "HBV prevention",
+        "options": {
+            "A": "HBIG plus HBV vaccine after exposure; recombinant/subunit HBsAg vaccine for prevention",
+            "B": "No postexposure prophylaxis exists; only supportive care",
+            "C": "Inactivated HAV vaccine only",
+            "D": "Direct acting antivirals as vaccination"
+        },
+        "correct": "A",
+        "explanation": "The section lists HBV prevention by vaccination and sterilization, and the detailed acute hepatitis content states postexposure HBIG plus vaccine for nonimmune or low-titer individuals. The HBV vaccine is a recombinant/subunit HBsAg vaccine.",
+        "optionExplanations": {
+            "A": "Correct. HBIG plus vaccine is HBV postexposure prophylaxis, and routine vaccine is recombinant/subunit HBsAg.",
+            "B": "HBV postexposure prophylaxis does exist.",
+            "C": "HAV vaccine prevents HAV, not HBV.",
+            "D": "Direct acting antivirals treat HCV; they are not vaccines."
+        }
+    },
+    {
+        "id": 25,
+        "stem": "A patient with acute hepatitis has worsening jaundice, personality changes, sleep disturbance, encephalopathy, rapid progression toward coma, easy bruising, and fasting hypoglycemia. Which syndrome best describes this presentation",
+        "topic": "Fulminant hepatitis",
+        "options": {
+            "A": "Cholestatic HAV only",
+            "B": "Uncomplicated chronic HCV carrier state",
+            "C": "Serum sickness like HBV prodrome",
+            "D": "Fulminant hepatitis with decreased liver synthetic function"
+        },
+        "correct": "D",
+        "explanation": "The shared acute viral hepatitis syndrome lists fulminant hepatitis as worsening jaundice, hepatic encephalopathy, decreased liver synthetic function, fasting hypoglycemia, and easy bruising or bleeding. PT/INR should be checked.",
+        "optionExplanations": {
+            "A": "Cholestatic HAV causes prolonged itching and persistent jaundice but not necessarily encephalopathy and synthetic failure.",
+            "B": "Chronic HCV is often silent or causes fatigue, not rapid encephalopathy and hypoglycemia.",
+            "C": "HBV serum sickness like reaction causes rash and arthritis from immune complexes.",
+            "D": "Correct. Encephalopathy plus decreased synthetic function indicates fulminant hepatitis."
+        }
+    },
+    {
+        "id": 26,
+        "stem": "A patient asks which hepatitis viruses are nonenveloped and therefore relatively environmentally stable in fecal oral transmission. Based on the section, which pair is correct",
+        "topic": "HAV and HEV virology",
+        "options": {
+            "A": "HBV and HCV",
+            "B": "HAV and HEV",
+            "C": "HCV and HDV",
+            "D": "HBV and HDV"
+        },
+        "correct": "B",
+        "explanation": "HAV is listed as nonenveloped positive sense ssRNA in Picornaviridae, and HEV is listed as nonenveloped positive sense ssRNA in Hepeviridae. Both are fecal oral viruses.",
+        "optionExplanations": {
+            "A": "HBV and HCV are enveloped and transmitted mainly through blood/body fluids or parenteral routes.",
+            "B": "Correct. HAV and HEV are nonenveloped fecal oral hepatitis viruses.",
+            "C": "HCV is enveloped; HDV requires HBV and is not the fecal oral nonenveloped pair.",
+            "D": "HBV is enveloped; HDV uses HBV envelope."
+        }
+    },
+    {
+        "id": 27,
+        "stem": "A patient with acute hepatitis has anti-HCV antibody negative but HCV RNA positive shortly after a needlestick. Which interpretation is most accurate based on the acute HCV diagnostic timing in the section",
+        "topic": "Early acute HCV diagnosis",
+        "options": {
+            "A": "This pattern strongly supports acute early HCV before antibody seroconversion",
+            "B": "This proves prior resolved HAV infection",
+            "C": "This is the HBV window period",
+            "D": "This excludes viral hepatitis"
+        },
+        "correct": "A",
+        "explanation": "The detailed acute hepatitis content states HCV RNA can be positive early, before antibody appears. RNA positive with antibody negative strongly suggests acute HCV, with later seroconversion confirming.",
+        "optionExplanations": {
+            "A": "Correct. HCV RNA appears before anti-HCV antibody in early acute infection.",
+            "B": "Resolved HAV would show anti-HAV IgG, not HCV RNA.",
+            "C": "HBV window period is anti-HBc IgM only.",
+            "D": "A positive HCV RNA is evidence of viral hepatitis, not exclusion."
+        }
+    },
+    {
+        "id": 28,
+        "stem": "A patient with hepatitis is found to have a virus that is not cytolytic, with liver injury driven by CD8 positive immune responses. Which viruses in the section are explicitly described as not cytolytic",
+        "topic": "Immune mediated hepatitis injury",
+        "options": {
+            "A": "Only HEV",
+            "B": "Only HPgV-1",
+            "C": "Only adenovirus",
+            "D": "HAV, HBV, and HCV"
+        },
+        "correct": "D",
+        "explanation": "The section specifically labels HAV, HBV, and HCV as not cytolytic. Their hepatic injury is primarily immune mediated, with HBV and HAV emphasizing CD8+ mediated injury and HCV chronic immune-mediated inflammation.",
+        "optionExplanations": {
+            "A": "HEV is described as similar to HAV, but the explicit not-cytolytic label appears for HAV, HBV, and HCV in the section.",
+            "B": "HPgV-1 infects lymphocytes and is not a focus, but this is not the set asked.",
+            "C": "Adenovirus is listed as another cause but not the explicit not-cytolytic group.",
+            "D": "Correct. HAV, HBV, and HCV are explicitly described as not cytolytic."
+        }
+    },
+    {
+        "id": 29,
+        "stem": "A patient is diagnosed with acute HAV. Which prevention counseling best matches the section",
+        "topic": "HAV prevention",
+        "options": {
+            "A": "Needle exchange only because HAV is bloodborne",
+            "B": "Vaccination and hand hygiene",
+            "C": "HBIG plus tenofovir for all contacts",
+            "D": "Avoiding oysters only, because no vaccine exists"
+        },
+        "correct": "B",
+        "explanation": "HAV prevention in the section includes vaccination and hand hygiene. HAV is transmitted fecal orally and is commonly prevented by hygiene and vaccine strategies.",
+        "optionExplanations": {
+            "A": "Needle exchange is more relevant to bloodborne viruses such as HCV; HAV is fecal oral.",
+            "B": "Correct. HAV prevention includes vaccination and hand hygiene.",
+            "C": "HBIG and antivirals are not the routine HAV prevention approach described here.",
+            "D": "HAV has a vaccine; the section lists vaccination."
+        }
+    },
+    {
+        "id": 30,
+        "stem": "A physician reviews hepatitis causes beyond the big five. Which bacterial differential diagnosis list is included in the Hepatitis section",
+        "topic": "Bacterial differential for hepatitis",
+        "options": {
+            "A": "Leptospira, Mycoplasma, Rickettsia, Brucella, and Salmonella typhi",
+            "B": "Candida, Aspergillus, Mucor, and Cryptococcus",
+            "C": "Rotavirus, norovirus, astrovirus, and adenovirus 40/41",
+            "D": "Entamoeba histolytica, Giardia, Cryptosporidium, and Cyclospora only"
+        },
+        "correct": "A",
+        "explanation": "Under causes of hepatitis, the section lists bacterial differential causes including Leptospira species, Mycoplasma species, Rickettsia species, Brucella species, and Salmonella typhi.",
+        "optionExplanations": {
+            "A": "Correct. This is the bacterial hepatitis differential list from the section.",
+            "B": "These are fungi, not the listed bacterial hepatitis differential.",
+            "C": "These are viral gastroenteritis agents, not the bacterial hepatitis differential list.",
+            "D": "These are protozoal GI pathogens rather than the bacterial hepatitis differential named in the section."
+        }
+    }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionMeta = document.getElementById("questionMeta");
+    const topicMeta = document.getElementById("topicMeta");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "segment" + (answers[q.id] ? " answered" : "") + (idx === currentIndex ? " active" : "");
+        btn.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(btn);
+      });
+    }
+
+    function scoreCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([id, choice]) => {
+        const q = questions.find(item => item.id === Number(id));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionMeta.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = q.stem.endsWith("?") ? q.stem : q.stem + "?";
+
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        if (showExplanation && letter === q.correct) btn.classList.add("correct");
+        if (showExplanation && letter === selected && letter !== q.correct) btn.classList.add("incorrect");
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(btn);
+      });
+
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        const optionExplanations = Object.entries(q.optionExplanations || {})
+          .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+          .join("");
+        explanationEl.style.display = "block";
+        explanationEl.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "correct-text" : "incorrect-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div>
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExplanations}
+          </div>
+        `;
+      } else {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+      }
+    }
+
+    function render() {
+      renderSegments();
+      scoreCounts();
+      renderQuestion();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === 0 ? questions.length - 1 : currentIndex - 1;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === questions.length - 1 ? 0 : currentIndex + 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.keys(answers).forEach(key => delete answers[key]);
+      currentIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GI Microbiota Quiz Corrected</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .progress-wrap {
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress {
+      display: flex;
+      gap: 3px;
+    }
+    .segment {
+      height: 9px;
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      background: #334155;
+      cursor: pointer;
+      padding: 0;
+    }
+    .segment.answered { background: #6fa8dc; }
+    .segment.active { background: #cbd5e1; }
+    .score {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .wrong { background: #7f1d1d; }
+    .right { background: #065f46; }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .stem {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+    .choice {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .choice:hover { background: #f3f4f6; }
+    .choice.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .choice.incorrect {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 0 0 9px; }
+    .option-exp {
+      margin-top: 8px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 10px;
+    }
+    .nav button, .reset {
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f3f4f6; }
+    .footer {
+      margin-top: 14px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GI Microbiota Quiz</h1>
+    <div class="subtitle">30 board-style questions from section “2. Esophageal Disorders.” Select an answer to reveal the explanation.</div>
+
+    <div class="topbar">
+      <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+      <div class="score">
+        <span id="counter" class="pill" style="background:#334155;">1 / 30</span>
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+        <button class="reset" onclick="resetQuiz()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic">Topic</span>
+      </div>
+      <div id="stem" class="stem"></div>
+      <div id="answers" class="answers"></div>
+      <div id="explanation" class="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">Answer distribution verified before export: A=7, B=7, C=7, D=9.</div>
+  </div>
+
+<script>
+const questions = [
+  {
+    "id": 1,
+    "stem": "A researcher describes the intestinal microbiome as behaving like an endocrine organ because microbial metabolites are absorbed by the host and act as signaling molecules. Which microbial product best fits this description",
+    "topic": "Short-chain fatty acids",
+    "options": {
+      "A": "Urea",
+      "B": "Peptidoglycan fragments",
+      "C": "Short-chain fatty acids such as acetate and butyrate",
+      "D": "Conjugated bilirubin"
+    },
+    "correct": "C",
+    "explanation": "The GI Microbiota section emphasizes that microbial fermentation produces short-chain fatty acids, especially acetic acid and butyric acid, which are absorbed by the host and act as hormone-like signaling molecules affecting metabolism, immune modulation, and gut integrity.",
+    "optionExplanations": {
+      "A": "Urea is relevant to urease-producing organisms such as H. pylori, but it is not the major endocrine-like microbiota product highlighted here.",
+      "B": "Peptidoglycan fragments can stimulate immunity, but the section specifically identifies SCFAs as signaling molecules.",
+      "C": "Correct. SCFAs such as acetate and butyrate are microbial fermentation products with systemic signaling effects.",
+      "D": "Conjugated bilirubin is produced by hepatic processing, not by gut microbial fermentation as the key endocrine-like product."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A newborn develops a progressively more complex intestinal microbiota during early childhood. By what age is the gut microbiota described as being established in this section",
+    "topic": "Gut microbiota development",
+    "options": {
+      "A": "1 to 2 years",
+      "B": "At birth only",
+      "C": "After puberty",
+      "D": "After age 80"
+    },
+    "correct": "A",
+    "explanation": "The section states that the gut microbiota is established by age 1 to 2 years, with co-development of the intestinal epithelium and mucosal barrier.",
+    "optionExplanations": {
+      "A": "Correct. The section lists establishment by age 1 to 2 years.",
+      "B": "Birth begins colonization, but the microbiota is not described as fully established only at birth.",
+      "C": "Puberty is not the establishment point given in the material.",
+      "D": "Age 80 is associated with later-life shifts in microbial composition, not initial establishment."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A patient asks why the gut microbiota can be considered beneficial rather than merely harmless. Which host benefit is specifically attributed to gut microbes in the notes",
+    "topic": "Mutualism and host benefits",
+    "options": {
+      "A": "Synthesis of intrinsic factor",
+      "B": "Production of pancreatic enzymes",
+      "C": "Direct secretion of hydrochloric acid",
+      "D": "Synthesis of vitamin B and vitamin K"
+    },
+    "correct": "D",
+    "explanation": "The section distinguishes mutualism from simple commensalism and lists host benefits including fermentation of dietary fiber to SCFAs and synthesis of vitamin B and vitamin K.",
+    "optionExplanations": {
+      "A": "Intrinsic factor is secreted by gastric parietal cells, not by gut microbes.",
+      "B": "Pancreatic enzymes are produced by the pancreas, not by commensal microbiota.",
+      "C": "Hydrochloric acid is produced by gastric parietal cells.",
+      "D": "Correct. Vitamin B and vitamin K synthesis are listed benefits of gut microbiota."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A patient with lactose intolerance develops bloating and diarrhea because an undigested sugar reaches the colon. Which microbial capability explains why symptoms occur after lactose exposure",
+    "topic": "Gut flora metabolism",
+    "options": {
+      "A": "Microbes conjugate bilirubin into bile",
+      "B": "Microbes metabolize sugars including lactose and produce fermentation products",
+      "C": "Microbes digest only proteins and fats",
+      "D": "Microbes eliminate all gas production"
+    },
+    "correct": "B",
+    "explanation": "Humans lack enzymes to digest many carbohydrates, and gut microbes provide enzymes to break down starches, fiber, oligosaccharides, sugar alcohols, and lactose. Fermentation products contribute to symptoms such as gas.",
+    "optionExplanations": {
+      "A": "Bilirubin conjugation is a liver function and does not explain lactose symptoms.",
+      "B": "Correct. Microbial carbohydrate metabolism and fermentation explain gas and diarrhea in lactose intolerance.",
+      "C": "The section specifically emphasizes microbial digestion of carbohydrates, not only proteins and fats.",
+      "D": "Fermentation can increase gas rather than eliminate it."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A stool sample is analyzed for dominant microbial populations. Which bacterial genus is described as comprising about 30 percent of all gut bacteria",
+    "topic": "Dominant gut bacterial genera",
+    "options": {
+      "A": "Staphylococcus",
+      "B": "Proteus",
+      "C": "Bacteroides",
+      "D": "Mycobacterium"
+    },
+    "correct": "C",
+    "explanation": "The GI Microbiota section lists dominant bacterial genera and specifically notes that Bacteroides accounts for approximately 30 percent of all gut bacteria.",
+    "optionExplanations": {
+      "A": "Staphylococcus can be found in the stomach list but is not the dominant gut genus listed at about 30 percent.",
+      "B": "Proteus is included among colon organisms but is not listed as the dominant genus at about 30 percent.",
+      "C": "Correct. Bacteroides is specifically listed as about 30 percent of all gut bacteria.",
+      "D": "Mycobacterium is not a dominant normal gut genus in this section."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A clinician explains that one region of the GI tract contains the largest microbial ecosystem and is overwhelmingly anaerobic. Which location best matches this description",
+    "topic": "Regional microbiota distribution",
+    "options": {
+      "A": "Stomach",
+      "B": "Proximal small intestine",
+      "C": "Esophagus",
+      "D": "Colon"
+    },
+    "correct": "D",
+    "explanation": "The section states that the colon has the largest microbial ecosystem, contains the largest bacterial density in the body, and is composed of more than 99 percent anaerobes.",
+    "optionExplanations": {
+      "A": "The stomach has high acidity and only trace microbial load.",
+      "B": "The proximal small intestine has few microbes due to acid exposure.",
+      "C": "The esophagus is not described as the largest microbial ecosystem.",
+      "D": "Correct. The colon is the major anaerobic powerhouse of the gut microbiota."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A gastric biopsy shows a helical gram-negative organism with polar flagella that produces urease. Which mechanism allows this organism to survive locally in the acidic stomach",
+    "topic": "Helicobacter pylori urease",
+    "options": {
+      "A": "Conversion of urea to ammonia, increasing local pH",
+      "B": "Production of botulinum toxin",
+      "C": "Formation of a thick polysaccharide capsule only",
+      "D": "IgA protease-mediated immune evasion"
+    },
+    "correct": "A",
+    "explanation": "H. pylori produces urease, which converts urea to ammonia. Ammonia increases local pH and contributes to epithelial toxicity, allowing the organism to survive in the gastric mucous layer.",
+    "optionExplanations": {
+      "A": "Correct. Urease-mediated ammonia production is the key acid-buffering mechanism.",
+      "B": "Botulinum toxin is produced by Clostridium botulinum, not H. pylori.",
+      "C": "The section emphasizes helical shape, flagella, urease, proteases, and cysteine-rich proteins rather than capsule-only survival.",
+      "D": "IgA protease is not the mechanism emphasized for H. pylori in this section."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A pathologist studies specialized intestinal epithelial cells overlying Peyer patches. These cells sample luminal antigens and deliver them to immune cells beneath the epithelium, initiating mucosal IgA responses. Which cells are being described",
+    "topic": "M cells",
+    "options": {
+      "A": "Goblet cells",
+      "B": "Paneth cells",
+      "C": "M cells",
+      "D": "Parietal cells"
+    },
+    "correct": "C",
+    "explanation": "M cells are located over Peyer patches and GALT. Their role is antigen sampling through transcytosis, delivering luminal material to underlying immune cells and helping initiate IgA-mediated mucosal immune responses.",
+    "optionExplanations": {
+      "A": "Goblet cells produce mucus and support the physical mucous barrier.",
+      "B": "Paneth cells produce antimicrobial products such as bacteriocins.",
+      "C": "Correct. M cells perform antigen sampling and transcytosis over GALT.",
+      "D": "Parietal cells are gastric cells that secrete acid and intrinsic factor."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A student compares microbial populations in the proximal versus distal small intestine. Which shift is described as the intestinal lumen becomes more alkaline distally",
+    "topic": "Small intestine microbiota gradient",
+    "options": {
+      "A": "Complete sterility throughout the distal ileum",
+      "B": "Increase in gram-negative bacteria including Enterobacteriaceae",
+      "C": "Replacement by fungi only",
+      "D": "Dominance of acid-resistant gastric organisms only"
+    },
+    "correct": "B",
+    "explanation": "The proximal small intestine has few microbes and predominantly gram-positive cocci and rods. Distally, the environment becomes more alkaline and gram-negative bacteria, especially Enterobacteriaceae, increase.",
+    "optionExplanations": {
+      "A": "The distal small intestine is not sterile; microbial load increases distally.",
+      "B": "Correct. Increased gram-negative bacteria and Enterobacteriaceae are emphasized distally.",
+      "C": "Fungi are listed as part of gut microbiota but do not replace bacteria only.",
+      "D": "The distal small intestine is not described as dominated only by gastric organisms."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient takes sulfasalazine for inflammatory bowel disease. The clinician notes that the gut microbiota can activate prodrugs. Which concept best explains this example",
+    "topic": "Microbiota and drug metabolism",
+    "options": {
+      "A": "Microbes prevent all drug absorption",
+      "B": "Microbes only produce vitamins and never affect medications",
+      "C": "Microbes convert all drugs to toxic metabolites",
+      "D": "Microbes can influence drug activation, deactivation, bioavailability, and toxicity"
+    },
+    "correct": "D",
+    "explanation": "The pharmaceutical interactions portion states that microbes influence drug activation, deactivation, bioavailability, and toxicity. Sulfasalazine activation is given as an example of microbial activation of a prodrug.",
+    "optionExplanations": {
+      "A": "Microbes can change bioavailability, but they do not prevent all drug absorption.",
+      "B": "The section explicitly lists multiple drug interactions, not only vitamin production.",
+      "C": "Some microbial effects may increase toxicity, but not all drugs are converted to toxic metabolites.",
+      "D": "Correct. This statement summarizes the listed pharmaceutical interactions of gut microbes."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient taking digoxin has lower-than-expected drug effect due to metabolism by a gut organism. Which organism is specifically named as inactivating digoxin",
+    "topic": "Eggerthella lenta and digoxin",
+    "options": {
+      "A": "Eggerthella lenta",
+      "B": "Bacteroides fragilis",
+      "C": "Enterococcus faecalis",
+      "D": "Clostridium tetani"
+    },
+    "correct": "A",
+    "explanation": "The section lists digoxin deactivation by Eggerthella lenta as an example of microbes altering medication activity.",
+    "optionExplanations": {
+      "A": "Correct. Eggerthella lenta is specifically named for digoxin inactivation.",
+      "B": "Bacteroides fragilis is normal GI flora important for anaerobic ecosystem stability, but it is not the named digoxin example.",
+      "C": "Enterococcus faecalis is normal intestinal flora but not the digoxin-inactivating organism listed.",
+      "D": "Clostridium tetani is associated with tetanospasmin and sustained muscle contraction, not digoxin metabolism."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A patient moves from an omnivorous diet to a vegetarian diet. The clinician says the microbiota can change rapidly and later revert if the diet reverts. Which diet-related microbial shift is described in the notes",
+    "topic": "Diet and microbiota",
+    "options": {
+      "A": "Loss of all anaerobes within one day",
+      "B": "Permanent disappearance of Bacteroides",
+      "C": "Increase in plant polysaccharide metabolizers",
+      "D": "Immediate dominance of Staphylococcus aureus"
+    },
+    "correct": "C",
+    "explanation": "Diet can alter the microbiota rapidly, within one day. The section notes that vegetarians have increased plant polysaccharide metabolizers and that reversion of diet can lead to reversion of microbiota.",
+    "optionExplanations": {
+      "A": "The notes do not state that all anaerobes are lost in one day.",
+      "B": "Bacteroides does not permanently disappear according to the material.",
+      "C": "Correct. Vegetarian diets are associated with increased plant polysaccharide metabolizers.",
+      "D": "Staphylococcus aureus dominance is not the described diet-related change."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "An elderly patient has age-associated changes in gut microbial composition. Which pattern is specifically listed for elderly individuals",
+    "topic": "Age-related microbiota changes",
+    "options": {
+      "A": "Increased Lachnospiraceae only",
+      "B": "Increased Bacteroides and Eubacterium with decreased Lachnospiraceae",
+      "C": "Complete loss of Bacteroides",
+      "D": "New establishment of microbiota for the first time"
+    },
+    "correct": "B",
+    "explanation": "The influence-on-microbiota section states that in elderly individuals there is increased Bacteroides and Eubacterium with decreased Lachnospiraceae.",
+    "optionExplanations": {
+      "A": "The notes say Lachnospiraceae decreases, not increases.",
+      "B": "Correct. This is the listed elderly microbiota pattern.",
+      "C": "Bacteroides increases rather than disappears.",
+      "D": "Initial establishment occurs early in life, not in elderly patients."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A malnourished child is evaluated for gut microbiota changes. Which finding is most consistent with the notes",
+    "topic": "Malnourishment and microbiota",
+    "options": {
+      "A": "Increased diversity with mature microbiota",
+      "B": "Loss of oral yeast colonization",
+      "C": "Sterile colon with no pathogens",
+      "D": "Decreased diversity, immature microbiota, and increased pathogenic organisms"
+    },
+    "correct": "D",
+    "explanation": "Malnourishment is associated with decreased diversity, immature microbiota, increased pathogenic organisms, and increased oral yeast colonization.",
+    "optionExplanations": {
+      "A": "Malnourishment decreases diversity and is associated with immature microbiota.",
+      "B": "The notes say oral yeast colonization increases.",
+      "C": "The colon is not sterile; pathogenic organisms can increase.",
+      "D": "Correct. This is the listed malnourishment pattern."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A microbiology plate shows gram-positive cocci in clusters that are catalase-positive, coagulase-positive, mannitol salt agar-positive, and beta-hemolytic. Which virulence factor binds the Fc portion of IgG and inhibits opsonization",
+    "topic": "Staphylococcus aureus Protein A",
+    "options": {
+      "A": "M protein",
+      "B": "Tetanospasmin",
+      "C": "Protein A",
+      "D": "Alpha toxin"
+    },
+    "correct": "C",
+    "explanation": "Staphylococcus aureus is gram-positive cocci in clusters and produces Protein A, which binds the Fc portion of IgG, preventing effective opsonization and phagocytosis.",
+    "optionExplanations": {
+      "A": "M protein is a Streptococcus pyogenes virulence factor that is anti-phagocytic.",
+      "B": "Tetanospasmin is produced by Clostridium tetani.",
+      "C": "Correct. Protein A binds the Fc portion of IgG.",
+      "D": "Alpha toxin is emphasized for Clostridium perfringens as a phospholipase causing membrane destruction."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A gram-positive coccus in chains is catalase-negative, bacitracin-sensitive, and beta-hemolytic. Which virulence factor is noted for being anti-phagocytic and having antibodies that may cross-react with heart muscle",
+    "topic": "Group A Streptococcus M protein",
+    "options": {
+      "A": "M protein",
+      "B": "Protein A",
+      "C": "Coagulase",
+      "D": "Cytochrome bd oxidase"
+    },
+    "correct": "A",
+    "explanation": "Group A Streptococcus is gram-positive cocci in chains, catalase-negative, bacitracin-sensitive, and beta-hemolytic. M protein is anti-phagocytic and antibodies against it can cross-react with heart muscle.",
+    "optionExplanations": {
+      "A": "Correct. M protein is the key GAS virulence factor described.",
+      "B": "Protein A is a Staphylococcus aureus factor that binds IgG Fc.",
+      "C": "Coagulase is a Staphylococcus aureus enzyme.",
+      "D": "Cytochrome bd oxidase is emphasized for Bacteroides fragilis oxygen reduction."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A probiotic organism is described as a gram-positive branched rod and obligate anaerobe that ferments carbohydrates through the fructose-6-phosphate phosphoketolase pathway. Which organism is most likely",
+    "topic": "Bifidobacterium",
+    "options": {
+      "A": "Proteus mirabilis",
+      "B": "Escherichia coli",
+      "C": "Enterococcus faecalis",
+      "D": "Bifidobacterium species"
+    },
+    "correct": "D",
+    "explanation": "Bifidobacterium species are gram-positive branched rods, obligate anaerobes, and common probiotics that ferment carbohydrates via the fructose-6-phosphate phosphoketolase pathway.",
+    "optionExplanations": {
+      "A": "Proteus is a gram-negative bacillus known for swarming motility and urease positivity.",
+      "B": "E. coli is a gram-negative facultative anaerobic bacillus and lactose fermenter.",
+      "C": "Enterococcus is gram-positive cocci and grows in bile esculin and 6.5 percent NaCl.",
+      "D": "Correct. These features match Bifidobacterium species."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A normal colon anaerobe helps maintain ecosystem stability by reducing oxygen with cytochrome bd oxidase, allowing other obligate anaerobes to survive. Which organism is being described",
+    "topic": "Bacteroides fragilis",
+    "options": {
+      "A": "Clostridium tetani",
+      "B": "Bacteroides fragilis",
+      "C": "Staphylococcus aureus",
+      "D": "Lactobacillus species"
+    },
+    "correct": "B",
+    "explanation": "Bacteroides fragilis is a gram-negative obligate anaerobe that supports the gut ecosystem. The notes specifically mention cytochrome bd oxidase reducing oxygen to help other obligate anaerobes survive.",
+    "optionExplanations": {
+      "A": "Clostridium tetani is an obligate anaerobe but is associated with tetanospasmin and tetanus, not this ecosystem-stability feature.",
+      "B": "Correct. Bacteroides fragilis reduces oxygen and supports obligate anaerobes.",
+      "C": "Staphylococcus aureus is a facultative gram-positive coccus, not the described colon anaerobe.",
+      "D": "Lactobacillus produces hydrogen peroxide and can be probiotic, but the cytochrome bd oxidase feature is listed for B. fragilis."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A gram-negative bacillus from colon flora is a lactose fermenter on MacConkey agar, indole-positive, methyl red-positive, Voges-Proskauer-negative, citrate-negative, urease-negative, and reduces nitrate to nitrite. Which antigen is the flagellar antigen",
+    "topic": "Escherichia coli antigens",
+    "options": {
+      "A": "O antigen",
+      "B": "K antigen",
+      "C": "H antigen",
+      "D": "Vi antigen"
+    },
+    "correct": "C",
+    "explanation": "The organism is E. coli. Its listed antigens are O, H, and K: O is somatic heat-stable antigen, H is flagellar antigen, and K is capsular antigen.",
+    "optionExplanations": {
+      "A": "O antigen is the somatic antigen.",
+      "B": "K antigen is the capsular antigen.",
+      "C": "Correct. H antigen is the flagellar antigen.",
+      "D": "Vi antigen is classically associated with Salmonella Typhi and is not the E. coli flagellar antigen here."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A wound culture grows a motile gram-negative bacillus that forms swarming colonies on nonselective media and is urease-positive and H2S-positive. Which organism best matches these findings",
+    "topic": "Proteus species",
+    "options": {
+      "A": "Proteus species",
+      "B": "Klebsiella granulomatis",
+      "C": "Bifidobacterium species",
+      "D": "Clostridioides difficile"
+    },
+    "correct": "A",
+    "explanation": "Proteus species are gram-negative bacilli that are motile, form swarming colonies on nonselective media, and are urease-positive and H2S-positive.",
+    "optionExplanations": {
+      "A": "Correct. Swarming motility plus urease positivity strongly fits Proteus.",
+      "B": "Klebsiella granulomatis is associated with painless beefy red ulcers and Donovan bodies.",
+      "C": "Bifidobacterium is gram-positive branched rods and obligate anaerobic probiotic flora.",
+      "D": "C. difficile is a gram-positive spore-forming anaerobic rod associated with antibiotic-associated diarrhea."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A genital lesion biopsy shows macrophages containing Donovan bodies. The organism is described as a gram-negative rod with catalase and citrate positivity, producing painless beefy red ulcers at the site of entry. Which diagnosis is most consistent",
+    "topic": "Klebsiella granulomatis",
+    "options": {
+      "A": "Tularemia",
+      "B": "Brucellosis",
+      "C": "Amebiasis",
+      "D": "Granulomatosis due to Klebsiella granulomatis"
+    },
+    "correct": "D",
+    "explanation": "The section lists Klebsiella granulomatosis as a gram-negative rod causing painless beefy red ulcers, with Donovan bodies in macrophages at the site of entry.",
+    "optionExplanations": {
+      "A": "Tularemia is due to Francisella tularensis and was not the Donovan body organism in this section.",
+      "B": "Brucellosis is associated with animal exposure and undulant fever, not Donovan bodies.",
+      "C": "Amebiasis is due to Entamoeba histolytica and causes flask-shaped ulcers or liver abscess.",
+      "D": "Correct. Donovan bodies in macrophages with painless beefy red ulceration fit Klebsiella granulomatis."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A urine culture grows gram-positive cocci that are bile esculin-positive, PYR-positive, and grow in 6.5 percent NaCl. The isolate is normal intestinal flora and an opportunistic pathogen. Which organism group is most likely",
+    "topic": "Enterococcus",
+    "options": {
+      "A": "Group A Streptococcus",
+      "B": "Enterococcus species",
+      "C": "Staphylococcus aureus",
+      "D": "Clostridium perfringens"
+    },
+    "correct": "B",
+    "explanation": "Enterococcus species are gram-positive cocci with Group D-like features, facultative anaerobes, bile esculin-positive, PYR-positive, and able to grow in 6.5 percent NaCl. They are normal intestinal flora and opportunistic pathogens.",
+    "optionExplanations": {
+      "A": "Group A Streptococcus is bacitracin-sensitive and beta-hemolytic, not bile esculin/6.5 percent NaCl growth.",
+      "B": "Correct. These lab features match Enterococcus.",
+      "C": "S. aureus is catalase-positive, coagulase-positive gram-positive cocci in clusters.",
+      "D": "C. perfringens is a gram-positive spore-forming rod, not cocci."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A gram-positive spore-forming rod grows rapidly in low oxygen and produces double-zone hemolysis on blood agar. The inner zone is complete hemolysis from theta toxin, and the outer zone is partial hemolysis from which toxin",
+    "topic": "Clostridium perfringens alpha toxin",
+    "options": {
+      "A": "Tetanospasmin",
+      "B": "Shiga toxin",
+      "C": "Alpha toxin, a phospholipase",
+      "D": "Protein A"
+    },
+    "correct": "C",
+    "explanation": "Clostridium perfringens produces double-zone hemolysis. The outer zone is partial hemolysis from alpha toxin, a phospholipase that causes membrane destruction; the inner zone is complete hemolysis from theta toxin.",
+    "optionExplanations": {
+      "A": "Tetanospasmin is produced by Clostridium tetani.",
+      "B": "Shiga toxin is associated with Shigella dysenteriae and EHEC, not the C. perfringens double-zone hemolysis pattern.",
+      "C": "Correct. Alpha toxin is a phospholipase responsible for the outer partial hemolysis.",
+      "D": "Protein A is a Staphylococcus aureus virulence factor."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A hospitalized patient develops antibiotic-associated diarrhea and pseudomembranous colitis. Culture on selective agar shows yellow, ground-glass colonies. Which organism is most consistent with this description",
+    "topic": "Clostridioides difficile",
+    "options": {
+      "A": "Bacteroides fragilis",
+      "B": "Enterobacter species",
+      "C": "Lactobacillus species",
+      "D": "Clostridioides difficile"
+    },
+    "correct": "D",
+    "explanation": "Clostridioides difficile is a gram-positive, spore-forming, motile obligate anaerobe that grows on CCFA agar with yellow, ground-glass colonies and causes toxin-mediated antibiotic-associated diarrhea and pseudomembranous colitis.",
+    "optionExplanations": {
+      "A": "Bacteroides fragilis is normal GI flora and supports anaerobe survival, but it is not the antibiotic-associated pseudomembranous colitis organism described.",
+      "B": "Enterobacter species are gram-negative rods and not the classic pseudomembranous colitis cause.",
+      "C": "Lactobacillus is a gram-positive rod often mutualistic/probiotic.",
+      "D": "Correct. C. difficile matches the clinical syndrome and CCFA colony description."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A patient develops sustained muscle contractions beginning with trismus after contamination of a deep wound. The toxin blocks inhibitory neurons. Which organism is described by these features",
+    "topic": "Clostridium tetani",
+    "options": {
+      "A": "Clostridium perfringens",
+      "B": "Clostridium tetani",
+      "C": "Clostridioides difficile",
+      "D": "Bacillus cereus"
+    },
+    "correct": "B",
+    "explanation": "Clostridium tetani is a gram-positive spore-forming obligate anaerobe with spherical endospores. Its plasmid-coded exotoxin tetanospasmin blocks inhibitory neurons, causing sustained muscle contraction often beginning at the jaw.",
+    "optionExplanations": {
+      "A": "C. perfringens is associated with alpha toxin, theta toxin, and double-zone hemolysis.",
+      "B": "Correct. Tetanospasmin-mediated blockade of inhibitory neurons is C. tetani.",
+      "C": "C. difficile causes antibiotic-associated diarrhea and pseudomembranous colitis.",
+      "D": "Bacillus cereus causes foodborne emetic or diarrheal syndromes, not trismus from inhibitory neuron blockade."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A probiotic organism is a gram-positive non-spore-forming rod that produces hydrogen peroxide, helping protect itself from oxygen toxicity and antagonizing pathogens such as Staphylococcus aureus and Pseudomonas. Which organism best matches this description",
+    "topic": "Lactobacillus",
+    "options": {
+      "A": "Lactobacillus species",
+      "B": "Proteus mirabilis",
+      "C": "Enterococcus faecium",
+      "D": "Bacteroides fragilis"
+    },
+    "correct": "A",
+    "explanation": "Lactobacillus species are gram-positive, non-spore-forming rods that are aerotolerant or microaerophilic. They produce hydrogen peroxide and have mutualistic/probiotic roles, including antagonistic effects against pathogens.",
+    "optionExplanations": {
+      "A": "Correct. Hydrogen peroxide production and probiotic use are emphasized for Lactobacillus.",
+      "B": "Proteus is a gram-negative swarming urease-positive bacillus.",
+      "C": "Enterococcus is gram-positive cocci and grows in bile esculin/6.5 percent NaCl.",
+      "D": "Bacteroides fragilis is a gram-negative anaerobic rod that supports anaerobic ecosystem stability."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A lab is identifying a motile gram-negative rod from a wound culture. The isolate is urease-negative, Voges-Proskauer-positive, methyl red-negative, uses citrate as a sole carbon source, ferments glucose with gas, and reduces nitrate to nitrite. Which genus best fits",
+    "topic": "Enterobacter species",
+    "options": {
+      "A": "Escherichia",
+      "B": "Proteus",
+      "C": "Enterobacter",
+      "D": "Bifidobacterium"
+    },
+    "correct": "C",
+    "explanation": "Enterobacter species are gram-negative motile rods that are urease-negative, Voges-Proskauer-positive, methyl red-negative, utilize citrate, ferment glucose with gas, and reduce nitrate to nitrite.",
+    "optionExplanations": {
+      "A": "E. coli is citrate-negative and methyl red-positive in the notes.",
+      "B": "Proteus is urease-positive and shows swarming motility.",
+      "C": "Correct. The biochemical profile matches Enterobacter species.",
+      "D": "Bifidobacterium is a gram-positive branched rod and obligate anaerobe."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A discussion of gut immune surveillance focuses on the organized lymphoid tissue that develops early in life, detects pathogens, and remains tolerant to commensals. Which term best names this system",
+    "topic": "GALT",
+    "options": {
+      "A": "Peyer-free epithelium",
+      "B": "Kupffer cell network",
+      "C": "Enteric nervous system only",
+      "D": "Gut-associated lymphoid tissue"
+    },
+    "correct": "D",
+    "explanation": "GALT, or gut-associated lymphoid tissue, develops early in life, detects pathogens, and remains tolerant to commensals. M cells and dendritic cells contribute to antigen sampling and immune signaling.",
+    "optionExplanations": {
+      "A": "Peyer patches are part of GALT, but “Peyer-free epithelium” is not the system described.",
+      "B": "Kupffer cells are liver macrophages, not the gut lymphoid surveillance system.",
+      "C": "The enteric nervous system regulates gut function but is not the lymphoid immune tissue described.",
+      "D": "Correct. GALT is the mucosal immune surveillance system described."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A patient working night shifts develops changes in gut microbial rhythms. Which lifestyle factor is specifically listed as capable of disrupting the microbiota through circadian rhythm changes",
+    "topic": "Lifestyle and circadian rhythm",
+    "options": {
+      "A": "Shift work or jet lag",
+      "B": "Sleeping at the same time every night",
+      "C": "Avoiding dogs entirely",
+      "D": "Eating only sterile food"
+    },
+    "correct": "A",
+    "explanation": "The lifestyle section states that circadian rhythm disruption from shift work or jet lag can disrupt the microbiota. It also notes that shared environment is more influential than genetics and that dogs increase similarity.",
+    "optionExplanations": {
+      "A": "Correct. Shift work and jet lag are the circadian rhythm examples listed.",
+      "B": "Regular sleep timing is not listed as the disrupting factor.",
+      "C": "The notes say dogs increase microbial similarity; avoiding dogs is not the listed disruptor.",
+      "D": "Eating sterile food is not the lifestyle factor described."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A patient is counseled that the stomach normally has relatively few microbes. Which explanation best accounts for the trace microbial load in the stomach",
+    "topic": "Stomach microbiota",
+    "options": {
+      "A": "The stomach has the largest bacterial density in the body",
+      "B": "High acidity limits microbial load",
+      "C": "The stomach contains more than 99 percent obligate anaerobes",
+      "D": "The stomach lacks all normal organisms including H. pylori"
+    },
+    "correct": "B",
+    "explanation": "The stomach has high acidity, which results in a trace microbial load. Common organisms listed include H. pylori, Streptococcus, Staphylococcus, Lactobacillus, and Peptostreptococcus.",
+    "optionExplanations": {
+      "A": "The colon, not the stomach, has the largest bacterial density.",
+      "B": "Correct. High acidity explains the low microbial load.",
+      "C": "The colon is described as more than 99 percent obligate anaerobes.",
+      "D": "The stomach is not sterile; the section lists several organisms including H. pylori."
+    }
+  }
+];
+
+let currentIndex = 0;
+let answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'segment' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; render(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, selected]) => {
+    const q = questions.find(item => item.id === Number(id));
+    if (!q) return;
+    if (selected === q.correct) right++;
+    else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+}
+
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    if (selected) {
+      if (letter === q.correct) btn.classList.add('correct');
+      else if (letter === selected) btn.classList.add('incorrect');
+    }
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => {
+      answers[q.id] = letter;
+      render();
+    };
+    answersDiv.appendChild(btn);
+  });
+
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const correctness = selected === q.correct ? 'Nice job.' : 'Good attempt.';
+    const optionRows = Object.entries(q.optionExplanations).map(([letter, text]) =>
+      `<p><strong>${letter}.</strong> ${text}</p>`
+    ).join('');
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p>${correctness} ${q.explanation}</p>
+      <div class="option-exp">
+        <p><strong>Why each option is right or wrong:</strong></p>
+        ${optionRows}
+      </div>
+    `;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+
+  renderProgress();
+  renderScore();
+}
+
+function goNext() {
+  currentIndex = (currentIndex + 1) % questions.length;
+  render();
+}
+
+function goPrev() {
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  render();
+}
+
+function resetQuiz() {
+  answers = {};
+  currentIndex = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jaundice Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 7px 0; }
+    .green-text { color: var(--green-text); }
+    .red-text { color: var(--red-text); }
+    .option-explanations { margin-top: 10px; }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .nav button {
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .nav button:hover { background: #f8fafc; }
+    .footer { color: #94a3b8; font-size: 12px; min-height: 12px; }
+    @media (max-width: 720px) {
+      body { padding: 14px; }
+      .topbar { align-items: stretch; flex-direction: column; }
+      .status { justify-content: space-between; }
+      .meta { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red"><span>×</span><span id="wrongCount">0</span></span>
+        <span class="pill green"><span>✓</span><span id="rightCount">0</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="meta">
+        <span id="questionCount">Question 1 of 30</span>
+        <span id="topicText">Topic:</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="prevQuestion()">Previous</button>
+        <button onclick="nextQuestion()">Next</button>
+      </div>
+    </div>
+    <p class="footer"></p>
+  </div>
+  <script>
+    const questions = [
+    {
+        "id": 1,
+        "stem": "A 45 year old woman notices yellow orange discoloration of her palms after starting a diet heavy in carrots, squash, and sweet potatoes. Her sclerae are white and bilirubin is normal. Which finding best distinguishes this condition from true jaundice",
+        "topic": "Carotenemia versus jaundice",
+        "options": {
+            "A": "Dark urine from conjugated bilirubin",
+            "B": "Yellow discoloration of the hard palate",
+            "C": "Sparing of the sclerae",
+            "D": "Clinically apparent bilirubin above 3 to 4 mg/dL"
+        },
+        "correct": "C",
+        "explanation": "Carotenemia causes yellow orange skin from beta carotene accumulation in the stratum corneum, but the sclerae are spared. True jaundice involves bilirubin deposition and the sclerae are the most sensitive site.",
+        "optionExplanations": {
+            "A": "Dark urine suggests conjugated bilirubin in urine, not carotenemia.",
+            "B": "Mucous membranes such as the tongue and hard palate can be involved in true jaundice.",
+            "C": "Correct. Scleral sparing is the key differentiator for carotenemia.",
+            "D": "True jaundice becomes clinically apparent when bilirubin is above about 3 to 4 mg/dL."
+        }
+    },
+    {
+        "id": 2,
+        "stem": "A patient presents with new yellowing of the skin and sclera. Before ordering an extensive panel, what is the first step emphasized in the evaluation of jaundice",
+        "topic": "Evaluation of jaundice",
+        "options": {
+            "A": "Focused history and physical examination",
+            "B": "Immediate liver biopsy",
+            "C": "Empiric ursodeoxycholic acid",
+            "D": "Hepatobiliary scan for all patients"
+        },
+        "correct": "A",
+        "explanation": "The jaundice framework starts with history and physical examination, including age, pregnancy status, onset, systemic symptoms, RUQ pain, stool color, dark urine, medications, alcohol, hepatitis risks, and signs of chronic liver disease.",
+        "optionExplanations": {
+            "A": "Correct. History and physical direct the next labs and differential.",
+            "B": "Liver biopsy is not the initial step for routine jaundice evaluation.",
+            "C": "UDCA is used for intrahepatic cholestasis of pregnancy, not all jaundice.",
+            "D": "Hepatobiliary scan is useful for selected conditions such as biliary atresia, not as the first universal test."
+        }
+    },
+    {
+        "id": 3,
+        "stem": "A patient has yellow sclerae and dark urine. Labs show conjugated hyperbilirubinemia. Which principle explains why bilirubin appears in the urine in this patient",
+        "topic": "Bilirubin solubility and urine findings",
+        "options": {
+            "A": "Unconjugated bilirubin is freely filtered at the glomerulus",
+            "B": "Albumin bound bilirubin is normally excreted in urine",
+            "C": "Urobilinogen is always absent when bilirubin is conjugated",
+            "D": "Conjugated bilirubin is water soluble and appears in urine when present in blood"
+        },
+        "correct": "D",
+        "explanation": "Conjugated bilirubin is water soluble. If conjugated bilirubin is present in blood, it will appear in urine and this is abnormal. Insoluble unconjugated bilirubin does not appear in urine.",
+        "optionExplanations": {
+            "A": "Unconjugated bilirubin is insoluble and albumin bound, so it is not freely filtered.",
+            "B": "Albumin bound bilirubin is not normally excreted in urine.",
+            "C": "Urobilinogen findings depend on whether bilirubin reaches the intestine; it is not always absent.",
+            "D": "Correct. Urine bilirubin means conjugated bilirubin is present in blood."
+        }
+    },
+    {
+        "id": 4,
+        "stem": "A patient with chronic malnutrition develops jaundice. Albumin is low, but the clinician notes this may not reflect an acute change in hepatic synthetic function. Which feature of albumin explains this limitation",
+        "topic": "Hepatic synthetic function: albumin",
+        "options": {
+            "A": "Albumin is not made by hepatocytes",
+            "B": "Albumin has a long half life of about 18 to 20 days",
+            "C": "Albumin only reflects clotting factor synthesis",
+            "D": "Albumin is elevated in nephrotic syndrome"
+        },
+        "correct": "B",
+        "explanation": "Albumin is synthesized by hepatocytes, but it has an 18 to 20 day half life, so it may remain normal in acute liver injury and may be low for nonhepatic reasons such as malnutrition, nephrotic syndrome, or protein losing enteropathy.",
+        "optionExplanations": {
+            "A": "Albumin is synthesized by hepatocytes.",
+            "B": "Correct. The long half life makes albumin less useful for very acute liver dysfunction.",
+            "C": "PT/INR is the faster marker of clotting factor synthesis.",
+            "D": "Nephrotic syndrome can lower albumin due to urinary protein loss."
+        }
+    },
+    {
+        "id": 5,
+        "stem": "A patient with jaundice has prolonged PT and elevated INR early in the course of illness. Which interpretation is most appropriate",
+        "topic": "Hepatic synthetic function: PT and INR",
+        "options": {
+            "A": "PT/INR only rises in chronic cirrhosis and cannot change acutely",
+            "B": "PT/INR reflects albumin synthesis and has a long half life",
+            "C": "PT/INR reflects clotting factor VIII synthesis specifically",
+            "D": "PT/INR is an early marker of liver dysfunction because most clotting factors have short half lives"
+        },
+        "correct": "D",
+        "explanation": "PT/INR reflects hepatic synthesis of clotting factors except factor VIII. Because these factors have short half lives, PT/INR is an early marker of liver dysfunction. It can also rise with vitamin K deficiency, especially in cholestasis.",
+        "optionExplanations": {
+            "A": "PT/INR can rise early in acute liver dysfunction.",
+            "B": "Albumin has the longer half life; PT/INR reflects clotting factors.",
+            "C": "Factor VIII is the exception and is not the main factor reflected by hepatic PT/INR changes.",
+            "D": "Correct. Short clotting factor half lives make PT/INR sensitive to early synthetic failure."
+        }
+    },
+    {
+        "id": 6,
+        "stem": "A patient with altered mental status and known severe liver injury is found to have elevated ammonia. Which process normally prevents ammonia accumulation",
+        "topic": "Ammonia metabolism",
+        "options": {
+            "A": "Kidney conversion of ammonia to stercobilin",
+            "B": "Splenic uptake of conjugated bilirubin",
+            "C": "Hepatic conversion of ammonia to urea",
+            "D": "Biliary secretion of ammonia into the gallbladder"
+        },
+        "correct": "C",
+        "explanation": "Ammonia is produced by protein metabolism and gut bacteria. The liver normally converts ammonia to urea; massive liver injury, GI bleeding, high protein load, hypokalemia, metabolic alkalosis, and rare urea cycle defects can raise ammonia.",
+        "optionExplanations": {
+            "A": "Stercobilin is a bilirubin pigment that gives stool its brown color.",
+            "B": "The spleen breaks down senescent RBCs but does not detoxify ammonia.",
+            "C": "Correct. The liver detoxifies ammonia by converting it to urea.",
+            "D": "Biliary secretion is not the main ammonia detoxification route."
+        }
+    },
+    {
+        "id": 7,
+        "stem": "A patient has isolated indirect hyperbilirubinemia. Urine bilirubin is absent and urine urobilinogen is markedly increased. AST, ALT, and ALP are normal. Which mechanism best fits this pattern",
+        "topic": "Prehepatic hemolytic jaundice",
+        "options": {
+            "A": "Excess RBC breakdown with preserved hepatic conjugation capacity",
+            "B": "Obstruction of the common bile duct by a gallstone",
+            "C": "Primary failure of canalicular secretion of conjugated bile",
+            "D": "Hepatocellular necrosis with mixed bilirubin elevation"
+        },
+        "correct": "A",
+        "explanation": "Prehepatic hemolytic jaundice is due to excess RBC breakdown. Total bilirubin increases, the blood bilirubin is unconjugated, urine bilirubin is absent, and urine urobilinogen is markedly increased because more bilirubin reaches the intestine.",
+        "optionExplanations": {
+            "A": "Correct. Hemolysis causes unconjugated hyperbilirubinemia with absent urine bilirubin and high urobilinogen.",
+            "B": "Obstruction causes conjugated hyperbilirubinemia, urine bilirubin, absent urobilinogen, and clay colored stools.",
+            "C": "Dubin Johnson causes impaired excretion of conjugated bilirubin.",
+            "D": "Hepatic jaundice usually produces mixed conjugated and unconjugated bilirubin with variable urine findings."
+        }
+    },
+    {
+        "id": 8,
+        "stem": "A 57 year old man develops jaundice, dark urine, pruritus, and clay colored stools after a gallstone obstructs the bile duct. Which urine pattern is expected",
+        "topic": "Posthepatic obstructive jaundice",
+        "options": {
+            "A": "Absent urine bilirubin with markedly increased urine urobilinogen",
+            "B": "Absent urine bilirubin with normal urine urobilinogen",
+            "C": "Absent urine bilirubin with absent urine urobilinogen",
+            "D": "Markedly increased urine bilirubin with absent urine urobilinogen"
+        },
+        "correct": "D",
+        "explanation": "Posthepatic obstruction prevents bilirubin from reaching the intestine, so urobilinogen is absent and stool becomes clay colored from lack of stercobilin. Conjugated bilirubin refluxes into blood and appears in urine.",
+        "optionExplanations": {
+            "A": "This is more consistent with hemolysis.",
+            "B": "Normal urine urobilinogen would not fit complete obstruction.",
+            "C": "Urine bilirubin should be present because conjugated bilirubin refluxes into blood.",
+            "D": "Correct. Obstructive jaundice produces urine bilirubin and absent urobilinogen."
+        }
+    },
+    {
+        "id": 9,
+        "stem": "A patient with jaundice has a conjugated bilirubin fraction between 20 and 60 percent of total bilirubin, with variable urine urobilinogen and urine bilirubin present. Which category best fits this pattern",
+        "topic": "Hepatic jaundice",
+        "options": {
+            "A": "Normal bilirubin metabolism",
+            "B": "Hepatic jaundice from mixed hepatocellular and intrahepatic cholestatic injury",
+            "C": "Pure prehepatic hemolytic jaundice",
+            "D": "Pure posthepatic obstruction"
+        },
+        "correct": "B",
+        "explanation": "Hepatic jaundice is a mixed process involving hepatocellular injury and intrahepatic cholestasis. The conjugated fraction is typically 20 to 60 percent, and urine findings can vary.",
+        "optionExplanations": {
+            "A": "Normal conjugated bilirubin is less than 20 percent and urine bilirubin is absent.",
+            "B": "Correct. Mixed conjugated and unconjugated bilirubin elevation fits hepatic jaundice.",
+            "C": "Prehepatic jaundice is predominantly unconjugated with absent urine bilirubin.",
+            "D": "Posthepatic obstruction usually has a conjugated fraction above 60 percent with absent urobilinogen."
+        }
+    },
+    {
+        "id": 10,
+        "stem": "A patient has jaundice with AST and ALT much higher than alkaline phosphatase. Which lab pattern does this represent",
+        "topic": "Liver biochemical patterns",
+        "options": {
+            "A": "Normal physiologic alkaline phosphatase elevation",
+            "B": "Isolated bone source of alkaline phosphatase",
+            "C": "Hepatocellular injury pattern",
+            "D": "Cholestatic injury pattern"
+        },
+        "correct": "C",
+        "explanation": "AST and ALT much greater than ALP indicates a hepatocellular pattern. ALP much greater than AST and ALT suggests cholestasis.",
+        "optionExplanations": {
+            "A": "Physiologic ALP elevation can occur in children and pregnancy but does not explain AST/ALT predominance.",
+            "B": "A bone source raises ALP, not primarily AST/ALT.",
+            "C": "Correct. Transaminase predominance indicates hepatocellular injury.",
+            "D": "Cholestasis is suggested when ALP is much higher than AST/ALT."
+        }
+    },
+    {
+        "id": 11,
+        "stem": "A patient has an isolated elevated alkaline phosphatase. The clinician wants to confirm whether the ALP is from hepatobiliary disease rather than bone. Which additional test is most appropriate from the jaundice framework",
+        "topic": "ALP source confirmation",
+        "options": {
+            "A": "Indirect bilirubin only",
+            "B": "Serum albumin only",
+            "C": "Serum ammonia only",
+            "D": "GGT or 5 prime nucleotidase"
+        },
+        "correct": "D",
+        "explanation": "ALP comes from liver, bone, and placenta. GGT or 5 prime nucleotidase can confirm a hepatobiliary source; GGT is not elevated in bone disease and is also induced by alcohol and some medications.",
+        "optionExplanations": {
+            "A": "Indirect bilirubin does not localize the ALP source.",
+            "B": "Albumin reflects synthetic function and can be low for many nonhepatic reasons.",
+            "C": "Ammonia is used for altered mental status in liver disease, not ALP source.",
+            "D": "Correct. GGT or 5 prime nucleotidase helps confirm hepatic origin of elevated ALP."
+        }
+    },
+    {
+        "id": 12,
+        "stem": "A 38 year old man with alcohol use disorder has jaundice. AST is more than twice ALT. Which explanation was given for this AST to ALT pattern in alcoholic liver disease",
+        "topic": "Alcoholic liver disease lab pattern",
+        "options": {
+            "A": "Decreased pyridoxal 5 phosphate decreases ALT synthesis",
+            "B": "Bone turnover selectively increases AST",
+            "C": "Conjugated bilirubin inhibits AST release",
+            "D": "GGT suppression prevents ALT excretion"
+        },
+        "correct": "A",
+        "explanation": "AST to ALT greater than 2 suggests alcoholic liver disease. The provided mechanism is decreased pyridoxal 5 phosphate, which decreases ALT synthesis.",
+        "optionExplanations": {
+            "A": "Correct. Alcohol related pyridoxal 5 phosphate deficiency lowers ALT relative to AST.",
+            "B": "Bone turnover affects alkaline phosphatase, not AST predominance.",
+            "C": "Bilirubin does not selectively inhibit AST release.",
+            "D": "GGT may be induced by alcohol but does not explain the AST to ALT ratio."
+        }
+    },
+    {
+        "id": 13,
+        "stem": "A pregnant patient in her first trimester has severe nausea and vomiting with weight loss and electrolyte imbalance. Transaminases are mildly elevated, but bilirubin elevation is rare. Which pregnancy related liver condition is most likely",
+        "topic": "Hyperemesis gravidarum",
+        "options": {
+            "A": "Intrahepatic cholestasis of pregnancy",
+            "B": "HELLP syndrome",
+            "C": "Hyperemesis gravidarum",
+            "D": "Acute fatty liver of pregnancy"
+        },
+        "correct": "C",
+        "explanation": "Hyperemesis gravidarum occurs in the first trimester and presents with severe nausea and vomiting, weight loss, and electrolyte imbalance. About half can have increased transaminases, while bilirubin elevation is rare.",
+        "optionExplanations": {
+            "A": "Intrahepatic cholestasis of pregnancy usually occurs in the second to third trimester with pruritus and elevated bile acids.",
+            "B": "HELLP is a severe preeclampsia variant, usually in the third trimester or postpartum.",
+            "C": "Correct. First trimester severe vomiting and weight loss fits hyperemesis gravidarum.",
+            "D": "AFLP occurs in the third trimester and can cause hypoglycemia, coagulopathy, and encephalopathy."
+        }
+    },
+    {
+        "id": 14,
+        "stem": "A pregnant patient in the third trimester has intense itching of the palms and soles without a rash. Labs show elevated serum bile acids, mild transaminase elevation, and mild jaundice. Which treatment is most appropriate",
+        "topic": "Intrahepatic cholestasis of pregnancy",
+        "options": {
+            "A": "Vitamin B6 only",
+            "B": "Ursodeoxycholic acid",
+            "C": "Phenobarbital",
+            "D": "Immediate liver transplant"
+        },
+        "correct": "B",
+        "explanation": "Intrahepatic cholestasis of pregnancy presents in the second to third trimester with pruritus, often palms and soles, elevated serum bile acids, transaminase elevation, and possible jaundice. Treatment is ursodeoxycholic acid.",
+        "optionExplanations": {
+            "A": "Vitamin B6 may be used in supportive care for hyperemesis gravidarum.",
+            "B": "Correct. UDCA is the treatment listed for intrahepatic cholestasis of pregnancy.",
+            "C": "Phenobarbital is associated with Crigler Najjar type II treatment, not ICP.",
+            "D": "Transplant is not the standard treatment for ICP."
+        }
+    },
+    {
+        "id": 15,
+        "stem": "A 34 week pregnant patient has hypertension, proteinuria, RUQ pain, headache, visual changes, jaundice, thrombocytopenia, elevated LDH, low haptoglobin, and schistocytes. Which management is emphasized for this condition",
+        "topic": "HELLP syndrome",
+        "options": {
+            "A": "Observation until spontaneous labor",
+            "B": "UDCA and hepatitis C screening only",
+            "C": "Phototherapy based on total serum bilirubin",
+            "D": "Delivery"
+        },
+        "correct": "D",
+        "explanation": "HELLP syndrome is a severe preeclampsia variant: hemolysis, elevated liver enzymes, and low platelets. It can present in the third trimester or postpartum with RUQ or epigastric pain, nausea, headache, visual changes, and jaundice. Treatment is delivery.",
+        "optionExplanations": {
+            "A": "Untreated preeclampsia can progress to eclampsia and severe maternal risk.",
+            "B": "UDCA is for intrahepatic cholestasis of pregnancy.",
+            "C": "Phototherapy is neonatal management, not HELLP management.",
+            "D": "Correct. HELLP is treated with delivery."
+        }
+    },
+    {
+        "id": 16,
+        "stem": "A third trimester pregnant patient develops vomiting, abdominal pain, polyuria, polydipsia, and encephalopathy. Labs show elevated bilirubin, AST and ALT, ammonia, hypoglycemia, coagulopathy, renal dysfunction, elevated urate, and leukocytosis. Which pathophysiology best fits",
+        "topic": "Acute fatty liver of pregnancy",
+        "options": {
+            "A": "Defect in fatty acid oxidation with LCHAD related toxic metabolite accumulation",
+            "B": "Rapid rise in pregnancy hormones causing severe nausea only",
+            "C": "Impaired canalicular secretion due to MRP2 mutation",
+            "D": "Autoimmune destruction of intrahepatic bile ducts"
+        },
+        "correct": "A",
+        "explanation": "Acute fatty liver of pregnancy occurs in the third trimester and is linked to a defect in fatty acid oxidation, including LCHAD deficiency with toxic metabolite accumulation. It can resemble HELLP and progress to liver failure.",
+        "optionExplanations": {
+            "A": "Correct. AFLP is tied to fatty acid oxidation defects and LCHAD deficiency.",
+            "B": "This describes hyperemesis gravidarum more than AFLP.",
+            "C": "MRP2 mutation causes Dubin Johnson syndrome.",
+            "D": "Autoimmune bile duct destruction is not the listed mechanism for AFLP."
+        }
+    },
+    {
+        "id": 17,
+        "stem": "A newborn develops jaundice beginning during the first week of life, peaking around days 3 to 5, then gradually declining. The bilirubin is predominantly unconjugated. Which mechanism best explains this physiologic pattern",
+        "topic": "Physiologic neonatal jaundice",
+        "options": {
+            "A": "Complete absence of UGT activity",
+            "B": "Common bile duct obstruction with absent stercobilin",
+            "C": "Increased RBC turnover with immature UGT activity",
+            "D": "MRP2 mutation impairing canalicular secretion"
+        },
+        "correct": "C",
+        "explanation": "Physiologic neonatal jaundice is common and predominantly unconjugated. It is due to increased RBC turnover, increased bilirubin production from high hematocrit and short RBC lifespan, and immature UGT activity.",
+        "optionExplanations": {
+            "A": "Absent UGT activity causes Crigler Najjar type I and severe neonatal jaundice.",
+            "B": "Obstruction causes conjugated hyperbilirubinemia, pale stools, and dark urine.",
+            "C": "Correct. Immature conjugation plus increased bilirubin production causes physiologic neonatal jaundice.",
+            "D": "MRP2 mutation causes Dubin Johnson syndrome."
+        }
+    },
+    {
+        "id": 18,
+        "stem": "A breastfed newborn has early jaundice in the first week with weight loss, poor intake, poor urine output, and delayed stooling. Which mechanism best explains this early breastfeeding jaundice",
+        "topic": "Breastfeeding jaundice",
+        "options": {
+            "A": "OATP1B1 and OATP1B3 transporter defect",
+            "B": "MRP2 mutation causing black liver discoloration",
+            "C": "Beta glucuronidases in breast milk inhibiting conjugation",
+            "D": "Poor intake increasing enterohepatic circulation"
+        },
+        "correct": "D",
+        "explanation": "Early breastfeeding jaundice is related to poor intake, which increases enterohepatic circulation. Late breast milk jaundice is attributed to milk factors such as beta glucuronidases and non esterified fatty acids inhibiting bilirubin conjugation.",
+        "optionExplanations": {
+            "A": "OATP1B1/OATP1B3 defects cause Rotor syndrome.",
+            "B": "MRP2 mutation causes Dubin Johnson syndrome.",
+            "C": "This describes late breast milk jaundice rather than early breastfeeding jaundice.",
+            "D": "Correct. Poor intake increases enterohepatic circulation early in breastfeeding jaundice."
+        }
+    },
+    {
+        "id": 19,
+        "stem": "A neonate has severe jaundice soon after birth with unconjugated bilirubin between 20 and 50 mg/dL and high risk for kernicterus. Enzyme testing shows absent UGT activity. Which diagnosis is most likely",
+        "topic": "Crigler Najjar type I",
+        "options": {
+            "A": "Gilbert syndrome",
+            "B": "Crigler Najjar type I",
+            "C": "Dubin Johnson syndrome",
+            "D": "Biliary atresia"
+        },
+        "correct": "B",
+        "explanation": "Crigler Najjar type I is autosomal recessive with absent UGT activity, severe neonatal unconjugated hyperbilirubinemia, bilirubin often 20 to 50 mg/dL, and risk of kernicterus.",
+        "optionExplanations": {
+            "A": "Gilbert syndrome has mild recurrent benign jaundice from reduced UGT activity, often triggered by stress, fasting, or illness.",
+            "B": "Correct. Absent UGT with severe neonatal unconjugated hyperbilirubinemia fits type I.",
+            "C": "Dubin Johnson causes conjugated hyperbilirubinemia from impaired excretion.",
+            "D": "Biliary atresia is extrahepatic obstruction with conjugated bilirubin, acholic stools, and dark urine."
+        }
+    },
+    {
+        "id": 20,
+        "stem": "A child has recurrent unconjugated hyperbilirubinemia below 20 mg/dL. UGT activity is present but less than or equal to 10 percent of normal, and symptoms improve with phenobarbital. Which disorder is most likely",
+        "topic": "Crigler Najjar type II",
+        "options": {
+            "A": "Crigler Najjar type II",
+            "B": "Rotor syndrome",
+            "C": "Biliary atresia",
+            "D": "Dubin Johnson syndrome"
+        },
+        "correct": "A",
+        "explanation": "Crigler Najjar type II is autosomal recessive with markedly reduced but not absent UGT activity, often less than or equal to 10 percent. Bilirubin is usually below 20 mg/dL and phenobarbital can be used.",
+        "optionExplanations": {
+            "A": "Correct. Reduced UGT activity with response to phenobarbital fits type II.",
+            "B": "Rotor syndrome is a mixed hyperbilirubinemia from OATP1B1/OATP1B3 defects.",
+            "C": "Biliary atresia is extrahepatic obstruction in infancy.",
+            "D": "Dubin Johnson is conjugated hyperbilirubinemia due to MRP2 mutation."
+        }
+    },
+    {
+        "id": 21,
+        "stem": "A 19 year old has intermittent mild scleral icterus during fasting and viral illness. There is no pruritus and no evidence of hemolysis or liver disease. Which molecular defect is most likely",
+        "topic": "Gilbert syndrome",
+        "options": {
+            "A": "Absent UGT activity causing severe neonatal jaundice",
+            "B": "MRP2 mutation causing impaired canalicular secretion",
+            "C": "OATP1B1 and OATP1B3 defect causing mixed hyperbilirubinemia",
+            "D": "Promoter defect in UGT1A1 causing about 30 percent decreased UGT activity"
+        },
+        "correct": "D",
+        "explanation": "Gilbert syndrome is a benign recurrent jaundice triggered by stress, fasting, or illness. It is due to a promoter defect in UGT1A1 with about 30 percent decreased UGT activity and classically has no pruritus.",
+        "optionExplanations": {
+            "A": "This describes Crigler Najjar type I.",
+            "B": "This describes Dubin Johnson syndrome.",
+            "C": "This describes Rotor syndrome.",
+            "D": "Correct. Gilbert syndrome is due to decreased UGT1A1 expression from a promoter defect."
+        }
+    },
+    {
+        "id": 22,
+        "stem": "A young adult has mild conjugated hyperbilirubinemia with otherwise limited symptoms. A liver biopsy shows dark liver discoloration. Which defect best explains this disorder",
+        "topic": "Dubin Johnson syndrome",
+        "options": {
+            "A": "Absent UGT activity",
+            "B": "OATP1B1 and OATP1B3 defect",
+            "C": "MRP2 mutation impairing canalicular secretion of conjugated bile",
+            "D": "Fibro obliterative extrahepatic bile duct disease"
+        },
+        "correct": "C",
+        "explanation": "Dubin Johnson syndrome is an autosomal recessive impaired excretion disorder caused by MRP2 mutation, leading to impaired canalicular secretion of conjugated bile. It can have liver discoloration.",
+        "optionExplanations": {
+            "A": "Absent UGT activity causes Crigler Najjar type I.",
+            "B": "OATP defects cause Rotor syndrome, which lacks liver discoloration.",
+            "C": "Correct. MRP2 mutation is the Dubin Johnson defect.",
+            "D": "Fibro obliterative extrahepatic bile duct disease describes biliary atresia."
+        }
+    },
+    {
+        "id": 23,
+        "stem": "A patient has mixed conjugated and unconjugated hyperbilirubinemia. There is no liver discoloration. Urinary coproporphyrins are increased to 250 to 500 percent of normal. Which inherited disorder is most likely",
+        "topic": "Rotor syndrome",
+        "options": {
+            "A": "Dubin Johnson syndrome",
+            "B": "Rotor syndrome",
+            "C": "Gilbert syndrome",
+            "D": "Crigler Najjar type I"
+        },
+        "correct": "B",
+        "explanation": "Rotor syndrome is a rare autosomal recessive disorder due to OATP1B1/OATP1B3 defects. It produces mixed hyperbilirubinemia, lacks liver discoloration, and has increased urinary coproporphyrins.",
+        "optionExplanations": {
+            "A": "Dubin Johnson has conjugated hyperbilirubinemia and liver discoloration from MRP2 mutation.",
+            "B": "Correct. OATP defect with no liver discoloration and increased urinary coproporphyrins fits Rotor syndrome.",
+            "C": "Gilbert syndrome causes benign recurrent unconjugated hyperbilirubinemia.",
+            "D": "Crigler Najjar type I causes severe unconjugated hyperbilirubinemia in neonates."
+        }
+    },
+    {
+        "id": 24,
+        "stem": "An infant has jaundice, acholic gray stools, dark urine, and hepatosplenomegaly. Hepatobiliary scan shows persistent hepatic activity with gallbladder visualization but no bowel activity after 24 hours. Which diagnosis is most likely",
+        "topic": "Biliary atresia",
+        "options": {
+            "A": "Biliary atresia",
+            "B": "Physiologic neonatal jaundice",
+            "C": "Gilbert syndrome",
+            "D": "Breastfeeding jaundice"
+        },
+        "correct": "A",
+        "explanation": "Biliary atresia is a progressive fibro obliterative disease of the extrahepatic bile ducts with conjugated hyperbilirubinemia. It presents in infancy with jaundice, acholic stools, dark urine, and hepatosplenomegaly. Imaging can show no bile excretion into bowel.",
+        "optionExplanations": {
+            "A": "Correct. Acholic stools, dark urine, and absent bowel activity on hepatobiliary scan point to biliary atresia.",
+            "B": "Physiologic neonatal jaundice is predominantly unconjugated and peaks days 3 to 5.",
+            "C": "Gilbert syndrome is benign recurrent unconjugated jaundice, usually later and without acholic stools.",
+            "D": "Breastfeeding jaundice is not an obstructive conjugated process with acholic stools."
+        }
+    },
+    {
+        "id": 25,
+        "stem": "A newborn has jaundice. Which management principle is used for physiologic neonatal jaundice when neurotoxicity risk is present",
+        "topic": "Neonatal jaundice management",
+        "options": {
+            "A": "Immediate delivery",
+            "B": "UDCA for all newborns",
+            "C": "Phototherapy based on total serum bilirubin and age",
+            "D": "No evaluation because all neonatal jaundice is benign"
+        },
+        "correct": "C",
+        "explanation": "Physiologic neonatal jaundice may be observed, but phototherapy is used if neurotoxicity risk is present. The decision is based on total serum bilirubin and age.",
+        "optionExplanations": {
+            "A": "Delivery is a treatment principle for HELLP and AFLP in pregnancy, not neonatal jaundice.",
+            "B": "UDCA is used for intrahepatic cholestasis of pregnancy.",
+            "C": "Correct. Phototherapy decisions use total serum bilirubin and age.",
+            "D": "Neonatal jaundice can be pathologic and requires evaluation when concerning features are present."
+        }
+    },
+    {
+        "id": 26,
+        "stem": "A 9 year old develops jaundice. The section emphasizes that older children require evaluation to rule out several acquired causes. Which group is specifically listed",
+        "topic": "Jaundice in older children",
+        "options": {
+            "A": "Pregnancy specific syndromes only",
+            "B": "Only congenital transporter disorders",
+            "C": "Only physiologic jaundice from immature UGT",
+            "D": "Hepatitis, drugs or toxins, and metabolic disease"
+        },
+        "correct": "D",
+        "explanation": "For jaundice in older children, the section emphasizes ruling out hepatitis, drugs or toxins, and metabolic disease. Familial cholestasis syndromes may also be considered.",
+        "optionExplanations": {
+            "A": "Pregnancy specific syndromes are not applicable to most older children.",
+            "B": "Inherited transporter disorders are part of the differential but not the only concern.",
+            "C": "Physiologic neonatal jaundice is a newborn pattern.",
+            "D": "Correct. Hepatitis, drugs or toxins, and metabolic disease should be ruled out."
+        }
+    },
+    {
+        "id": 27,
+        "stem": "An adult with jaundice is found to have isolated unconjugated hyperbilirubinemia. Which adult differential category best matches this pattern",
+        "topic": "Adult jaundice differential: bilirubin metabolism",
+        "options": {
+            "A": "Choledocholithiasis and pancreatic cancer only",
+            "B": "Hemolysis, decreased uptake such as rifampin, or decreased conjugation such as Gilbert syndrome or protease inhibitors",
+            "C": "Primary sclerosing cholangitis and cholangiocarcinoma only",
+            "D": "Acetaminophen toxicity and ischemia only"
+        },
+        "correct": "B",
+        "explanation": "Adult disorders of bilirubin metabolism include hemolysis, decreased uptake such as rifampin, decreased conjugation such as Gilbert syndrome or protease inhibitors, and decreased excretion such as Dubin Johnson or Rotor.",
+        "optionExplanations": {
+            "A": "Choledocholithiasis and pancreatic cancer are cholestatic or obstructive causes.",
+            "B": "Correct. These are bilirubin metabolism causes, especially relevant to unconjugated elevation.",
+            "C": "PSC and cholangiocarcinoma are cholestatic or obstructive causes.",
+            "D": "Acetaminophen toxicity and ischemia are liver disease causes, not isolated bilirubin metabolism disorders."
+        }
+    },
+    {
+        "id": 28,
+        "stem": "A patient with jaundice has ALP much greater than AST and ALT. Which category should be prioritized from the adult differential",
+        "topic": "Cholestatic and obstructive jaundice",
+        "options": {
+            "A": "Pure hemolysis",
+            "B": "Gilbert syndrome from fasting",
+            "C": "Choledocholithiasis, PSC, cholangiocarcinoma, pancreatic cancer, or external compression",
+            "D": "Physiologic neonatal jaundice"
+        },
+        "correct": "C",
+        "explanation": "ALP much greater than AST and ALT suggests a cholestatic pattern. Adult cholestatic or obstructive causes listed include choledocholithiasis, PSC, AIDS cholangiopathy, cholangiocarcinoma, pancreatic cancer, and external compression.",
+        "optionExplanations": {
+            "A": "Hemolysis causes unconjugated hyperbilirubinemia and normal liver enzymes rather than cholestatic ALP predominance.",
+            "B": "Gilbert syndrome causes benign unconjugated hyperbilirubinemia without cholestatic enzyme predominance.",
+            "C": "Correct. This enzyme pattern prioritizes cholestatic or obstructive disease.",
+            "D": "Physiologic neonatal jaundice is not an adult cholestatic pattern."
+        }
+    },
+    {
+        "id": 29,
+        "stem": "A pregnant patient with jaundice is being evaluated. Which principle from the section should guide the differential before attributing symptoms to a pregnancy specific liver disease",
+        "topic": "Jaundice in pregnancy differential",
+        "options": {
+            "A": "Always rule out common causes and underlying diseases such as autoimmune hepatitis, hepatitis B or C, PBC, PSC, and Wilson disease",
+            "B": "Assume all pregnancy related jaundice is HELLP syndrome",
+            "C": "Avoid hepatitis testing because pregnancy prevents viral hepatitis",
+            "D": "Treat all pregnancy related jaundice with phenobarbital"
+        },
+        "correct": "A",
+        "explanation": "The pregnancy framework lists disorders unique to pregnancy but also emphasizes underlying diseases that may be unmasked, including autoimmune hepatitis, hepatitis B or C, primary biliary cholangitis, primary sclerosing cholangitis, and Wilson disease. Common causes should be ruled out first.",
+        "optionExplanations": {
+            "A": "Correct. Pregnancy does not exclude common or chronic liver diseases.",
+            "B": "HELLP is important but not the only pregnancy associated liver disorder.",
+            "C": "Hepatitis B and C remain relevant in pregnancy.",
+            "D": "Phenobarbital is not a general treatment for pregnancy related jaundice."
+        }
+    },
+    {
+        "id": 30,
+        "stem": "A patient with increased alkaline phosphatase has an elevated GGT. Which interpretation is best",
+        "topic": "GGT interpretation",
+        "options": {
+            "A": "The ALP elevation is most likely from bone growth",
+            "B": "The ALP elevation is supported as hepatobiliary in origin",
+            "C": "The patient must have isolated unconjugated hyperbilirubinemia",
+            "D": "GGT elevation rules out alcohol or medication effects"
+        },
+        "correct": "B",
+        "explanation": "GGT helps confirm a hepatobiliary source of elevated ALP and is not elevated in bone disease. GGT is sensitive but nonspecific and can be induced by alcohol, phenytoin, and phenobarbital.",
+        "optionExplanations": {
+            "A": "Bone disease can elevate ALP, but GGT is not elevated from bone sources.",
+            "B": "Correct. Elevated GGT supports hepatobiliary origin of ALP.",
+            "C": "GGT does not define unconjugated hyperbilirubinemia.",
+            "D": "GGT can be increased by alcohol and medications, so it does not rule them out."
+        }
+    }
+];
+    let currentIndex = 0;
+    const answers = {};
+
+    function renderSegments() {
+      const segments = document.getElementById('segments');
+      segments.innerHTML = '';
+      questions.forEach((q, idx) => {
+        const button = document.createElement('button');
+        button.className = 'segment' + (answers[q.id] !== undefined ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+        button.title = q.topic || `Question ${idx + 1}`;
+        button.setAttribute('aria-label', `Go to question ${idx + 1}`);
+        button.onclick = () => { currentIndex = idx; render(); };
+        segments.appendChild(button);
+      });
+    }
+
+    function renderCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([qid, choice]) => {
+        const q = questions.find(item => item.id === Number(qid));
+        if (q && choice === q.correct) right += 1;
+        if (q && choice !== q.correct) wrong += 1;
+      });
+      document.getElementById('rightCount').textContent = right;
+      document.getElementById('wrongCount').textContent = wrong;
+      document.getElementById('progressText').textContent = `${currentIndex + 1} / ${questions.length}`;
+    }
+
+    function render() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] !== undefined ? answers[q.id] : null;
+      document.getElementById('questionCount').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      document.getElementById('topicText').textContent = q.topic ? `Topic: ${q.topic}` : '';
+      document.getElementById('stem').textContent = q.stem + '?';
+
+      const options = document.getElementById('options');
+      options.innerHTML = '';
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const button = document.createElement('button');
+        let cls = 'option';
+        if (selected !== null && letter === q.correct) cls += ' correct';
+        else if (selected !== null && selected === letter && letter !== q.correct) cls += ' incorrect';
+        button.className = cls;
+        button.innerHTML = `<strong>${letter}.</strong> ${escapeHtml(text)}`;
+        button.onclick = () => { answers[q.id] = letter; render(); };
+        options.appendChild(button);
+      });
+
+      const explanation = document.getElementById('explanation');
+      if (selected === null) {
+        explanation.style.display = 'none';
+        explanation.innerHTML = '';
+      } else {
+        const isCorrect = selected === q.correct;
+        explanation.style.display = 'block';
+        let html = `<p><strong>Correct answer: ${q.correct}</strong> (${escapeHtml(q.options[q.correct])})</p>`;
+        html += `<p class="${isCorrect ? 'green-text' : 'red-text'}">${isCorrect ? 'Nice job. ' : 'Good attempt. '}${escapeHtml(q.explanation)}</p>`;
+        if (q.optionExplanations) {
+          html += '<div class="option-explanations"><p><strong>Why each option is right or wrong:</strong></p>';
+          Object.entries(q.optionExplanations).forEach(([letter, text]) => {
+            html += `<p><strong>${letter}.</strong> ${escapeHtml(text)}</p>`;
+          });
+          html += '</div>';
+        }
+        explanation.innerHTML = html;
+      }
+      renderSegments();
+      renderCounts();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function nextQuestion() {
+      currentIndex = (currentIndex + 1) % questions.length;
+      render();
+    }
+
+    function prevQuestion() {
+      currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

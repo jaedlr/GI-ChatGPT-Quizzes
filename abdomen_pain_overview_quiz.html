@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DSA. Abdomen Pain Overview Quiz</title>
+<style>
+  :root { --bg:#0f172a; --card:#ffffff; --muted:#64748b; --border:#e5e7eb; --blue:#6fa8dc; --green:#dcfce7; --green-border:#22c55e; --red:#fee2e2; --red-border:#ef4444; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:#111827; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .segments { display:flex; gap:4px; flex:1; }
+  .seg { height:8px; border-radius:999px; border:0; background:#334155; flex:1; min-width:4px; cursor:pointer; }
+  .seg.active { background:#e2e8f0; }
+  .seg.answered { background:var(--blue); }
+  .status { display:flex; align-items:center; gap:10px; color:#e2e8f0; font-size:14px; font-weight:700; white-space:nowrap; }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; }
+  .bad { background:#7f1d1d; color:#fee2e2; }
+  .good { background:#064e3b; color:#d1fae5; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 8px 30px rgba(0,0,0,.20); }
+  .meta { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; gap:12px; }
+  .stem { font-weight:700; line-height:1.45; margin:14px 0; }
+  .options { display:grid; gap:10px; }
+  .choice { width:100%; text-align:left; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:#f8fafc; cursor:pointer; font-size:15px; line-height:1.35; }
+  .choice:hover { background:#f1f5f9; }
+  .choice.correct { background:var(--green); border-color:var(--green-border); }
+  .choice.wrong { background:var(--red); border-color:var(--red-border); }
+  .explanation { margin-top:16px; padding:14px; border-radius:10px; background:#f8fafc; border:1px solid var(--border); font-size:14px; line-height:1.45; }
+  .why { margin-top:10px; }
+  .why p { margin:6px 0; }
+  .nav { display:flex; justify-content:space-between; margin-top:16px; }
+  .nav button { padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; font-size:13px; font-weight:700; }
+  .nav button:hover { background:#f8fafc; }
+  .footer { color:#94a3b8; font-size:12px; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="segments" id="segments"></div>
+    <div class="status">
+      <span id="progressText">1 / 30</span>
+      <span class="pill bad">× <span id="wrongCount">0</span></span>
+      <span class="pill good">✓ <span id="rightCount">0</span></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="meta"><span id="qNum">Question 1 of 30</span><span id="topic">Topic</span></div>
+    <div class="stem" id="stem"></div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation" style="display:none;"></div>
+    <div class="nav"><button id="prevBtn">Previous</button><button id="nextBtn">Next</button></div>
+  </div>
+  <div class="footer">DSA. Abdomen Pain Overview — 30 question review quiz</div>
+</div>
+<script>
+const questions = [
+  {
+    "id": 1,
+    "stem": "A patient with early hollow-organ distention describes diffuse, crampy abdominal discomfort that is difficult to localize and is associated with nausea and diaphoresis. Which pain physiology best explains this presentation",
+    "topic": "Visceral abdominal pain",
+    "options": {
+      "A": "Somatic pain carried rapidly by A fibers from the parietal peritoneum",
+      "B": "Musculoskeletal pain reproducible with abdominal wall movement",
+      "C": "Visceral pain carried by slow C fibers from internal organs or visceral peritoneum",
+      "D": "Referred pain caused by reproducible tenderness at the distant site"
+    },
+    "correct": "C",
+    "explanation": "Visceral abdominal pain originates from internal organs or the visceral peritoneum and is carried by slow C fibers. It is classically dull, vague, crampy, and poorly localized, often with autonomic symptoms such as nausea, vomiting, or diaphoresis.",
+    "optionExplanations": {
+      "A": "Somatic pain is sharp and well localized, usually from parietal peritoneal irritation.",
+      "B": "Musculoskeletal pain is sharp, localized, and reproducible with palpation or movement.",
+      "C": "Correct. Vague crampy pain from hollow-organ distention with autonomic symptoms is visceral pain.",
+      "D": "Referred pain is perceived at a distant site due to shared spinal innervation, not reproducible tenderness at that site."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A patient with suspected peritonitis has sharp, focal abdominal pain that worsens with coughing and movement. He lies still with his knees flexed. Which type of pain is most likely present",
+    "topic": "Somatic/parietal pain",
+    "options": {
+      "A": "Somatic pain from parietal peritoneal irritation",
+      "B": "Visceral pain from stretching of a hollow organ",
+      "C": "Referred pain from shared spinal cord innervation",
+      "D": "Functional pain from irritable bowel syndrome"
+    },
+    "correct": "A",
+    "explanation": "Somatic, or parietal, abdominal pain comes from the abdominal wall or parietal peritoneum. It is sharp, well localized, worsened by movement or coughing, and patients with peritonitis often prefer to lie still with knees flexed.",
+    "optionExplanations": {
+      "A": "Correct. Sharp localized pain worsened by movement or cough points to somatic/parietal pain.",
+      "B": "Visceral pain is dull, crampy, and poorly localized.",
+      "C": "Referred pain is perceived at a distant site and is not reproduced by pressing that site.",
+      "D": "IBS is listed as a chronic functional cause and typically causes constant/dull or crampy chronic symptoms, not peritonitis behavior."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A patient with intra-abdominal pathology reports pain at a distant body site. Palpation of that distant site does not reproduce the pain. Which mechanism best explains this finding",
+    "topic": "Referred pain",
+    "options": {
+      "A": "Voluntary contraction of abdominal wall muscles",
+      "B": "Direct irritation of the parietal peritoneum beneath the distant site",
+      "C": "Pain generated by abdominal wall strain",
+      "D": "Shared spinal cord innervation between the diseased organ and distant site"
+    },
+    "correct": "D",
+    "explanation": "Referred pain is perceived at a distant site because visceral and somatic afferents share spinal cord innervation. A key clue is that the referred site itself is not tender or reproducible on palpation.",
+    "optionExplanations": {
+      "A": "Voluntary contraction describes guarding, not referred pain.",
+      "B": "Direct parietal peritoneal irritation would cause localized somatic pain reproducible near the affected area.",
+      "C": "Musculoskeletal abdominal wall pain is reproducible with palpation or movement.",
+      "D": "Correct. Shared spinal cord innervation causes pain to be perceived at a distant site."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A 67 year old patient presents with gradual onset left lower quadrant abdominal pain, low grade fever, and leukocytosis. Which abdominal region association best fits the likely diagnosis",
+    "topic": "Abdominal regions",
+    "options": {
+      "A": "Right upper quadrant → appendix",
+      "B": "Left lower quadrant → diverticulitis",
+      "C": "Left upper quadrant → gallbladder",
+      "D": "Right lower quadrant → pancreas"
+    },
+    "correct": "B",
+    "explanation": "The section maps LLQ pain to diverticulitis. Diverticulitis is also described as occurring most often in patients older than 50 with gradual LLQ pain, low-grade fever, and leukocytosis.",
+    "optionExplanations": {
+      "A": "The appendix is classically associated with the right lower quadrant, not the right upper quadrant.",
+      "B": "Correct. LLQ pain is the classic regional clue for diverticulitis.",
+      "C": "Gallbladder and liver are RUQ structures; pancreas and spleen are LUQ associations.",
+      "D": "Pancreas is associated with LUQ, while the appendix is associated with RLQ."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "During the history for abdominal pain, which pain feature is emphasized as the most important for narrowing the diagnosis",
+    "topic": "Pain characterization",
+    "options": {
+      "A": "Severity on a 1 to 10 scale",
+      "B": "Associated nausea or vomiting",
+      "C": "Location of the pain",
+      "D": "Duration of symptoms"
+    },
+    "correct": "C",
+    "explanation": "The abdominal pain overview lists pain characterization items and specifically labels location as the most important feature. Location plus progression of pain is also highlighted as diagnostic.",
+    "optionExplanations": {
+      "A": "Severity should be standardized, but it is not listed as the most important diagnostic feature.",
+      "B": "Associated symptoms are important but secondary to location for localization.",
+      "C": "Correct. Pain location is emphasized as the most important feature.",
+      "D": "Duration helps distinguish acute from chronic patterns but is not the most important feature."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A 74 year old man has sudden severe abdominal pain described as tearing and ripping with radiation to the back. Which diagnosis category should be prioritized based on this pain quality",
+    "topic": "AAA/dissection pain clue",
+    "options": {
+      "A": "Chronic peptic ulcer disease",
+      "B": "Irritable bowel syndrome",
+      "C": "Uncomplicated diverticulitis",
+      "D": "Abdominal aortic aneurysm or dissection"
+    },
+    "correct": "D",
+    "explanation": "The section flags AAA/dissection as classically causing tearing, ripping, or crushing pain with possible back pain. This pain quality is a high-risk clue that should not be dismissed.",
+    "optionExplanations": {
+      "A": "Chronic PUD is described as gnawing or hunger pain, not tearing/ripping back pain.",
+      "B": "IBS/dyspepsia is described as constant and dull, not sudden tearing pain.",
+      "C": "Diverticulitis usually causes gradual LLQ pain with low-grade fever and leukocytosis.",
+      "D": "Correct. Tearing/ripping/crushing abdominal pain with back radiation is the listed clue for AAA/dissection."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A patient describes recurrent epigastric discomfort as gnawing and hunger-like. Which chronic abdominal pain etiology does this pain character most strongly suggest",
+    "topic": "Chronic PUD pain",
+    "options": {
+      "A": "Chronic peptic ulcer disease",
+      "B": "Ischemic bowel",
+      "C": "Intussusception",
+      "D": "Abdominal wall pain"
+    },
+    "correct": "A",
+    "explanation": "The section identifies chronic PUD as producing gnawing, hunger pain. This is a pattern-based clue under pain characterization.",
+    "optionExplanations": {
+      "A": "Correct. Gnawing, hunger-like pain is the listed clue for chronic PUD.",
+      "B": "Ischemic bowel is flagged by pain out of proportion, often with bloody stools and vascular risk factors.",
+      "C": "Intussusception causes episodic crampy pain, leg drawing, and currant-jelly stools in infants.",
+      "D": "Abdominal wall pain is sharp, localized, and reproducible with palpation or movement."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "An elderly patient has mild abdominal tenderness but appears less uncomfortable than expected. The clinician remains concerned and plans repeat abdominal exams. Which principle from the abdominal pain overview supports this approach",
+    "topic": "Physical exam vigilance",
+    "options": {
+      "A": "A normal abdominal exam excludes surgical disease",
+      "B": "Elderly patients typically exaggerate abdominal pain",
+      "C": "Disease evolves over time, and elderly patients may under-express pain",
+      "D": "Repeat exams are only useful when laboratory tests are abnormal"
+    },
+    "correct": "C",
+    "explanation": "The section stresses never skipping the exam, repeating exams because disease evolves, and maintaining high suspicion in elderly patients because they may under-express pain.",
+    "optionExplanations": {
+      "A": "The overview specifically warns that serious disease can be missed and requires vigilance.",
+      "B": "The opposite is emphasized: elderly patients may under-express pain.",
+      "C": "Correct. Repeat exams and high suspicion are key, especially in elderly patients.",
+      "D": "Normal labs do not exclude emergency disease, so repeat exams can still be necessary."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "During abdominal examination, a patient voluntarily tightens the abdominal wall, but the contraction decreases when distracted. Which term best describes this finding",
+    "topic": "Guarding",
+    "options": {
+      "A": "Rigidity",
+      "B": "Guarding",
+      "C": "Rebound tenderness",
+      "D": "Peritonitis-associated referred pain"
+    },
+    "correct": "B",
+    "explanation": "Guarding is voluntary contraction of the abdominal wall and may decrease with distraction. It is part of the continuum that can progress to rebound tenderness and rigidity in worsening peritoneal irritation.",
+    "optionExplanations": {
+      "A": "Rigidity is involuntary and board-like, typically a late sign.",
+      "B": "Correct. Voluntary muscle contraction that lessens with distraction is guarding.",
+      "C": "Rebound tenderness is pain after sudden release of pressure.",
+      "D": "Referred pain is a distant perceived pain due to shared spinal innervation."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient with abdominal pain reports a sharp increase in pain when the examiner suddenly releases pressure from the abdomen. Which exam finding is this",
+    "topic": "Rebound tenderness",
+    "options": {
+      "A": "Guarding",
+      "B": "Abdominal bruit",
+      "C": "Psoas sign",
+      "D": "Rebound tenderness"
+    },
+    "correct": "D",
+    "explanation": "Rebound tenderness is defined as pain upon sudden release of pressure. It is a peritoneal irritation sign and falls along the worsening continuum from guarding to rebound to rigidity.",
+    "optionExplanations": {
+      "A": "Guarding is voluntary abdominal muscle contraction.",
+      "B": "A bruit is a vascular sound heard with the bell, suggesting vascular disease or ischemia.",
+      "C": "Psoas sign is associated with a retrocecal appendix.",
+      "D": "Correct. Pain with sudden release of pressure is rebound tenderness."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient with worsening abdominal pain now has an involuntary, board-like abdomen. Which statement best describes this finding",
+    "topic": "Rigidity",
+    "options": {
+      "A": "It is a benign sign that usually decreases with distraction",
+      "B": "It indicates pain perceived at a distant non-tender site",
+      "C": "It is rigidity, a late sign in the guarding → rebound → rigidity continuum",
+      "D": "It is high-pitched bowel sounds from obstruction"
+    },
+    "correct": "C",
+    "explanation": "Rigidity is involuntary, board-like abdominal wall contraction. The overview frames it as a late sign in the continuum of guarding to rebound tenderness to rigidity.",
+    "optionExplanations": {
+      "A": "Guarding may decrease with distraction; rigidity is involuntary and more concerning.",
+      "B": "That describes referred pain, not rigidity.",
+      "C": "Correct. Board-like involuntary contraction is rigidity and is a late sign.",
+      "D": "High-pitched bowel sounds suggest obstruction on auscultation, not rigidity."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A patient with severe abdominal pain has a normal white blood cell count. Which interpretation is most appropriate",
+    "topic": "Normal labs do not exclude emergency",
+    "options": {
+      "A": "A normal WBC count does not exclude an abdominal emergency",
+      "B": "A normal WBC count rules out appendicitis and diverticulitis",
+      "C": "A normal WBC count means imaging is unnecessary",
+      "D": "A normal WBC count excludes inflammation"
+    },
+    "correct": "A",
+    "explanation": "The laboratory evaluation section notes that leukocytosis supports inflammation, but a normal WBC count does not exclude an emergency. This principle is also reinforced in the board pearls: normal labs do not equal benign disease.",
+    "optionExplanations": {
+      "A": "Correct. Normal labs cannot safely exclude serious abdominal pathology.",
+      "B": "Appendicitis can still occur with a normal WBC count.",
+      "C": "Imaging and repeat exams may still be needed depending on the clinical picture.",
+      "D": "A normal WBC count does not exclude inflammatory or surgical disease."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient presents with acute epigastric abdominal pain radiating toward the back and concern for pancreatitis. Which laboratory test is emphasized as the key test for this diagnosis",
+    "topic": "Pancreatitis laboratory testing",
+    "options": {
+      "A": "Urinalysis",
+      "B": "Lipase",
+      "C": "Cardiac enzymes",
+      "D": "Bilirubin alone"
+    },
+    "correct": "B",
+    "explanation": "The diagnostic laboratory list specifically marks lipase as the key test for pancreatitis, with amylase noted as less specific. Lipase is therefore the best lab choice from the listed options.",
+    "optionExplanations": {
+      "A": "UA is part of abdominal pain evaluation but does not specifically test pancreatitis.",
+      "B": "Correct. Lipase is the emphasized pancreatitis lab.",
+      "C": "Cardiac enzymes are used if cardiac disease is indicated, not as the primary pancreatitis test.",
+      "D": "LFTs and bilirubin help evaluate hepatobiliary disease but are not the key pancreatitis lab."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A patient has sudden severe abdominal pain with concern for a hollow viscus perforation. Which imaging modality is listed as best for detecting free air",
+    "topic": "Free air imaging",
+    "options": {
+      "A": "Plain supine x-ray for stool burden only",
+      "B": "Ultrasound of the gallbladder",
+      "C": "CT enterography",
+      "D": "Upright x-ray"
+    },
+    "correct": "D",
+    "explanation": "The imaging table lists upright x-ray as best for free air, which suggests perforation. Plain x-ray is more generally for gas patterns, obstruction, and ileus.",
+    "optionExplanations": {
+      "A": "Plain x-ray is listed for gas patterns, obstruction, and ileus, not specifically best for free air.",
+      "B": "Ultrasound is listed for gallbladder, OB/GYN, and some appendicitis evaluations.",
+      "C": "CT enterography is not the listed modality for free air in this section.",
+      "D": "Correct. Upright x-ray is listed as best for free air from perforation."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A pregnant patient presents with right upper quadrant abdominal pain concerning for gallbladder disease. Which imaging modality is most aligned with the abdominal pain overview",
+    "topic": "Ultrasound indications",
+    "options": {
+      "A": "Ultrasound",
+      "B": "Plain x-ray",
+      "C": "Barium enema",
+      "D": "Technetium-99m scan"
+    },
+    "correct": "A",
+    "explanation": "Ultrasound is listed as best for gallbladder, OB/GYN causes, and some appendicitis evaluations. It is therefore the most appropriate listed modality for RUQ gallbladder-type pain, especially in an OB/GYN context.",
+    "optionExplanations": {
+      "A": "Correct. Ultrasound is listed for gallbladder and OB/GYN-related abdominal pain evaluation.",
+      "B": "Plain x-ray is better for gas patterns, obstruction, and ileus.",
+      "C": "Contrast enema is used diagnostically and therapeutically for intussusception.",
+      "D": "Technetium-99m scan is listed for Meckel’s diverticulitis."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient has fever and focal abdominal pain with concern for appendicitis, diverticulitis, abscess, or pancreatitis. Which imaging modality is listed as best for these diagnoses",
+    "topic": "CT abdomen indications",
+    "options": {
+      "A": "Upright chest x-ray only",
+      "B": "Technetium-99m scan",
+      "C": "CT abdomen",
+      "D": "Contrast enema"
+    },
+    "correct": "C",
+    "explanation": "The imaging table lists CT abdomen as best for appendicitis, diverticulitis, abscess, and pancreatitis. This is a recurring theme in the condition-specific tables as well, with CT as the study of choice for appendicitis and diverticulitis.",
+    "optionExplanations": {
+      "A": "Upright x-ray is for free air/perforation, not the best modality for these diagnoses.",
+      "B": "Technetium-99m scan is for Meckel’s diverticulitis.",
+      "C": "Correct. CT abdomen is listed for appendicitis, diverticulitis, abscess, and pancreatitis.",
+      "D": "Contrast enema is diagnostic and therapeutic for intussusception."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "On abdominal auscultation, a patient with crampy pain, bloating, anorexia, nausea, and vomiting has high-pitched hyperactive bowel sounds. Which condition is most suggested by this finding",
+    "topic": "Bowel obstruction exam clue",
+    "options": {
+      "A": "Ileus",
+      "B": "Intestinal obstruction",
+      "C": "Meckel’s diverticulitis",
+      "D": "Chronic pancreatitis"
+    },
+    "correct": "B",
+    "explanation": "High-pitched, hyperactive bowel sounds are listed as an auscultation clue for obstruction. The obstruction clinical pattern also includes crampy abdominal pain, bloating, anorexia, nausea, and vomiting.",
+    "optionExplanations": {
+      "A": "Absent bowel sounds are listed as the clue for ileus.",
+      "B": "Correct. High-pitched hyperactive bowel sounds suggest obstruction.",
+      "C": "Meckel’s diverticulitis is associated with pain and rectal bleeding in young children and is evaluated with Technetium-99m scan.",
+      "D": "Chronic pancreatitis is a chronic inflammatory cause of abdominal pain, not the classic high-pitched bowel sound diagnosis."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A clinician uses the bell during abdominal auscultation and hears bruits in a patient with abdominal pain. Which interpretation is most appropriate",
+    "topic": "Abdominal bruits",
+    "options": {
+      "A": "Normal bowel gas movement",
+      "B": "Benign functional abdominal pain",
+      "C": "Acute appendicitis at McBurney point",
+      "D": "Vascular disease or ischemia"
+    },
+    "correct": "D",
+    "explanation": "The abdominal exam table states that the bell is used to assess bruits, and bruits suggest vascular disease or ischemia. This fits the broader warning that ischemic bowel can present with pain out of proportion and vascular risk factors.",
+    "optionExplanations": {
+      "A": "Bruits are vascular sounds, not normal bowel sounds.",
+      "B": "Functional pain is a chronic category such as IBS/dyspepsia; bruits suggest vascular pathology.",
+      "C": "Appendicitis is suggested by migration to RLQ and McBurney point tenderness, not bruits.",
+      "D": "Correct. Bruits point toward vascular disease or ischemia."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A patient has focal abdominal pain. During palpation, what is the recommended technique",
+    "topic": "Palpation technique",
+    "options": {
+      "A": "Start directly over the point of maximal pain with deep palpation",
+      "B": "Avoid palpation if the patient reports pain",
+      "C": "Start away from the painful area, using light then deep palpation",
+      "D": "Palpate only after advanced imaging confirms the diagnosis"
+    },
+    "correct": "C",
+    "explanation": "The section emphasizes palpation as the most valuable exam component. The step-wise exam specifically recommends starting away from the pain and using light palpation followed by deep palpation.",
+    "optionExplanations": {
+      "A": "Starting directly at the worst pain can increase guarding and reduce exam quality.",
+      "B": "The overview says never skip the exam.",
+      "C": "Correct. Start away from pain and proceed from light to deep palpation.",
+      "D": "The physical exam is essential and should not wait for imaging in routine evaluation."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "During abdominal palpation in a patient with severe abdominal and back pain, the examiner detects a pulsatile abdominal mass. Which diagnosis should be considered immediately",
+    "topic": "Pulsatile mass",
+    "options": {
+      "A": "Abdominal aortic aneurysm",
+      "B": "Irritable bowel syndrome",
+      "C": "Meckel’s diverticulitis",
+      "D": "Lactose intolerance"
+    },
+    "correct": "A",
+    "explanation": "The palpation table lists pulsatile mass as a key finding suggesting AAA. This connects with the history clue of tearing, ripping, or crushing pain with possible back pain.",
+    "optionExplanations": {
+      "A": "Correct. A pulsatile abdominal mass is the listed exam clue for AAA.",
+      "B": "IBS is a chronic functional cause and does not cause a pulsatile mass.",
+      "C": "Meckel’s diverticulitis is a congenital vitelline duct remnant, usually in young children.",
+      "D": "Lactose intolerance is not part of the abdominal pain overview and does not cause pulsatile mass."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A patient has a sudden severe abdominal pain syndrome with guarding, rebound, and rigidity. Which management principle is emphasized for acute abdomen",
+    "topic": "Acute abdomen management",
+    "options": {
+      "A": "Delay consultation until all labs return abnormal",
+      "B": "Treat as functional pain if the first exam is nonspecific",
+      "C": "Avoid repeat exams because they confuse the clinical picture",
+      "D": "Identify need for immediate surgery and obtain early surgical consult"
+    },
+    "correct": "D",
+    "explanation": "Acute abdomen is sudden severe abdominal pain and is often a surgical emergency. Management requires identifying the need for immediate surgery and obtaining early surgical consultation.",
+    "optionExplanations": {
+      "A": "Normal labs do not exclude emergency, and consultation should not be delayed when the exam is concerning.",
+      "B": "Functional pain is a chronic category; peritoneal signs suggest surgical abdomen.",
+      "C": "Repeat exams are emphasized because disease evolves.",
+      "D": "Correct. Early surgical consult and rapid identification of surgical need are central."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A 22 year old develops appendicitis after obstruction of the appendiceal lumen by a fecalith. Which sequence best describes the pathogenesis listed in the section",
+    "topic": "Appendicitis pathogenesis",
+    "options": {
+      "A": "Reflux → metaplasia → dysplasia → carcinoma",
+      "B": "Obstruction → distention → thrombosis → bacterial invasion → gangrene",
+      "C": "Portal hypertension → varices → rupture → hemorrhage",
+      "D": "Immune activation → villous atrophy → malabsorption"
+    },
+    "correct": "B",
+    "explanation": "Appendicitis is described as luminal obstruction, often by fecalith, followed by distention, thrombosis, bacterial invasion, and gangrene. This sequence explains progression from vague visceral pain to localized parietal pain and late peritonitis.",
+    "optionExplanations": {
+      "A": "That resembles a metaplasia-dysplasia-carcinoma framework, not appendicitis.",
+      "B": "Correct. This is the listed appendicitis pathogenesis sequence.",
+      "C": "That describes variceal bleeding pathophysiology, not appendicitis.",
+      "D": "That pattern fits malabsorptive immune disease, not appendiceal obstruction."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A patient initially has vague periumbilical abdominal pain that later localizes to the right lower quadrant. Which diagnosis is most consistent with this pain progression",
+    "topic": "Appendicitis pain progression",
+    "options": {
+      "A": "Diverticulitis",
+      "B": "Chronic pancreatitis",
+      "C": "Appendicitis",
+      "D": "Meckel’s diverticulitis"
+    },
+    "correct": "C",
+    "explanation": "Appendicitis classically begins with early periumbilical or epigastric visceral pain and later progresses to localized right lower quadrant parietal pain. McBurney point tenderness is the most reliable physical exam sign.",
+    "optionExplanations": {
+      "A": "Diverticulitis classically causes gradual LLQ pain in older patients.",
+      "B": "Chronic pancreatitis is a chronic inflammatory cause of abdominal pain, not migratory RLQ pain.",
+      "C": "Correct. Periumbilical/epigastric pain migrating to RLQ is classic appendicitis.",
+      "D": "Meckel’s diverticulitis is associated with pain and rectal bleeding in young children and is evaluated with Technetium-99m scan."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A patient with suspected appendicitis says he is very hungry and asks for a full meal. According to the section, how should this affect clinical suspicion",
+    "topic": "Appendicitis anorexia clue",
+    "options": {
+      "A": "Desire to eat argues against appendicitis",
+      "B": "Desire to eat confirms appendicitis",
+      "C": "Appetite is unrelated to appendicitis evaluation",
+      "D": "Desire to eat is the most reliable sign of appendicitis"
+    },
+    "correct": "A",
+    "explanation": "The appendicitis table notes anorexia as a clinical manifestation and explicitly states that desire to eat argues against the diagnosis. This is a useful board-style clue.",
+    "optionExplanations": {
+      "A": "Correct. Appetite/desire to eat argues against appendicitis in this section.",
+      "B": "Appendicitis is associated with anorexia, not hunger.",
+      "C": "The section specifically uses appetite as a diagnostic clue.",
+      "D": "McBurney point tenderness is listed as the most reliable physical exam sign, not desire to eat."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "During an appendicitis exam, palpation of the left lower quadrant produces right lower quadrant pain by pushing gas toward the inflamed appendix. Which sign is this",
+    "topic": "Rovsing sign",
+    "options": {
+      "A": "Psoas sign",
+      "B": "Obturator sign",
+      "C": "Murphy sign",
+      "D": "Rovsing sign"
+    },
+    "correct": "D",
+    "explanation": "Rovsing sign is RLQ pain produced by palpating the LLQ, described in the section as pushing gas toward the inflamed appendix and causing referred RLQ pain.",
+    "optionExplanations": {
+      "A": "Psoas sign is associated with a retrocecal appendix.",
+      "B": "Obturator sign is listed as low sensitivity in appendicitis.",
+      "C": "Murphy sign is not discussed in this abdominal pain overview section.",
+      "D": "Correct. LLQ palpation causing RLQ pain is Rovsing sign."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A patient with appendicitis has exam findings suggesting irritation from a retrocecal appendix. Which physical exam sign is associated with this anatomic position",
+    "topic": "Psoas sign",
+    "options": {
+      "A": "Rovsing sign",
+      "B": "Psoas sign",
+      "C": "Rebound tenderness only after contrast enema",
+      "D": "High-pitched bowel sounds"
+    },
+    "correct": "B",
+    "explanation": "The appendicitis table associates psoas sign with a retrocecal appendix. It also lists obturator sign as having low sensitivity and McBurney point tenderness as the most reliable sign.",
+    "optionExplanations": {
+      "A": "Rovsing sign is RLQ pain with LLQ palpation.",
+      "B": "Correct. Psoas sign is linked to retrocecal appendicitis.",
+      "C": "Rebound tenderness is pain on sudden release and does not require contrast enema.",
+      "D": "High-pitched bowel sounds suggest obstruction, not retrocecal appendix."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A 24 year old has migratory abdominal pain, anorexia, and McBurney point tenderness. Plain x-ray is unrevealing. Which diagnostic study is listed as the study of choice with approximately 98 percent accuracy",
+    "topic": "Appendicitis diagnosis",
+    "options": {
+      "A": "Plain abdominal x-ray",
+      "B": "Technetium-99m scan",
+      "C": "CT abdomen",
+      "D": "Contrast enema"
+    },
+    "correct": "C",
+    "explanation": "For appendicitis, the section states that plain x-ray has poor utility and CT abdomen is the study of choice, approximately 98 percent. Repeat exams are also emphasized because disease can evolve.",
+    "optionExplanations": {
+      "A": "Plain x-ray is specifically described as poor utility for appendicitis.",
+      "B": "Technetium-99m scan is used for Meckel’s diverticulitis.",
+      "C": "Correct. CT abdomen is listed as the study of choice for appendicitis.",
+      "D": "Contrast enema is diagnostic and therapeutic for intussusception."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A 7 month old has episodic crampy abdominal pain, draws up the legs, and passes currant-jelly stools. A palpable abdominal mass is noted. Which diagnostic and therapeutic test is indicated",
+    "topic": "Intussusception",
+    "options": {
+      "A": "Contrast enema",
+      "B": "Technetium-99m scan",
+      "C": "CT abdomen for diverticulitis",
+      "D": "Upright x-ray for free air"
+    },
+    "correct": "A",
+    "explanation": "Intussusception is described in infants 5 to 9 months old as telescoping of bowel, usually ileum into colon, causing episodic crampy pain, drawing up of legs, currant-jelly stools, and sometimes a palpable mass. Contrast enema is both diagnostic and therapeutic.",
+    "optionExplanations": {
+      "A": "Correct. Contrast enema diagnoses and treats intussusception.",
+      "B": "Technetium-99m scan is for Meckel’s diverticulitis.",
+      "C": "CT is listed for diverticulitis, appendicitis, abscess, and pancreatitis, not as the key intussusception test here.",
+      "D": "Upright x-ray is for free air/perforation, not typical intussusception management."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A 2 year old has intermittent abdominal pain and rectal bleeding. The clinician suspects inflammation of a congenital remnant of the vitelline duct. Which diagnostic test is listed for this condition",
+    "topic": "Meckel’s diverticulitis",
+    "options": {
+      "A": "Contrast enema",
+      "B": "Technetium-99m scan",
+      "C": "Plain x-ray only",
+      "D": "Lipase"
+    },
+    "correct": "B",
+    "explanation": "Meckel’s diverticulitis is described as a congenital remnant of the vitelline duct with mean age around 2 years and complications including pain and rectal bleeding. Technetium-99m scan is the listed diagnostic test, and surgery is treatment.",
+    "optionExplanations": {
+      "A": "Contrast enema is used for intussusception.",
+      "B": "Correct. Technetium-99m scan is the listed diagnostic test for Meckel’s diverticulitis.",
+      "C": "Plain x-ray is for gas patterns, obstruction, and ileus, not the preferred Meckel test.",
+      "D": "Lipase is emphasized for pancreatitis, not Meckel’s diverticulitis."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A 72 year old has gradual onset left lower quadrant pain, low grade fever, and leukocytosis. CT scan confirms diverticulitis. Which treatment plan best matches the section",
+    "topic": "Diverticulitis treatment",
+    "options": {
+      "A": "Immediate contrast enema as definitive therapy",
+      "B": "Technetium-99m scan followed by elective observation only",
+      "C": "Chlorpromazine and outpatient reassurance",
+      "D": "IV antibiotics covering anaerobes and gram-negative organisms, bowel rest, IV fluids, and surgical consult"
+    },
+    "correct": "D",
+    "explanation": "Diverticulitis is described in patients older than 50 with fecalith obstruction of a diverticulum leading to perforation, gradual LLQ pain, low-grade fever, and leukocytosis. Diagnosis is CT scan. Treatment includes IV antibiotics for anaerobes and gram-negative organisms, specifically metronidazole and ceftriaxone in the notes, plus bowel rest, IV fluids, and surgical consult.",
+    "optionExplanations": {
+      "A": "Contrast enema is for intussusception, not diverticulitis treatment.",
+      "B": "Technetium-99m scan is for Meckel’s diverticulitis.",
+      "C": "Chlorpromazine is listed for hiccups in a different esophageal disorders section, not diverticulitis.",
+      "D": "Correct. CT-confirmed diverticulitis is treated with IV antibiotics, bowel rest, IV fluids, and surgical consult."
+    }
+  }
+];
+let currentIndex = 0;
+let answers = {};
+const segmentsEl = document.getElementById('segments');
+const progressText = document.getElementById('progressText');
+const wrongCount = document.getElementById('wrongCount');
+const rightCount = document.getElementById('rightCount');
+const qNum = document.getElementById('qNum');
+const topic = document.getElementById('topic');
+const stem = document.getElementById('stem');
+const options = document.getElementById('options');
+const explanation = document.getElementById('explanation');
+function renderSegments() {
+  segmentsEl.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'seg' + (idx === currentIndex ? ' active' : '') + (answers[q.id] !== undefined && idx !== currentIndex ? ' answered' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.setAttribute('aria-label', `Go to question ${idx + 1}`);
+    btn.onclick = () => { currentIndex = idx; render(); };
+    segmentsEl.appendChild(btn);
+  });
+}
+function renderCounts() {
+  let right = 0, wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(x => x.id === Number(id));
+    if (q && choice === q.correct) right++; else if (q) wrong++;
+  });
+  rightCount.textContent = right;
+  wrongCount.textContent = wrong;
+}
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id];
+  progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+  qNum.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  topic.textContent = q.topic ? `Topic: ${q.topic}` : '';
+  stem.textContent = q.stem + '?';
+  options.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    if (selected !== undefined) {
+      if (letter === q.correct) btn.classList.add('correct');
+      else if (letter === selected) btn.classList.add('wrong');
+    }
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; render(); };
+    options.appendChild(btn);
+  });
+  if (selected !== undefined) {
+    const correctText = q.options[q.correct];
+    const verdict = selected === q.correct ? 'Nice job. ' : 'Good attempt. ';
+    const verdictClass = selected === q.correct ? 'color:#15803d;' : 'color:#b91c1c;';
+    const why = Object.entries(q.optionExplanations).map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`).join('');
+    explanation.style.display = 'block';
+    explanation.innerHTML = `<p><strong>Correct answer: ${q.correct}</strong> (${correctText})</p><p style="${verdictClass}">${verdict}${q.explanation}</p><div class="why"><p><strong>Why each option is right or wrong:</strong></p>${why}</div>`;
+  } else {
+    explanation.style.display = 'none';
+    explanation.innerHTML = '';
+  }
+  renderSegments();
+  renderCounts();
+}
+document.getElementById('prevBtn').onclick = () => { currentIndex = (currentIndex - 1 + questions.length) % questions.length; render(); };
+document.getElementById('nextBtn').onclick = () => { currentIndex = (currentIndex + 1) % questions.length; render(); };
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liver Disorders Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fb; margin: 0; padding: 24px; color: #1f2937; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .subtitle { color: #6b7280; font-size: 14px; }
+    .progress-wrap { display: flex; align-items: center; gap: 12px; margin: 14px 0; }
+    .progress { display: flex; gap: 4px; flex: 1; }
+    .seg { height: 8px; border-radius: 999px; background: #374151; flex: 1; cursor: pointer; border: none; padding: 0; }
+    .seg.answered { background: #6fa8dc; }
+    .seg.active { background: #d1d5db; }
+    .score { display: flex; gap: 8px; font-size: 13px; font-weight: 700; }
+    .pill { padding: 4px 10px; border-radius: 999px; }
+    .right { background: #d1fae5; color: #065f46; }
+    .wrong { background: #fee2e2; color: #991b1b; }
+    .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .meta { display: flex; justify-content: space-between; color: #6b7280; font-size: 12px; margin-bottom: 14px; gap: 12px; }
+    .stem { font-weight: 700; line-height: 1.45; margin-bottom: 16px; }
+    .option { width: 100%; text-align: left; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 10px; padding: 12px; margin: 6px 0; cursor: pointer; font-size: 15px; }
+    .option:hover { background: #f3f4f6; }
+    .option.correct { background: #dcfce7; border-color: #22c55e; }
+    .option.incorrect { background: #fee2e2; border-color: #ef4444; }
+    .explanation { margin-top: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; font-size: 14px; line-height: 1.45; }
+    .option-explanations p { margin: 6px 0; }
+    .controls { display: flex; justify-content: space-between; margin-top: 18px; }
+    .nav { background: #ffffff; border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+    .nav:hover { background: #f3f4f6; }
+    .footer { color: #6b7280; font-size: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Liver Disorders Quiz</h1>
+    <div class="subtitle">30 board-style questions from section 17. Inflammatory Bowel Disease</div>
+    <div class="progress-wrap">
+      <div class="progress" id="progress"></div>
+      <div class="score">
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="meta"><span id="qNum"></span><span id="topic"></span></div>
+    <div class="stem" id="stem"></div>
+    <div id="options"></div>
+    <div id="explanation" class="explanation" style="display:none;"></div>
+    <div class="controls">
+      <button class="nav" onclick="prevQuestion()">Previous</button>
+      <button class="nav" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+  <div class="footer">Answers reveal after selection. Use the progress bar to jump between questions.</div>
+</div>
+<script>
+const questions = [
+  {
+    "id": 1,
+    "stem": "A patient with jaundice has a urine dipstick that is positive for bilirubin. Which interpretation is most consistent with the bilirubin principles in this section",
+    "topic": "Bilirubin in urine",
+    "options": {
+      "A": "The patient has only unconjugated bilirubin in the blood",
+      "B": "Conjugated bilirubin is present in blood and is being excreted in urine",
+      "C": "This is a normal urine finding if urobilinogen is also present",
+      "D": "The finding rules out hepatobiliary disease"
+    },
+    "correct": "B",
+    "explanation": "Conjugated bilirubin is water soluble, so if it appears in blood it can appear in urine. Unconjugated bilirubin is insoluble and albumin-bound, so it does not appear in urine.",
+    "optionExplanations": {
+      "A": "Unconjugated bilirubin is insoluble and albumin-bound, so it does not appear in urine.",
+      "B": "Correct. Urine bilirubin means conjugated bilirubin has refluxed into blood and is being filtered into urine.",
+      "C": "Urobilinogen is normally present, but bilirubin in urine is abnormal.",
+      "D": "Urine bilirubin supports conjugated hyperbilirubinemia and can occur in hepatic or obstructive disease."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A patient with hemolytic anemia develops jaundice. Urine bilirubin is absent, but urine urobilinogen is markedly increased. Which type of jaundice best explains these findings",
+    "topic": "Prehepatic jaundice",
+    "options": {
+      "A": "Posthepatic obstructive jaundice",
+      "B": "Hepatic jaundice with mixed conjugated fraction",
+      "C": "Rotor syndrome",
+      "D": "Prehepatic hemolytic jaundice"
+    },
+    "correct": "D",
+    "explanation": "Prehepatic jaundice is caused by excess RBC breakdown. Total bilirubin rises, the blood bilirubin is predominantly unconjugated, urine bilirubin is absent, and urine urobilinogen is markedly increased.",
+    "optionExplanations": {
+      "A": "Posthepatic obstruction gives conjugated hyperbilirubinemia with urine bilirubin present and absent urobilinogen.",
+      "B": "Hepatic jaundice has a mixed pattern with variable urine findings, not the classic hemolytic pattern.",
+      "C": "Rotor syndrome is a congenital conjugated hyperbilirubinemia from decreased secretion.",
+      "D": "Correct. Hemolysis produces unconjugated bilirubin and increased intestinal urobilinogen formation."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A 40-year-old woman has complete common bile duct obstruction from a gallstone. She has clay-colored stools and dark urine. Which bilirubin pattern is expected",
+    "topic": "Posthepatic obstructive jaundice",
+    "options": {
+      "A": "Predominantly conjugated bilirubin with absent urine urobilinogen",
+      "B": "Predominantly unconjugated bilirubin with absent urine bilirubin",
+      "C": "Normal total bilirubin with markedly increased stercobilin",
+      "D": "Conjugated bilirubin fraction less than 20 percent"
+    },
+    "correct": "A",
+    "explanation": "Complete posthepatic obstruction prevents bilirubin from reaching the intestine, so conjugated bilirubin refluxes into blood, urine bilirubin is increased, urine urobilinogen is absent, and stool becomes clay-colored from lack of stercobilin.",
+    "optionExplanations": {
+      "A": "Correct. Obstructive jaundice is predominantly conjugated with absent urine urobilinogen.",
+      "B": "This fits prehepatic hemolytic jaundice more than obstruction.",
+      "C": "Stercobilin decreases in complete obstruction, causing clay-colored stool.",
+      "D": "A conjugated fraction less than 20% is normal/prehepatic, not posthepatic obstruction."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A child has isolated alkaline phosphatase elevation during a period of rapid growth. Which feature of ALP best explains why this may be physiologic",
+    "topic": "Alkaline phosphatase sources",
+    "options": {
+      "A": "ALP is specific for hepatocyte cytoplasmic injury",
+      "B": "ALP is only induced by alcohol and phenytoin",
+      "C": "ALP can be elevated from bone growth because bone is one of its sources",
+      "D": "ALP is absent in cholestasis"
+    },
+    "correct": "C",
+    "explanation": "ALP comes from liver, bone, and placenta. Children can have physiologic elevation from bone growth, up to about three times normal in the section.",
+    "optionExplanations": {
+      "A": "ALT is more specific for hepatocellular injury; ALP is not liver-specific.",
+      "B": "GGT, not ALP, is noted as being induced by alcohol, phenytoin, and phenobarbital.",
+      "C": "Correct. Bone is a source of ALP, so growth can cause physiologic elevation.",
+      "D": "ALP is pathologically elevated in cholestasis."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient has elevated ALP. The clinician wants to determine whether the elevation is hepatic rather than bone in origin. Which additional marker is most useful according to the section",
+    "topic": "GGT use",
+    "options": {
+      "A": "Albumin",
+      "B": "Ammonia",
+      "C": "Urobilinogen",
+      "D": "Gamma-glutamyl transpeptidase"
+    },
+    "correct": "D",
+    "explanation": "GGT is a sensitive but nonspecific marker of liver disease and is specifically useful for differentiating bone versus liver sources of increased ALP.",
+    "optionExplanations": {
+      "A": "Albumin assesses hepatic synthetic function but does not localize ALP source.",
+      "B": "Ammonia is relevant to liver failure and encephalopathy, not ALP source.",
+      "C": "Urobilinogen helps interpret jaundice patterns, not bone versus liver ALP.",
+      "D": "Correct. GGT helps confirm a hepatobiliary source of ALP elevation."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A patient has very high ALT and AST with ALT greater than AST after an acute illness. Which enzyme pattern best matches the section's description of acute hepatitis",
+    "topic": "AST versus ALT pattern",
+    "options": {
+      "A": "AST greater than ALT with normal transaminases",
+      "B": "ALP greater than AST and ALT only",
+      "C": "ALT greater than AST",
+      "D": "GGT less than ALP"
+    },
+    "correct": "C",
+    "explanation": "The section lists ALT greater than AST as a pattern of acute hepatitis, while AST greater than ALT is associated with chronic liver disease and alcoholic liver disease.",
+    "optionExplanations": {
+      "A": "AST greater than ALT points more toward chronic liver disease or alcoholic liver disease.",
+      "B": "ALP predominance points toward cholestasis/obstruction rather than acute hepatocellular injury.",
+      "C": "Correct. ALT greater than AST is the acute hepatitis pattern listed.",
+      "D": "This ratio is not the section's acute hepatitis pattern."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A young adult develops mild intermittent scleral icterus during fasting and illness. Labs show unconjugated hyperbilirubinemia without hemolysis. Which congenital disorder is most likely",
+    "topic": "Gilbert syndrome",
+    "options": {
+      "A": "Gilbert syndrome from decreased hepatic uptake",
+      "B": "Dubin-Johnson syndrome from decreased secretion",
+      "C": "Rotor syndrome from decreased secretion",
+      "D": "Posthepatic obstruction from gallstone disease"
+    },
+    "correct": "A",
+    "explanation": "Congenital hyperbilirubinemias often present in young patients and are unmasked by fasting or illness. Gilbert syndrome is the most common benign cause and produces unconjugated hyperbilirubinemia from decreased hepatic uptake in this section.",
+    "optionExplanations": {
+      "A": "Correct. Gilbert syndrome is benign and classically produces unconjugated hyperbilirubinemia.",
+      "B": "Dubin-Johnson produces conjugated hyperbilirubinemia due to decreased secretion.",
+      "C": "Rotor produces conjugated hyperbilirubinemia due to decreased secretion.",
+      "D": "Obstruction produces conjugated hyperbilirubinemia with urine bilirubin and absent urobilinogen."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A young patient has recurrent jaundice from a congenital defect in bilirubin conjugation. Which bilirubin type would be expected to increase",
+    "topic": "Crigler-Najjar syndrome",
+    "options": {
+      "A": "Conjugated bilirubin because of decreased secretion",
+      "B": "Conjugated bilirubin because of extrahepatic obstruction",
+      "C": "Normal bilirubin because conjugation defects are asymptomatic",
+      "D": "Unconjugated bilirubin"
+    },
+    "correct": "D",
+    "explanation": "Crigler-Najjar syndrome is listed as a congenital hyperbilirubinemia due to decreased conjugation, producing unconjugated hyperbilirubinemia.",
+    "optionExplanations": {
+      "A": "Decreased secretion causes conjugated hyperbilirubinemia in Dubin-Johnson or Rotor syndrome.",
+      "B": "Extrahepatic obstruction is acquired posthepatic jaundice, not a congenital conjugation defect.",
+      "C": "Conjugation defects can cause clinically important jaundice.",
+      "D": "Correct. Decreased conjugation leaves bilirubin unconjugated."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A medical student is reviewing safe drinking definitions. In the section, one standard alcohol unit is defined as how many grams of pure ethanol",
+    "topic": "Alcohol unit definition",
+    "options": {
+      "A": "4 grams",
+      "B": "14 grams",
+      "C": "40 grams",
+      "D": "80 grams"
+    },
+    "correct": "B",
+    "explanation": "The section defines one standard unit as 14 grams of pure ethanol, equivalent to 12 fl oz beer, 5 fl oz wine, or 1.5 fl oz of 80-proof spirits.",
+    "optionExplanations": {
+      "A": "This is below the standard unit listed.",
+      "B": "Correct. One unit equals 14 grams of pure ethanol.",
+      "C": "This is the approximate percent alcohol of 80-proof spirits, not grams in one unit.",
+      "D": "This is far above the listed ethanol unit."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "Ethanol is metabolized in the liver to a toxic intermediate before conversion to acetate. Which intermediate is directly produced by alcohol dehydrogenase",
+    "topic": "Ethanol metabolism",
+    "options": {
+      "A": "Urobilinogen",
+      "B": "Ferroportin",
+      "C": "Acetaldehyde",
+      "D": "Ceruloplasmin"
+    },
+    "correct": "C",
+    "explanation": "Oxidative metabolism converts ethanol to acetaldehyde via alcohol dehydrogenase, then acetaldehyde to acetate via aldehyde dehydrogenase. Acetaldehyde contributes to liver injury.",
+    "optionExplanations": {
+      "A": "Urobilinogen is part of bilirubin metabolism, not ethanol metabolism.",
+      "B": "Ferroportin is involved in iron transport and hemochromatosis pathogenesis.",
+      "C": "Correct. ADH converts ethanol to acetaldehyde.",
+      "D": "Ceruloplasmin is relevant to Wilson disease evaluation."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient with heavy alcohol use has an enlarged yellow liver. Biopsy shows macrovesicular fat pushing hepatocyte nuclei to the periphery. Which stage of alcoholic liver disease is this",
+    "topic": "Alcoholic fatty liver",
+    "options": {
+      "A": "Fatty liver or steatosis",
+      "B": "Alcoholic hepatitis",
+      "C": "Alcoholic cirrhosis",
+      "D": "Fibrolamellar carcinoma"
+    },
+    "correct": "A",
+    "explanation": "Alcoholic fatty liver is characterized by focal or diffuse fat deposition, a yellow heavy liver, and macrovesicular fat that pushes nuclei to the periphery.",
+    "optionExplanations": {
+      "A": "Correct. These are the section's classic steatosis findings.",
+      "B": "Alcoholic hepatitis has hepatocyte swelling/necrosis, Mallory-Denk bodies, neutrophils, and zone 3 fibrosis.",
+      "C": "Alcoholic cirrhosis is the final irreversible stage with a shrunken fibrotic liver.",
+      "D": "Fibrolamellar carcinoma is a liver tumor in young adults without chronic liver disease."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A man with chronic alcohol use develops fever, jaundice, nausea, easy bruising, and AST:ALT ratio greater than 2. Liver biopsy shows hepatocyte swelling, necrosis, neutrophils, and Mallory-Denk hyalin. What diagnosis best fits",
+    "topic": "Alcoholic hepatitis",
+    "options": {
+      "A": "Primary biliary cirrhosis",
+      "B": "Hemochromatosis",
+      "C": "Gilbert syndrome",
+      "D": "Alcoholic hepatitis"
+    },
+    "correct": "D",
+    "explanation": "Alcoholic hepatitis presents with systemic symptoms and AST:ALT ratio greater than 2. Pathologic findings include hepatocyte swelling/necrosis, Mallory-Denk hyalin, neutrophilic infiltrate, and pericentral/sinusoidal fibrosis.",
+    "optionExplanations": {
+      "A": "Primary biliary cirrhosis affects intrahepatic bile ducts and has antimitochondrial antibodies.",
+      "B": "Hemochromatosis causes iron overload with bronze diabetes and cirrhosis.",
+      "C": "Gilbert syndrome causes benign unconjugated hyperbilirubinemia, not necroinflammatory hepatitis.",
+      "D": "Correct. The symptoms, AST:ALT pattern, neutrophils, and Mallory-Denk bodies fit alcoholic hepatitis."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient has acute liver failure with no preexisting liver disease. The section identifies which cause as the primary cause of acute liver failure",
+    "topic": "Acute liver failure",
+    "options": {
+      "A": "Hepatic adenoma",
+      "B": "Acetaminophen poisoning",
+      "C": "Gilbert syndrome",
+      "D": "Focal nodular hyperplasia"
+    },
+    "correct": "B",
+    "explanation": "Acute liver failure is rapid deterioration of liver function in a patient with no preexisting disease, and the section lists acetaminophen poisoning as the primary cause, accounting for 46% of cases.",
+    "optionExplanations": {
+      "A": "Hepatic adenoma can rupture or mimic carcinoma, but it is not the listed primary cause of acute liver failure.",
+      "B": "Correct. Acetaminophen poisoning is the major cause listed.",
+      "C": "Gilbert syndrome is benign and does not cause acute liver failure.",
+      "D": "Focal nodular hyperplasia is usually incidental and benign."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A patient with acute liver failure develops confusion and asterixis. Which mechanism best explains the hepatic encephalopathy described in the section",
+    "topic": "Hepatic encephalopathy",
+    "options": {
+      "A": "Excess stercobilin production in the colon",
+      "B": "Increased conjugation of bilirubin by UGT1A1",
+      "C": "Failure to convert toxic ammonia into urea",
+      "D": "Increased destruction of ceruloplasmin by bile ducts"
+    },
+    "correct": "C",
+    "explanation": "Hepatic encephalopathy occurs because the failing liver cannot convert toxic ammonia into urea, allowing ammonia to enter systemic circulation and affect the brain.",
+    "optionExplanations": {
+      "A": "Stercobilin gives stool its brown color and does not explain encephalopathy.",
+      "B": "Increased bilirubin conjugation is not the mechanism of encephalopathy.",
+      "C": "Correct. Hyperammonemia from impaired urea conversion causes mental status changes.",
+      "D": "Ceruloplasmin is relevant to Wilson disease, not the immediate mechanism of encephalopathy."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A pathologist diagnoses cirrhosis after liver cell destruction. Which triad of features supports the diagnosis",
+    "topic": "Cirrhosis diagnostic triad",
+    "options": {
+      "A": "Steatosis, owl-eye inclusions, and portal vein thrombosis",
+      "B": "Cholestasis, urobilinogen, and bile duct stones",
+      "C": "Hepatoblastoma, angiosarcoma, and metastases",
+      "D": "Fibrosis, regenerative nodules, and vascular reorganization"
+    },
+    "correct": "D",
+    "explanation": "The pathologic diagnosis of cirrhosis rests on fibrosis, regenerative nodules, and vascular reorganization after liver cell destruction.",
+    "optionExplanations": {
+      "A": "Steatosis and CMV inclusions are not the cirrhosis triad.",
+      "B": "These relate to bilirubin and obstruction, not the defining histologic triad.",
+      "C": "These are liver tumors, not cirrhosis diagnostic criteria.",
+      "D": "Correct. Cirrhosis requires fibrosis, regenerative nodules, and distorted vascular architecture."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A chronic liver injury activates Kupffer cells, endothelial cells, platelets, and leukocytes. Cytokines then activate a cell in the liver to produce massive collagen. Which cell is the key driver of fibrogenesis",
+    "topic": "Hepatic stellate cell activation",
+    "options": {
+      "A": "Hepatic stellate cell",
+      "B": "Cholangiocyte",
+      "C": "Portal vein endothelial cell only",
+      "D": "Gallbladder epithelial cell"
+    },
+    "correct": "A",
+    "explanation": "In cirrhosis pathogenesis, hepatic stellate cells are activated and produce collagen, driving fibrosis. In the detailed histology section, stellate cells are located in the space of Disse and store vitamin A.",
+    "optionExplanations": {
+      "A": "Correct. Activated stellate cells become collagen-producing myofibroblast-like cells.",
+      "B": "Cholangiocytes line bile ducts and are not the main fibrogenic cell here.",
+      "C": "Endothelial cells may participate in injury signaling, but stellate cells are the key collagen source.",
+      "D": "Gallbladder epithelium is not the hepatic fibrogenic cell."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A man has cirrhosis, diabetes mellitus, skin pigmentation, and cardiac failure. Iron studies show increased serum iron, transferrin saturation, and ferritin. Which pathogenesis best explains this disorder",
+    "topic": "Hemochromatosis",
+    "options": {
+      "A": "ATP7B mutation causing copper deposition",
+      "B": "Autoimmune destruction of intrahepatic bile ducts",
+      "C": "Failure of hepcidin to destroy ferroportin causing uncontrolled iron absorption",
+      "D": "Aspirin-triggered mitochondrial injury after viral infection"
+    },
+    "correct": "C",
+    "explanation": "Hemochromatosis causes pigment cirrhosis or bronze diabetes. Primary genetic disease is associated with HFE abnormalities and failure of hepcidin regulation of ferroportin, causing uncontrolled iron absorption.",
+    "optionExplanations": {
+      "A": "ATP7B mutation causes Wilson disease with copper deposition.",
+      "B": "This describes primary biliary cirrhosis/cholangitis.",
+      "C": "Correct. Impaired hepcidin-ferroportin control leads to iron overload.",
+      "D": "This describes Reye syndrome."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A middle-aged woman presents with cholestatic liver disease. Workup shows high-titer antimitochondrial antibodies and autoimmune destruction of intrahepatic bile ducts. Which diagnosis is most likely",
+    "topic": "Primary biliary cirrhosis",
+    "options": {
+      "A": "Wilson disease",
+      "B": "Primary biliary cirrhosis",
+      "C": "Alcoholic fatty liver",
+      "D": "Hepatic adenoma"
+    },
+    "correct": "B",
+    "explanation": "Primary biliary cirrhosis primarily affects middle-aged women and is due to autoimmune destruction of intrahepatic bile ducts. Antimitochondrial antibodies are present in high titers.",
+    "optionExplanations": {
+      "A": "Wilson disease involves ATP7B mutation and copper deposition.",
+      "B": "Correct. Middle-aged woman plus AMA and intrahepatic bile duct destruction is PBC.",
+      "C": "Alcoholic fatty liver shows macrovesicular fat and a yellow heavy liver.",
+      "D": "Hepatic adenoma is a benign hepatocellular tumor linked to OCPs/steroids."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A young patient has cirrhosis and PAS-positive cytoplasmic droplets in hepatocytes. He also has risk for emphysema. Which phenotype is associated with severe deficiency in the section",
+    "topic": "Alpha-1 antitrypsin deficiency",
+    "options": {
+      "A": "MM phenotype",
+      "B": "SS phenotype",
+      "C": "HFE homozygosity",
+      "D": "ZZ phenotype"
+    },
+    "correct": "D",
+    "explanation": "Alpha-1 antitrypsin deficiency is autosomal recessive and can cause cirrhosis with cytoplasmic droplets. The section lists MM as normal, SS as intermediate, and ZZ as severe deficiency.",
+    "optionExplanations": {
+      "A": "MM is listed as the normal phenotype.",
+      "B": "SS is listed as intermediate, not severe.",
+      "C": "HFE abnormalities are associated with hemochromatosis.",
+      "D": "Correct. ZZ is severe alpha-1 antitrypsin deficiency."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A 22-year-old has progressive malaise, jaundice, Kayser-Fleischer rings, and increased hepatic copper. Which laboratory pattern is expected in the disorder described",
+    "topic": "Wilson disease",
+    "options": {
+      "A": "Low serum ceruloplasmin with increased free serum, urine, and liver copper",
+      "B": "High antimitochondrial antibody titers with florid duct lesions",
+      "C": "High serum iron, transferrin saturation, and ferritin",
+      "D": "Normal alpha-1 antitrypsin with PAS-positive droplets"
+    },
+    "correct": "A",
+    "explanation": "Wilson disease is an autosomal recessive copper metabolism disorder due to ATP7B on chromosome 13. The section lists decreased ceruloplasmin and total serum copper with increased free serum copper, urine copper, and liver dry weight copper.",
+    "optionExplanations": {
+      "A": "Correct. This is the Wilson disease pattern.",
+      "B": "This describes primary biliary cirrhosis.",
+      "C": "This describes hemochromatosis.",
+      "D": "PAS-positive droplets suggest alpha-1 antitrypsin deficiency, not Wilson disease."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A 70-year-old with NASH-related cirrhosis has hypertension, obesity, hyperlipidemia, sleep apnea, and diabetes mellitus type 2. Which comorbidity is described as most closely associated with development and progression of NAFLD/MASLD",
+    "topic": "NAFLD and metabolic syndrome",
+    "options": {
+      "A": "Hypertension only",
+      "B": "Diabetes mellitus type 2",
+      "C": "Low-roughage diet",
+      "D": "Major depressive disorder"
+    },
+    "correct": "B",
+    "explanation": "The section describes NAFLD/MASLD with a multi-hit hypothesis and states that its primary driver is closely associated with diabetes mellitus type 2 and metabolic syndrome.",
+    "optionExplanations": {
+      "A": "Hypertension can be part of metabolic syndrome but is not the comorbidity singled out as most closely associated.",
+      "B": "Correct. Diabetes mellitus type 2 is highlighted as closely associated with NAFLD progression.",
+      "C": "Low-roughage diet is not the section's emphasized association.",
+      "D": "Depression is not listed as the key driver."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient with cirrhosis develops portal hypertension. Which complication is specifically listed as a dangerous source of potentially fatal bleeding",
+    "topic": "Portal hypertension complications",
+    "options": {
+      "A": "Focal nodular hyperplasia",
+      "B": "Dubin-Johnson syndrome",
+      "C": "Gilbert syndrome",
+      "D": "Esophageal varices"
+    },
+    "correct": "D",
+    "explanation": "Portal hypertension is most commonly caused by cirrhosis and can cause esophageal varices, splenomegaly, ascites, and hepatic encephalopathy. Esophageal varices are extremely dangerous because severe bleeding can be fatal.",
+    "optionExplanations": {
+      "A": "Focal nodular hyperplasia is a benign tumor-like lesion, not a portal hypertension bleeding complication.",
+      "B": "Dubin-Johnson is a congenital conjugated hyperbilirubinemia.",
+      "C": "Gilbert syndrome is benign and not a portal hypertension complication.",
+      "D": "Correct. Variceal bleeding is a major portal hypertension mortality risk."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A patient with Budd-Chiari syndrome develops portal hypertension. In the section's classification, this cause belongs to which site category",
+    "topic": "Portal hypertension site categories",
+    "options": {
+      "A": "Prehepatic/presinusoidal",
+      "B": "Hepatic/sinusoidal",
+      "C": "Posthepatic/postsinusoidal",
+      "D": "Intrahepatic ductular"
+    },
+    "correct": "C",
+    "explanation": "Budd-Chiari syndrome is hepatic vein thrombosis and is classified as a posthepatic or postsinusoidal cause of portal hypertension. Cirrhosis is the most common hepatic/sinusoidal cause.",
+    "optionExplanations": {
+      "A": "Portal vein thrombosis is the prehepatic/presinusoidal example.",
+      "B": "Cirrhosis, schistosomiasis, and primary biliary cirrhosis are hepatic/sinusoidal examples.",
+      "C": "Correct. Budd-Chiari is posthepatic/postsinusoidal.",
+      "D": "This is not the section's portal hypertension category."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A liver biopsy in acute viral hepatitis shows ballooning degeneration, cholestasis, Kupffer cell hyperplasia, and acidophilic apoptotic bodies. What are these apoptotic bodies called in the section",
+    "topic": "Acute hepatitis morphology",
+    "options": {
+      "A": "Councilman bodies",
+      "B": "Donovan bodies",
+      "C": "Mallory-Denk bodies",
+      "D": "Lewy bodies"
+    },
+    "correct": "A",
+    "explanation": "Acute viral hepatitis morphology includes portal inflammation, lobular disarray, hepatocyte swelling or ballooning, cholestasis, and Councilman bodies, which are acidophilic apoptotic bodies.",
+    "optionExplanations": {
+      "A": "Correct. Councilman bodies are acidophilic apoptotic hepatocytes.",
+      "B": "Donovan bodies are associated with granuloma inguinale, not hepatitis morphology here.",
+      "C": "Mallory-Denk hyalin is associated with alcoholic hepatitis.",
+      "D": "Lewy bodies are neurologic inclusions, not liver hepatitis findings."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A patient with chronic active hepatitis has inflammatory cells spilling from portal tracts across the limiting plate into liver parenchyma. Which histologic term best describes this pattern",
+    "topic": "Interface hepatitis",
+    "options": {
+      "A": "Ground-glass hepatocytes",
+      "B": "Florid duct lesion",
+      "C": "Piecemeal necrosis or interface hepatitis",
+      "D": "Macrovesicular steatosis only"
+    },
+    "correct": "C",
+    "explanation": "Chronic active hepatitis can show piecemeal necrosis, also called interface hepatitis, where inflammatory cells cross the limiting plate from the portal tract into the parenchyma. Bridging necrosis can connect portal tracts and central veins.",
+    "optionExplanations": {
+      "A": "Ground-glass hepatocytes are associated with hepatitis B in the section.",
+      "B": "Florid duct lesion is the early duct lesion in primary biliary cirrhosis.",
+      "C": "Correct. The limiting plate being nibbled by inflammation is interface/piecemeal hepatitis.",
+      "D": "Macrovesicular steatosis is fatty change, not interface hepatitis."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A woman presents with nausea and jaundice. ANA and anti-smooth muscle antibodies are positive, antimitochondrial antibodies are negative, and biopsy shows interface hepatitis. Which etiology best fits",
+    "topic": "Autoimmune hepatitis",
+    "options": {
+      "A": "Alcoholic liver disease",
+      "B": "Autoimmune hepatitis",
+      "C": "Primary biliary cirrhosis",
+      "D": "Wilson disease"
+    },
+    "correct": "B",
+    "explanation": "Autoimmune hepatitis predominantly affects females and can present as acute hepatitis or progress rapidly to cirrhosis. Type 1 autoimmune hepatitis is associated with ANA or anti-smooth muscle antibodies, high serum IgG, and interface hepatitis.",
+    "optionExplanations": {
+      "A": "Alcoholic hepatitis is associated with AST:ALT >2, Mallory-Denk bodies, and neutrophils.",
+      "B": "Correct. ANA/ASMA positivity with interface hepatitis fits autoimmune hepatitis.",
+      "C": "Primary biliary cirrhosis has antimitochondrial antibodies and bile duct destruction.",
+      "D": "Wilson disease has copper deposition and low ceruloplasmin."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A child develops liver failure and encephalopathy after a viral illness treated with aspirin. Which diagnosis from the liver disorders section is most likely",
+    "topic": "Reye syndrome",
+    "options": {
+      "A": "Gilbert syndrome",
+      "B": "Rotor syndrome",
+      "C": "Primary biliary cirrhosis",
+      "D": "Reye syndrome"
+    },
+    "correct": "D",
+    "explanation": "Reye syndrome is described as a deadly childhood disorder that follows viral infection treated with aspirin and causes liver failure plus encephalopathy.",
+    "optionExplanations": {
+      "A": "Gilbert syndrome is benign unconjugated hyperbilirubinemia.",
+      "B": "Rotor syndrome causes congenital conjugated hyperbilirubinemia.",
+      "C": "Primary biliary cirrhosis is autoimmune bile duct destruction in middle-aged women.",
+      "D": "Correct. Viral illness plus aspirin with liver failure and encephalopathy is Reye syndrome."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient with suspected CMV hepatitis has a liver biopsy. Which finding would be diagnostic according to the section",
+    "topic": "CMV hepatitis",
+    "options": {
+      "A": "Owl-eye intranuclear inclusions",
+      "B": "PAS-positive alpha-1 antitrypsin droplets",
+      "C": "Prussian blue iron deposits only",
+      "D": "Central stellate scar"
+    },
+    "correct": "A",
+    "explanation": "Congenital CMV infection can involve the liver, and the section identifies owl-eye intranuclear inclusions as the diagnostic histologic clue.",
+    "optionExplanations": {
+      "A": "Correct. CMV has owl-eye intranuclear inclusions.",
+      "B": "PAS-positive droplets are associated with alpha-1 antitrypsin deficiency.",
+      "C": "Prussian blue iron deposition supports hemochromatosis.",
+      "D": "A central stellate scar is characteristic of focal nodular hyperplasia."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A young to middle-aged woman has an incidental benign liver lesion. Grossly it is a well-demarcated unencapsulated nodule with a central gray-white stellate scar and radiating septa. Which lesion is most likely",
+    "topic": "Focal nodular hyperplasia",
+    "options": {
+      "A": "Hepatic adenoma",
+      "B": "Cavernous hemangioma",
+      "C": "Focal nodular hyperplasia",
+      "D": "Angiosarcoma"
+    },
+    "correct": "C",
+    "explanation": "Focal nodular hyperplasia is the second most common benign liver tumor, often in young to middle-aged women. Its classic gross marker is a central gray-white stellate scar with radiating septa.",
+    "optionExplanations": {
+      "A": "Hepatic adenoma is associated with OCPs, anabolic steroids, and glycogen storage disease and lacks portal tracts microscopically.",
+      "B": "Cavernous hemangioma is the most common benign liver tumor and consists of large vascular channels.",
+      "C": "Correct. Central stellate scar is the classic FNH feature.",
+      "D": "Angiosarcoma is a highly aggressive endothelial malignancy linked to vinyl chloride, arsenic, and Thorotrast."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A young woman taking oral contraceptives has a solitary subcapsular right-lobe hepatic nodule composed of sheets and cords of disorganized hepatocytes without portal tracts. Which complication is specifically emphasized for this lesion",
+    "topic": "Hepatic adenoma",
+    "options": {
+      "A": "No clinical significance because all subtypes are innocuous",
+      "B": "Rupture with life-threatening intraperitoneal hemorrhage",
+      "C": "Progression to cholestatic jaundice from intrahepatic duct destruction",
+      "D": "Severe portal hypertension from hepatic vein thrombosis"
+    },
+    "correct": "B",
+    "explanation": "Hepatic adenoma is associated with OCPs, anabolic steroids, and glycogen storage disease. It can be mistaken for carcinoma and can rupture, causing life-threatening intraperitoneal hemorrhage. The beta-catenin subtype also has high malignant transformation risk.",
+    "optionExplanations": {
+      "A": "Hepatic adenomas are clinically important because of hemorrhage risk and malignant potential in beta-catenin subtype.",
+      "B": "Correct. Rupture with life-threatening intraperitoneal hemorrhage is specifically emphasized.",
+      "C": "This better fits primary biliary cirrhosis pathogenesis.",
+      "D": "Hepatic vein thrombosis is Budd-Chiari syndrome, a posthepatic cause of portal hypertension."
+    }
+  }
+];
+
+let currentIndex = 0;
+const answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'seg' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; renderQuestion(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(x => x.id === Number(id));
+    if (!q) return;
+    if (choice === q.correct) right++; else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('qNum').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = `Topic: ${q.topic}`;
+  document.getElementById('stem').textContent = q.stem;
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    if (selected && letter === q.correct) btn.classList.add('correct');
+    if (selected && letter === selected && letter !== q.correct) btn.classList.add('incorrect');
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; renderQuestion(); };
+    optionsDiv.appendChild(btn);
+  });
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const isCorrect = selected === q.correct;
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p style="color:${isCorrect ? '#047857' : '#b91c1c'};"><strong>${isCorrect ? 'Nice job.' : 'Good attempt.'}</strong> ${q.explanation}</p>
+      <div class="option-explanations"><p><strong>Why each option is right or wrong:</strong></p>
+      ${Object.entries(q.optionExplanations).map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`).join('')}
+      </div>`;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+  renderProgress();
+  renderScore();
+}
+
+function nextQuestion() { currentIndex = (currentIndex + 1) % questions.length; renderQuestion(); }
+function prevQuestion() { currentIndex = (currentIndex - 1 + questions.length) % questions.length; renderQuestion(); }
+renderQuestion();
+</script>
+</body>
+</html>

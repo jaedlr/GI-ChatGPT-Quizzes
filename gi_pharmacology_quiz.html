@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GI Pharmacology Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p {
+      margin: 8px 0;
+    }
+    .correct-text { color: var(--green-text); }
+    .incorrect-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .nav button, .reset {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f8fafc; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionMeta">Question 1 of 30</span>
+        <span id="topicMeta">Topic: GI Pharmacology</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button id="prevBtn">Previous</button>
+        <button class="reset" id="resetBtn">Reset quiz</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">GI Pharmacology quiz • 30 questions</div>
+  </div>
+
+  <script>
+    const questions = [
+  {
+    "id": 1,
+    "stem": "A 65-year-old patient receiving chemotherapy for non-Hodgkin lymphoma asks for the best medication to prevent chemotherapy-induced nausea and vomiting before infusion. Which drug is most appropriate",
+    "topic": "5-HT3 antagonists and chemotherapy-induced emesis",
+    "options": {
+      "A": "Diphenhydramine",
+      "B": "Scopolamine",
+      "C": "Loperamide",
+      "D": "Ondansetron"
+    },
+    "correct": "D",
+    "explanation": "Ondansetron is a 5-HT3 receptor blocker that acts centrally at the vomiting center and chemoreceptor trigger zone and is first-line for chemotherapy- and radiation-induced emesis.",
+    "optionExplanations": {
+      "A": "Diphenhydramine is an H1 antihistamine useful for motion sickness but not the preferred chemotherapy prophylaxis.",
+      "B": "Scopolamine is antimuscarinic and useful for motion sickness, not first-line chemotherapy-induced emesis.",
+      "C": "Loperamide is a peripheral opioid antidiarrheal and does not prevent chemotherapy-induced vomiting.",
+      "D": "Correct. Ondansetron is a -setron 5-HT3 antagonist used first-line before chemotherapy."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A patient with diabetic gastroparesis has early satiety, nausea, bloating, and postprandial vomiting. The physician starts a medication that antagonizes central D2 receptors and improves gastric motility. Which adverse effect is most important to monitor",
+    "topic": "Metoclopramide",
+    "options": {
+      "A": "Extrapyramidal symptoms",
+      "B": "Black tongue and dark stools",
+      "C": "Systemic alkalosis",
+      "D": "Hyperviscosity syndrome"
+    },
+    "correct": "A",
+    "explanation": "Metoclopramide is a central D2 receptor antagonist used as an antiemetic and prokinetic for gastroparesis; dose-dependent extrapyramidal symptoms are a key toxicity.",
+    "optionExplanations": {
+      "A": "Correct. Metoclopramide blocks D2 receptors and can cause dose-dependent extrapyramidal symptoms.",
+      "B": "This is associated with bismuth compounds, not metoclopramide.",
+      "C": "This can occur with sodium bicarbonate antacids, not D2 antagonists.",
+      "D": "This is not a listed toxicity of GI antiemetic/prokinetic therapy in this section."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A traveler develops nonspecific diarrhea during a trip and wants an over-the-counter medication that reduces intestinal peristalsis without meaningful CNS opioid effects. Which medication fits best",
+    "topic": "Opioid antidiarrheals",
+    "options": {
+      "A": "Diphenoxylate with atropine",
+      "B": "Bismuth subsalicylate",
+      "C": "Loperamide",
+      "D": "Lactulose"
+    },
+    "correct": "C",
+    "explanation": "Loperamide inhibits GI peristalsis, prolongs intestinal transit time, reduces fluid and electrolyte loss, and mainly has peripheral opioid effects without CNS effects.",
+    "optionExplanations": {
+      "A": "Diphenoxylate has peripheral and CNS opioid effects and is combined with atropine to limit abuse.",
+      "B": "Bismuth is antisecretory, anti-inflammatory, and antibacterial, but it is not the peripheral opioid with minimal CNS effect.",
+      "C": "Correct. Loperamide has peripheral opioid effects only and is commonly used for travel-associated nonspecific diarrhea.",
+      "D": "Lactulose is an osmotic laxative used for constipation and portal-systemic encephalopathy."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A patient with peptic ulcer disease takes calcium carbonate antacids frequently and is prescribed tetracycline for a respiratory infection. Why is tetracycline absorption reduced",
+    "topic": "Antacid drug interactions",
+    "options": {
+      "A": "CYP2C19 inhibition",
+      "B": "Complex formation with metal cations",
+      "C": "Irreversible H+/K+ ATPase inhibition",
+      "D": "D2 receptor antagonism"
+    },
+    "correct": "B",
+    "explanation": "Antacids containing Al3+, Mg2+, or Ca2+ can complex with tetracycline and ciprofloxacin, reducing their bioavailability.",
+    "optionExplanations": {
+      "A": "CYP2C19 inhibition is associated with omeprazole and esomeprazole increasing levels of drugs such as phenytoin, diazepam, and warfarin.",
+      "B": "Correct. Aluminum, magnesium, and calcium antacids bind tetracycline and reduce absorption.",
+      "C": "This is the PPI mechanism, not the reason tetracycline absorption falls with antacids.",
+      "D": "This describes agents such as metoclopramide and prochlorperazine, not antacid interactions."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient with GERD is prescribed omeprazole. Which instruction best matches the pharmacology of this medication",
+    "topic": "Proton pump inhibitors",
+    "options": {
+      "A": "Take it only after diarrhea begins",
+      "B": "Take it with calcium carbonate to improve absorption",
+      "C": "Avoid taking it before meals because food prevents activation",
+      "D": "Take it 30 minutes before meals"
+    },
+    "correct": "D",
+    "explanation": "PPIs are prodrugs activated in parietal cell canaliculi and should be taken about 30 minutes before meals because actively secreting parietal cells are required for maximal effect.",
+    "optionExplanations": {
+      "A": "This describes symptomatic antidiarrheal use, not PPI timing.",
+      "B": "Antacids are separate acid-neutralizing drugs and do not define PPI administration.",
+      "C": "The opposite is true; pre-meal dosing improves PPI activity.",
+      "D": "Correct. PPIs work best before meals because they require active acid-secreting parietal cells."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A patient with chronic warfarin therapy is started on cimetidine for nocturnal acid symptoms. Which mechanism explains why the warfarin level may increase",
+    "topic": "H2 receptor antagonists and CYP interactions",
+    "options": {
+      "A": "Activation of adenylate cyclase",
+      "B": "Reduced gastric mucus production",
+      "C": "CYP450 inhibition",
+      "D": "Increased renal clearance of warfarin"
+    },
+    "correct": "C",
+    "explanation": "Cimetidine inhibits CYP450, decreasing hepatic metabolism of drugs such as warfarin, phenytoin, diazepam, and propranolol.",
+    "optionExplanations": {
+      "A": "H2 receptors are Gs-coupled, but H2 antagonists block this pathway; this does not explain increased warfarin levels.",
+      "B": "Reduced mucus production is an NSAID/prostaglandin issue, not cimetidine’s interaction mechanism.",
+      "C": "Correct. Cimetidine inhibits hepatic CYP450 metabolism and can increase levels of several drugs.",
+      "D": "Cimetidine increases levels by reducing hepatic metabolism, not by increasing clearance."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A patient with peptic ulcer disease is treated with a drug that noncompetitively and irreversibly inhibits the H+/K+ ATPase in parietal cells. Which drug class is being used",
+    "topic": "Acid suppression",
+    "options": {
+      "A": "Proton pump inhibitors",
+      "B": "H2 receptor antagonists",
+      "C": "Antacids",
+      "D": "Bulk-forming laxatives"
+    },
+    "correct": "A",
+    "explanation": "Proton pump inhibitors irreversibly inhibit the parietal cell H+/K+ ATPase and suppress both basal and stimulated acid secretion more strongly than H2 blockers.",
+    "optionExplanations": {
+      "A": "Correct. PPIs irreversibly inhibit H+/K+ ATPase and are the strongest acid-suppressing drugs listed.",
+      "B": "H2 blockers competitively and reversibly block H2 receptors, reducing cAMP-mediated acid secretion.",
+      "C": "Antacids neutralize existing acid and reduce pepsin activity; they do not inhibit the proton pump.",
+      "D": "Bulk-forming laxatives increase stool bulk and moisture and do not suppress gastric acid."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A patient with portal-systemic encephalopathy is treated with a laxative that retains ammonia in the colon and produces an osmotic effect. Which medication is most appropriate",
+    "topic": "Laxatives",
+    "options": {
+      "A": "Psyllium",
+      "B": "Docusate",
+      "C": "Senna",
+      "D": "Lactulose"
+    },
+    "correct": "D",
+    "explanation": "Lactulose is an osmotic laxative that retains ammonia in the colon and is used to prevent and treat portal-systemic encephalopathy.",
+    "optionExplanations": {
+      "A": "Psyllium is a bulk-forming laxative that increases stool bulk and moisture.",
+      "B": "Docusate is a stool softener that lowers surface tension and allows water and fat into stool.",
+      "C": "Senna is a stimulant laxative that directly increases colonic smooth muscle peristalsis.",
+      "D": "Correct. Lactulose traps ammonia in the colon and promotes osmotic bowel evacuation."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A patient with constipation after surgery is told to avoid straining. Which laxative lowers stool surface tension and facilitates penetration of fat and water into stool",
+    "topic": "Stool softeners",
+    "options": {
+      "A": "Senna",
+      "B": "Docusate",
+      "C": "Magnesium citrate",
+      "D": "Bismuth subsalicylate"
+    },
+    "correct": "B",
+    "explanation": "Docusate is a stool softener used short-term for constipation and to prevent straining; it facilitates water and fat penetration into stool.",
+    "optionExplanations": {
+      "A": "Senna is a stimulant laxative that increases peristalsis and may cause abdominal cramping.",
+      "B": "Correct. Docusate is the stool softener described in the GI pharmacology section.",
+      "C": "Magnesium citrate is a saline osmotic cathartic that can cause electrolyte disturbances.",
+      "D": "Bismuth is an antidiarrheal/anti-inflammatory agent, not a stool softener."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient with inflammatory bowel disease is placed on sulfasalazine. Which mechanism best explains the anti-inflammatory effect of this drug class",
+    "topic": "Aminosalicylates",
+    "options": {
+      "A": "Irreversible blockade of H+/K+ ATPase",
+      "B": "Peripheral opioid receptor stimulation",
+      "C": "Inhibition of prostaglandin and leukotriene synthesis",
+      "D": "D2 receptor antagonism"
+    },
+    "correct": "C",
+    "explanation": "Aminosalicylates such as sulfasalazine release 5-aminosalicylic acid in the large intestine and inhibit prostaglandin and leukotriene synthesis.",
+    "optionExplanations": {
+      "A": "This is the mechanism of PPIs.",
+      "B": "This is the mechanism of loperamide-type antidiarrheals.",
+      "C": "Correct. Sulfasalazine releases 5-ASA, which reduces inflammatory mediator synthesis.",
+      "D": "This describes metoclopramide and phenothiazine antiemetics."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient with severe Crohn disease has persistent symptoms despite initial therapy. A biologic is started that antagonizes TNF-alpha and inhibits IL-1 and IL-6 production. Which drug is most consistent with this mechanism",
+    "topic": "Biologic response modifiers in IBD",
+    "options": {
+      "A": "Abciximab",
+      "B": "Ondansetron",
+      "C": "Famotidine",
+      "D": "Infliximab"
+    },
+    "correct": "D",
+    "explanation": "Infliximab is a TNF-alpha antagonist used for severe Crohn disease; the notes emphasize not confusing it with abciximab, an antiplatelet drug.",
+    "optionExplanations": {
+      "A": "Abciximab is an antiplatelet drug, not an IBD biologic response modifier here.",
+      "B": "Ondansetron is a 5-HT3 antiemetic.",
+      "C": "Famotidine is an H2 receptor antagonist used for acid suppression.",
+      "D": "Correct. Infliximab is the TNF-alpha antagonist used in severe Crohn disease."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A patient with peptic ulcer disease and proven H. pylori infection is treated with omeprazole, clarithromycin, and amoxicillin for 14 days. What is the therapeutic goal of this regimen",
+    "topic": "H. pylori eradication therapy",
+    "options": {
+      "A": "Eradicate H. pylori and reduce ulcer recurrence",
+      "B": "Stimulate motilin receptors",
+      "C": "Block serotonin receptors in the CTZ",
+      "D": "Bind bile acids in the intestinal lumen"
+    },
+    "correct": "A",
+    "explanation": "PPI-based triple therapy combines a PPI with clarithromycin and amoxicillin or metronidazole for 7-14 days to eradicate H. pylori, promote healing, and lower recurrence.",
+    "optionExplanations": {
+      "A": "Correct. Triple therapy targets H. pylori and promotes rapid healing with low recurrence.",
+      "B": "Erythromycin stimulates motilin receptors and can be used for gastroparesis, not H. pylori eradication.",
+      "C": "This describes 5-HT3 antagonists for nausea and vomiting.",
+      "D": "This is not the purpose of triple therapy in the uploaded GI pharmacology section."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient with recurrent H. pylori-associated ulcers cannot receive amoxicillin. Which regimen component is an appropriate substitute in PPI-based triple therapy according to the notes",
+    "topic": "H. pylori triple therapy",
+    "options": {
+      "A": "Vancomycin",
+      "B": "Loperamide",
+      "C": "Metronidazole",
+      "D": "Diphenhydramine"
+    },
+    "correct": "C",
+    "explanation": "PPI-based triple therapy uses omeprazole plus clarithromycin plus either amoxicillin or metronidazole.",
+    "optionExplanations": {
+      "A": "Vancomycin is not listed as an appropriate H. pylori regimen component in the section.",
+      "B": "Loperamide treats diarrhea by slowing peristalsis and does not eradicate H. pylori.",
+      "C": "Correct. Metronidazole can substitute for amoxicillin in PPI-based triple therapy.",
+      "D": "Diphenhydramine is an H1 antihistamine used for motion sickness."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A patient with peptic ulcer disease is treated with bismuth subsalicylate. Which additional effect makes this drug useful in H. pylori-associated disease",
+    "topic": "Cytoprotective agents",
+    "options": {
+      "A": "Selective D2 receptor blockade",
+      "B": "Bactericidal activity against H. pylori",
+      "C": "Direct beta-lactamase inhibition",
+      "D": "Irreversible CYP2C19 inhibition"
+    },
+    "correct": "B",
+    "explanation": "Bismuth subsalicylate coats the ulcer base, passively protects against acid and pepsin, reduces inflammation, and is bactericidal against H. pylori.",
+    "optionExplanations": {
+      "A": "This describes metoclopramide or phenothiazines, not bismuth.",
+      "B": "Correct. Bismuth has mucosal protective effects and activity against H. pylori.",
+      "C": "This is not the mechanism of bismuth subsalicylate.",
+      "D": "Omeprazole and esomeprazole inhibit CYP2C19, but this is not bismuth’s ulcer-protective role."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A patient with IBS has chronic lower abdominal pain and disturbed defecation without structural or biochemical abnormalities. Which medication class may reduce visceral hypersensitivity through neurotransmitter reuptake modulation",
+    "topic": "Irritable bowel syndrome pharmacology",
+    "options": {
+      "A": "Bulk-forming laxatives only",
+      "B": "Bismuth quadruple therapy",
+      "C": "H2 receptor antagonists only",
+      "D": "Antidepressants such as TCAs or SSRIs"
+    },
+    "correct": "D",
+    "explanation": "The IBS section lists TCAs and SSRIs for pain modulation and reduced visceral hypersensitivity through neurotransmitter reuptake modulation.",
+    "optionExplanations": {
+      "A": "Bulk-forming laxatives may help stool consistency but do not describe the listed visceral hypersensitivity mechanism.",
+      "B": "Bismuth quadruple therapy is for H. pylori eradication, not IBS visceral pain.",
+      "C": "H2 blockers suppress acid secretion and are not the IBS pain-modulating class.",
+      "D": "Correct. TCAs and SSRIs can reduce visceral hypersensitivity and modulate pain in IBS."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient develops serotonin syndrome while being treated with an SSRI for IBS-related visceral hypersensitivity. Which antidote is listed in the notes",
+    "topic": "IBS antidepressant adverse effects",
+    "options": {
+      "A": "Cyproheptadine",
+      "B": "Naloxone",
+      "C": "Leucovorin",
+      "D": "Protamine"
+    },
+    "correct": "A",
+    "explanation": "The IBS pharmacology notes list serotonin syndrome as an SSRI adverse effect and cyproheptadine as the treatment association.",
+    "optionExplanations": {
+      "A": "Correct. Cyproheptadine is the listed serotonin syndrome treatment association.",
+      "B": "Naloxone reverses opioid toxicity and is not listed for serotonin syndrome here.",
+      "C": "Leucovorin rescues cells from methotrexate toxicity and is unrelated to IBS pharmacology.",
+      "D": "Protamine reverses heparin and is unrelated to serotonin syndrome."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A patient with motion sickness asks for prevention before a boat trip. Which medication class from the GI pharmacology section is most appropriate",
+    "topic": "Motion sickness prevention",
+    "options": {
+      "A": "5-HT3 receptor inhibitors",
+      "B": "H1 antihistamines or anticholinergics",
+      "C": "Aminosalicylates",
+      "D": "TNF-alpha antagonists"
+    },
+    "correct": "B",
+    "explanation": "H1 antihistamines such as diphenhydramine or meclizine and anticholinergics such as scopolamine are used for motion sickness prevention.",
+    "optionExplanations": {
+      "A": "These are first-line for chemotherapy- or radiation-induced emesis, not classic motion sickness prevention.",
+      "B": "Correct. Diphenhydramine, meclizine, and scopolamine are listed for motion sickness prevention.",
+      "C": "These are anti-inflammatory drugs for IBD.",
+      "D": "These are biologic therapies for severe Crohn disease."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A patient takes a high dose of a motion-sickness medication and develops dry mouth, urinary retention, confusion, and dizziness. Which receptor effect best explains these findings",
+    "topic": "Anticholinergic adverse effects",
+    "options": {
+      "A": "Beta-2 receptor stimulation",
+      "B": "H2 receptor blockade",
+      "C": "Muscarinic receptor blockade",
+      "D": "TNF-alpha antagonism"
+    },
+    "correct": "C",
+    "explanation": "H1 antihistamines and anticholinergics used for motion sickness can block muscarinic receptors, causing dry mouth, urinary retention, confusion, dizziness, and sedation.",
+    "optionExplanations": {
+      "A": "Beta-2 stimulation is not the listed mechanism of motion-sickness drug adverse effects.",
+      "B": "H2 blockade reduces gastric acid secretion and does not cause this anticholinergic toxidrome.",
+      "C": "Correct. Antimuscarinic effects explain dry mouth, urinary retention, and confusion.",
+      "D": "TNF-alpha antagonism is used for IBD biologic therapy, not motion sickness."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A patient receiving prednisone for an inflammatory bowel disease flare asks why it will not be used long term. Which adverse effect/management issue is emphasized in the GI pharmacology notes",
+    "topic": "Corticosteroids in IBD",
+    "options": {
+      "A": "Immediate H. pylori eradication failure",
+      "B": "Permanent CYP450 induction",
+      "C": "Direct lithium battery perforation",
+      "D": "Osteoporosis risk and need for tapering"
+    },
+    "correct": "D",
+    "explanation": "Corticosteroids rapidly improve active IBD symptoms but are used short term; the notes emphasize osteoporosis risk and the need for tapering.",
+    "optionExplanations": {
+      "A": "Steroids are not H. pylori eradication drugs.",
+      "B": "This is not the key steroid limitation emphasized in this GI pharmacology section.",
+      "C": "This belongs to esophageal foreign body management, not IBD steroid toxicity.",
+      "D": "Correct. Steroids are useful short term for flares but carry osteoporosis risk and require tapering."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A patient with IBD is maintained on azathioprine. The clinician is cautious when another physician proposes allopurinol. Why",
+    "topic": "IBD immunosuppressants",
+    "options": {
+      "A": "Allopurinol irreversibly blocks proton pumps",
+      "B": "Allopurinol inhibits azathioprine and 6-mercaptopurine metabolism",
+      "C": "Allopurinol causes serotonin syndrome with SSRIs",
+      "D": "Allopurinol chelates tetracyclines"
+    },
+    "correct": "B",
+    "explanation": "The notes emphasize that allopurinol inhibits the metabolism of azathioprine and 6-mercaptopurine, increasing toxicity risk.",
+    "optionExplanations": {
+      "A": "PPIs irreversibly block proton pumps; allopurinol does not.",
+      "B": "Correct. This interaction can increase thiopurine toxicity.",
+      "C": "This is not the listed interaction; serotonin syndrome is tied to serotonergic agents.",
+      "D": "Antacids with metal cations reduce tetracycline absorption, not allopurinol."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A patient with Zollinger-Ellison syndrome has gastric acid hypersecretion due to a gastrin-secreting tumor. Which drug class is listed as drug of choice for acid control",
+    "topic": "Zollinger-Ellison syndrome",
+    "options": {
+      "A": "Proton pump inhibitors",
+      "B": "Opioid antidiarrheals",
+      "C": "5-HT3 antagonists",
+      "D": "Bulk-forming laxatives"
+    },
+    "correct": "A",
+    "explanation": "PPIs are listed as the drugs of choice for Zollinger-Ellison syndrome, with omeprazole dosing and gradual dose reduction discussed.",
+    "optionExplanations": {
+      "A": "Correct. PPIs provide strong acid suppression and are the listed drugs of choice in ZES.",
+      "B": "These reduce peristalsis and do not control gastrin-driven acid hypersecretion.",
+      "C": "These prevent nausea/vomiting, especially chemotherapy-induced emesis.",
+      "D": "These increase stool bulk and moisture and do not suppress acid."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient with mild GERD has heartburn and regurgitation. Which sequence best represents escalation of pharmacologic management listed in the notes",
+    "topic": "GERD management",
+    "options": {
+      "A": "Immediate infliximab, then prednisone, then colectomy",
+      "B": "Lactulose, senna, docusate, then bismuth",
+      "C": "Lifestyle modification, antacids, H2 receptor antagonists, then PPIs",
+      "D": "Only antibiotics because GERD is always infectious"
+    },
+    "correct": "C",
+    "explanation": "GERD management includes lifestyle modification, antacids, H2 receptor antagonists, and proton pump inhibitors; chronic erosive disease may progress to Barrett esophagus and require high-dose PPI.",
+    "optionExplanations": {
+      "A": "This is more aligned with severe IBD management, not GERD.",
+      "B": "These are bowel agents and do not represent standard GERD escalation.",
+      "C": "Correct. This matches the GERD management options listed in the section.",
+      "D": "GERD is reflux of gastric contents, not an infectious disease."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A patient taking sodium bicarbonate repeatedly for dyspepsia develops metabolic alkalosis. Which antacid adverse effect is being tested",
+    "topic": "Antacids",
+    "options": {
+      "A": "Extrapyramidal symptoms",
+      "B": "Fixed dilated pupils with descending paralysis",
+      "C": "Pseudomembranous colitis",
+      "D": "Systemic alkalosis"
+    },
+    "correct": "D",
+    "explanation": "Sodium bicarbonate antacids can cause systemic alkalosis; antacids can also alter gastric pH and interfere with drug absorption.",
+    "optionExplanations": {
+      "A": "These are associated with D2 antagonists such as metoclopramide.",
+      "B": "This describes botulinum toxin food poisoning, not antacids.",
+      "C": "This is associated with C. difficile, not sodium bicarbonate antacid toxicity.",
+      "D": "Correct. Sodium bicarbonate antacids can produce systemic alkalosis."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A patient taking lansoprazole has lower plasma levels of ketoconazole. Which explanation is best",
+    "topic": "PPI and weak acid absorption",
+    "options": {
+      "A": "Reduced gastric acidity impairs absorption of a weak acid",
+      "B": "CYP450 induction increases ketoconazole metabolism",
+      "C": "Direct binding of ketoconazole by serotonin receptors",
+      "D": "Increased gastric acidity destroys ketoconazole"
+    },
+    "correct": "A",
+    "explanation": "Ketoconazole is listed as a weak acid best absorbed in an acidic environment; acid suppression by a PPI can reduce its absorption.",
+    "optionExplanations": {
+      "A": "Correct. Weak acids such as ketoconazole are best absorbed in an acidic environment, so PPIs can lower absorption.",
+      "B": "The example hinges on reduced gastric acidity, not enzyme induction.",
+      "C": "Serotonin receptors are relevant to antiemetics, not ketoconazole absorption.",
+      "D": "Lansoprazole reduces, not increases, gastric acidity."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A student is reviewing GI drug absorption. Which pair is listed as weak bases best absorbed in the more basic distal small intestine",
+    "topic": "Weak acids and weak bases",
+    "options": {
+      "A": "Aspirin and ketoconazole",
+      "B": "Isoniazid and digoxin",
+      "C": "Morphine and lidocaine",
+      "D": "Ketoconazole and isoniazid"
+    },
+    "correct": "C",
+    "explanation": "The uploaded notes list weak bases such as morphine, quinidine, and lidocaine as best absorbed in the basic distal small intestine.",
+    "optionExplanations": {
+      "A": "These are listed weak acids best absorbed in acidic environments.",
+      "B": "These are listed weak acids, not weak bases.",
+      "C": "Correct. Both are listed weak bases best absorbed in a basic distal small intestinal environment.",
+      "D": "Both are weak acids in the notes."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A patient with constipation takes psyllium but drinks very little water. Which complication is most consistent with this medication class",
+    "topic": "Bulk-forming laxatives",
+    "options": {
+      "A": "CYP2C19 inhibition",
+      "B": "Esophageal or bowel obstruction",
+      "C": "Portal pressure reduction",
+      "D": "Adenylate cyclase activation"
+    },
+    "correct": "B",
+    "explanation": "Psyllium is a bulk-forming laxative that increases stool bulk and moisture; if taken with insufficient liquid, it can cause esophageal or bowel obstruction.",
+    "optionExplanations": {
+      "A": "This is associated with omeprazole and esomeprazole.",
+      "B": "Correct. Bulk-forming agents can obstruct if not taken with enough fluid.",
+      "C": "This is associated with octreotide in variceal bleeding, not psyllium.",
+      "D": "This appears in bacterial toxin mechanisms, not psyllium laxative use."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A patient with suspected small bowel obstruction has nausea and vomiting. Which antiemetic/prokinetic is contraindicated according to the notes",
+    "topic": "Metoclopramide contraindication",
+    "options": {
+      "A": "Ondansetron",
+      "B": "Diphenhydramine",
+      "C": "Scopolamine",
+      "D": "Metoclopramide"
+    },
+    "correct": "D",
+    "explanation": "Metoclopramide is contraindicated in small bowel obstruction because its prokinetic effect can worsen obstructive pathology.",
+    "optionExplanations": {
+      "A": "Ondansetron is a 5-HT3 blocker used for chemotherapy-induced and other nausea/vomiting.",
+      "B": "Diphenhydramine is an H1 antihistamine useful for motion sickness.",
+      "C": "Scopolamine is antimuscarinic and used for motion sickness prevention.",
+      "D": "Correct. Metoclopramide is a prokinetic and is contraindicated in SBO."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient with peptic ulcer disease is treated with famotidine. Which signaling pathway is directly reduced in parietal cells",
+    "topic": "H2 receptor antagonists",
+    "options": {
+      "A": "Intracellular calcium release through RyR1",
+      "B": "Nuclear RAR-alpha signaling",
+      "C": "cAMP signaling downstream of H2 receptors",
+      "D": "TGF-beta fibroblast activation"
+    },
+    "correct": "C",
+    "explanation": "Histamine H2 receptors are Gs-coupled; H2 antagonists competitively and reversibly block H2 receptors, decreasing cAMP and acid secretion.",
+    "optionExplanations": {
+      "A": "RyR1 calcium release is not the acid-suppression mechanism of H2 blockers.",
+      "B": "This is relevant to acute promyelocytic leukemia treatment, not famotidine.",
+      "C": "Correct. H2 is Gs-coupled; blockade decreases cAMP and acid secretion.",
+      "D": "This is unrelated to H2 receptor antagonist pharmacology."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A patient with diarrhea for 3 days cannot sleep because of frequent stools. The physician considers diphenoxylate. Why is atropine included in the combination product",
+    "topic": "Diphenoxylate with atropine",
+    "options": {
+      "A": "To eradicate H. pylori",
+      "B": "To add antimuscarinic effects and limit abuse",
+      "C": "To irreversibly inhibit H+/K+ ATPase",
+      "D": "To prevent serotonin syndrome"
+    },
+    "correct": "B",
+    "explanation": "Diphenoxylate is an opioid antidiarrheal with peripheral and CNS opioid effects and is combined with atropine, an antimuscarinic.",
+    "optionExplanations": {
+      "A": "H. pylori eradication uses PPI-based or bismuth-based antibiotic regimens.",
+      "B": "Correct. Diphenoxylate is combined with atropine, which adds antimuscarinic effects and discourages excessive use.",
+      "C": "That is the mechanism of PPIs.",
+      "D": "Cyproheptadine is the listed serotonin syndrome treatment association."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A patient with IBD needs a drug class to maintain remission and reduce corticosteroid dependence, but the clinician warns that onset is slow. Which class best fits",
+    "topic": "IBD immunosuppressants",
+    "options": {
+      "A": "Immunosuppressive antimetabolites such as azathioprine or 6-mercaptopurine",
+      "B": "5-HT3 receptor blockers such as ondansetron",
+      "C": "Antacids such as calcium carbonate",
+      "D": "H1 antihistamines such as diphenhydramine"
+    },
+    "correct": "A",
+    "explanation": "IBD immunosuppressants such as azathioprine, 6-mercaptopurine, methotrexate, and cyclosporine reduce GI inflammation, maintain remission, and reduce steroid dependence, but have a slow onset.",
+    "optionExplanations": {
+      "A": "Correct. These maintain remission and reduce steroid dependence, with slow onset.",
+      "B": "These are antiemetics, not remission-maintenance IBD drugs.",
+      "C": "Antacids relieve acid-related symptoms but do not maintain IBD remission.",
+      "D": "These are used for motion sickness and do not maintain IBD remission."
+    }
+  }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionMeta = document.getElementById("questionMeta");
+    const topicMeta = document.getElementById("topicMeta");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "segment" + (answers[q.id] ? " answered" : "") + (idx === currentIndex ? " active" : "");
+        btn.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(btn);
+      });
+    }
+
+    function scoreCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([id, choice]) => {
+        const q = questions.find(item => item.id === Number(id));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionMeta.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = q.stem.endsWith("?") ? q.stem : q.stem + "?";
+
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        if (showExplanation && letter === q.correct) btn.classList.add("correct");
+        if (showExplanation && letter === selected && letter !== q.correct) btn.classList.add("incorrect");
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(btn);
+      });
+
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        const optionExplanations = Object.entries(q.optionExplanations || {})
+          .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+          .join("");
+        explanationEl.style.display = "block";
+        explanationEl.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "correct-text" : "incorrect-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div>
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExplanations}
+          </div>
+        `;
+      } else {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+      }
+    }
+
+    function render() {
+      renderSegments();
+      scoreCounts();
+      renderQuestion();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === 0 ? questions.length - 1 : currentIndex - 1;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === questions.length - 1 ? 0 : currentIndex + 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.keys(answers).forEach(key => delete answers[key]);
+      currentIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

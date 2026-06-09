@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biliary Tract Disorders Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .progress {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+    }
+    .seg {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      flex: 1;
+      min-width: 4px;
+      background: #334155;
+      cursor: pointer;
+    }
+    .seg.answered { background: var(--blue); }
+    .seg.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127,29,29,.6); color: #fee2e2; }
+    .pill.green { background: rgba(6,78,59,.6); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 28px rgba(15,23,42,.18);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 16px;
+    }
+    .options { display: flex; flex-direction: column; gap: 9px; }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #eef2f7; }
+    .option.correct { background: var(--green-bg); border-color: var(--green-border); }
+    .option.wrong { background: var(--red-bg); border-color: var(--red-border); }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 7px 0; }
+    .correct-text { color: var(--green-text); }
+    .wrong-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+    .nav button {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .nav button:hover { background: #f1f5f9; }
+    .footer { color: #94a3b8; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="progress" id="progress"></div>
+      <div class="status">
+        <span id="counter"></span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="meta">
+        <span id="questionNum"></span>
+        <span id="topic"></span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="prevQuestion()">Previous</button>
+        <button onclick="nextQuestion()">Next</button>
+      </div>
+    </div>
+    <div class="footer">Biliary Tract Disorders Quiz</div>
+  </div>
+<script>
+const questions = [{"id": 1, "stem": "A newborn develops persistent jaundice at 5 weeks of age. Workup shows scarring and blockage of the extrahepatic biliary tree with inflammation and destruction of major intrahepatic ducts. Which diagnosis best explains these findings", "topic": "Biliary atresia", "options": {"A": "Choledochal cyst", "B": "Caroli disease", "C": "Biliary atresia", "D": "Von Meyenburg complexes"}, "correct": "C", "explanation": "Biliary atresia is a rare infant disorder with scarring and obstruction of bile ducts that presents with jaundice 2–8 weeks after birth and can progress to cirrhosis.", "optionExplanations": {"A": "Choledochal cysts are congenital cystic dilations of bile ducts and classically present with abdominal pain, jaundice, and a palpable RUQ mass.", "B": "Caroli disease is dilation of larger intrahepatic ducts with portal tract fibrosis.", "C": "Correct. The age, persistent jaundice, and destructive obstructive biliary process fit biliary atresia.", "D": "Von Meyenburg complexes are small bile duct hamartomas near portal tracts and are usually clinically insignificant."}}, {"id": 2, "stem": "A 6-month-old girl has intermittent jaundice, abdominal pain, and a palpable right upper quadrant mass. Imaging shows a solitary fusiform dilation of the common bile duct with fibrous wall thickening. Which congenital disorder is most likely", "topic": "Choledochal cyst", "options": {"A": "Biliary atresia", "B": "Phrygian cap", "C": "Von Meyenburg complex", "D": "Choledochal cyst"}, "correct": "D", "explanation": "Choledochal cysts are congenital cystic dilations of the intrahepatic or extrahepatic bile ducts. Type 1, a solitary fusiform dilation of the common bile duct, is the most common type and may present with abdominal pain, jaundice, and a palpable RUQ mass.", "optionExplanations": {"A": "Biliary atresia causes obstructed/scarred ducts and early infant jaundice rather than a fusiform CBD dilation.", "B": "A Phrygian cap is a fold between the gallbladder body and fundus.", "C": "Von Meyenburg complexes are small clusters of dilated bile ducts near portal tracts.", "D": "Correct. The triad and fusiform common bile duct dilation identify a choledochal cyst."}}, {"id": 3, "stem": "A patient with recurrent cholangitis and portal hypertension is found to have segmental dilation of the larger intrahepatic biliary ducts with portal tract fibrosis. This condition also increases the risk of which malignancy", "topic": "Caroli disease", "options": {"A": "Cholangiocarcinoma", "B": "Hepatoblastoma", "C": "Diffuse gastric cancer", "D": "Esophageal squamous cell carcinoma"}, "correct": "A", "explanation": "Caroli disease involves dilation of larger intrahepatic bile ducts with portal tract fibrosis. Complications include gallstones, cholangitis, hepatic abscess, portal hypertension, and increased risk of cholangiocarcinoma.", "optionExplanations": {"A": "Correct. Caroli disease is specifically associated with increased cholangiocarcinoma risk.", "B": "Hepatoblastoma is not the biliary tract cancer emphasized in this section.", "C": "Diffuse gastric cancer is linked to CDH1 loss and signet-ring cells, not Caroli disease.", "D": "Esophageal SCC is linked to alcohol, tobacco, caustic injury, and achalasia rather than intrahepatic duct dilation."}}, {"id": 4, "stem": "A liver biopsy done for unrelated reasons shows multiple tiny clusters of dilated bile ducts near portal tracts. The pathologist notes these are bile duct hamartomas that must be distinguished from metastases. Which lesion is being described", "topic": "Von Meyenburg complexes", "options": {"A": "Caroli disease", "B": "Von Meyenburg complexes", "C": "Gallbladder carcinoma", "D": "Choledocholithiasis"}, "correct": "B", "explanation": "Von Meyenburg complexes are small clusters of dilated bile ducts near portal tracts, also called bile duct hamartomas. They are usually insignificant but can mimic liver metastases.", "optionExplanations": {"A": "Caroli disease involves larger intrahepatic duct dilation and portal tract fibrosis.", "B": "Correct. Small dilated bile duct clusters near portal tracts are Von Meyenburg complexes.", "C": "Gallbladder carcinoma is an adenocarcinoma of the gallbladder, not small portal tract hamartomas.", "D": "Choledocholithiasis means stones in the bile ducts."}}, {"id": 5, "stem": "A 44-year-old woman with obesity and multiple pregnancies has episodic right upper quadrant pain after fatty meals. Which risk factor cluster is classically associated with her most likely hepatobiliary disease", "topic": "Cholelithiasis risk factors", "options": {"A": "Thin, male, young, febrile, fasting", "B": "Asian ancestry, childhood infection, viral prodrome, male sex", "C": "Low cholesterol, alcohol abstinence, low estrogen state", "D": "Fair, fat, female, forty, fertile"}, "correct": "D", "explanation": "Cholelithiasis is the most common disease of the hepatobiliary system and classically fits the 5 F's: fair, fat, female, forty, and fertile. Other risks include advancing age, obesity, rapid weight loss, stasis, hyperlipidemia, infection, chronic hemolysis, liver/pancreatic disease, and estrogens.", "optionExplanations": {"A": "This reverses several classic gallstone risk features.", "B": "This does not describe the classic gallstone risk profile from the section.", "C": "High cholesterol/obesity and estrogen exposure are more relevant risk factors.", "D": "Correct. The 5 F's are the classic teaching for gallstones."}}, {"id": 6, "stem": "A patient with sickle cell disease develops gallstones composed mostly of bilirubin with increased calcium and low cholesterol. Which stone type is most likely", "topic": "Pigment gallstones", "options": {"A": "Mixed stones", "B": "Pure cholesterol stones", "C": "Pigment stones", "D": "Porcelain stones"}, "correct": "C", "explanation": "Pigment stones are associated with chronic hemolytic diseases and are mostly bilirubin, with increased calcium and low cholesterol.", "optionExplanations": {"A": "Mixed stones are the most common type overall but contain varied cholesterol and pigment components.", "B": "Cholesterol stones are primarily cholesterol and are not specifically tied to hemolysis.", "C": "Correct. Hemolysis drives bilirubin supersaturation and pigment stone formation.", "D": "Porcelain gallbladder refers to diffuse gallbladder wall calcification, not a stone subtype."}}, {"id": 7, "stem": "A patient asks how gallstones form. Which sequence best summarizes the formation process described in the biliary tract section", "topic": "Gallstone formation", "options": {"A": "Inflammation, fistula formation, perforation", "B": "Saturation, crystallization, growth", "C": "Dysplasia, carcinoma in situ, invasion", "D": "Atresia, proliferation, cirrhosis"}, "correct": "B", "explanation": "Gallstone formation involves saturation, crystallization, and growth. It reflects an impaired relationship among cholesterol, phospholipids, and bile acids, with micelles, vesicles, and crystals involved.", "optionExplanations": {"A": "These are possible complications of gallstones or inflammation, not the formation sequence.", "B": "Correct. Saturation → crystallization → growth is the described sequence.", "C": "This is a neoplasia progression pattern, not gallstone formation.", "D": "This fits biliary atresia progression more than cholelithiasis formation."}}, {"id": 8, "stem": "A patient has stones lodged in the bile ducts of the biliary tree. The stones are pigmented and likely migrated from the gallbladder. Which diagnosis is most accurate", "topic": "Choledocholithiasis", "options": {"A": "Choledocholithiasis", "B": "Cholesterolosis", "C": "Chronic cholecystitis", "D": "Phrygian cap"}, "correct": "A", "explanation": "Choledocholithiasis refers to stones in the bile ducts of the biliary tree. These stones are usually pigmented and often come from the gallbladder, though de novo stones can occur.", "optionExplanations": {"A": "Correct. Stones in the biliary ducts are choledocholithiasis.", "B": "Cholesterolosis is cholesterol deposition in gallbladder mucosa, producing a strawberry gallbladder appearance.", "C": "Chronic cholecystitis is repeated gallbladder inflammation with wall thickening and fibrosis.", "D": "A Phrygian cap is a gallbladder shape anomaly."}}, {"id": 9, "stem": "A woman presents with acute right upper quadrant pain. Surgery shows a distended, edematous, hemorrhagic gallbladder with turbid bile. Histology shows mucosal erosion, neutrophil infiltration, and fibrin deposition. Which pathogenesis most likely caused this condition", "topic": "Acute calculous cholecystitis", "options": {"A": "Portal hypertension causing submucosal venous dilation", "B": "TP53 mutation preceding dysplasia", "C": "Complete cystic duct obstruction by a stone", "D": "Cystic dilation of the common bile duct"}, "correct": "C", "explanation": "Acute calculous cholecystitis accounts for about 90% of acute cholecystitis and results from complete cystic duct obstruction by a stone, leading to mucosal ischemia and necrosis.", "optionExplanations": {"A": "Portal hypertension is relevant to varices, not acute cholecystitis.", "B": "TP53 mutation is discussed in gallbladder carcinoma progression.", "C": "Correct. Cystic duct obstruction by a stone explains acute calculous cholecystitis.", "D": "A cystic dilation of the common bile duct describes a choledochal cyst."}}, {"id": 10, "stem": "A critically ill patient with sepsis and diabetes develops acute gallbladder inflammation without stones. Which category best describes this process", "topic": "Acalculous cholecystitis", "options": {"A": "Chronic cholecystitis", "B": "Choledochal cyst", "C": "Cholangiocarcinoma", "D": "Acalculous cholecystitis"}, "correct": "D", "explanation": "Acalculous cholecystitis accounts for about 10% of acute cholecystitis and occurs without stones, often related to biliary stasis, sepsis, salmonella, or diabetes.", "optionExplanations": {"A": "Chronic cholecystitis results from repeated mild attacks and causes wall thickening and fibrosis.", "B": "Choledochal cyst is congenital bile duct dilation.", "C": "Cholangiocarcinoma is bile duct adenocarcinoma, not acute inflammation without stones.", "D": "Correct. Sepsis/diabetes with acute gallbladder inflammation without stones is acalculous cholecystitis."}}, {"id": 11, "stem": "A patient with repeated mild attacks of gallbladder inflammation undergoes cholecystectomy. The gallbladder is shrunken with a thick fibrotic wall and serosal scarring. Which histologic finding is expected", "topic": "Chronic cholecystitis", "options": {"A": "Chronic inflammatory infiltrates with wall fibrosis", "B": "Back-to-back glands invading stroma", "C": "Owl-eye intranuclear inclusions", "D": "Signet-ring cells"}, "correct": "A", "explanation": "Chronic cholecystitis results from repeated mild acute cholecystitis. Grossly there is a thick wall with serosal scarring; microscopically there are chronic inflammatory infiltrates, especially lymphocytes/plasma cells, and wall fibrosis.", "optionExplanations": {"A": "Correct. Chronic inflammation and fibrosis are expected in chronic cholecystitis.", "B": "Back-to-back invasive glands would suggest adenocarcinoma rather than simple chronic inflammation.", "C": "Owl-eye inclusions are seen in CMV infection.", "D": "Signet-ring cells are associated with diffuse-type gastric adenocarcinoma."}}, {"id": 12, "stem": "A calcified gallbladder is incidentally noted after years of chronic inflammation. Which term describes this diffuse gallbladder wall calcification", "topic": "Porcelain gallbladder", "options": {"A": "Strawberry gallbladder", "B": "Klatskin tumor", "C": "Phrygian cap", "D": "Porcelain gallbladder"}, "correct": "D", "explanation": "Chronic cholecystitis can occasionally show diffuse gallbladder wall calcification known as porcelain gallbladder.", "optionExplanations": {"A": "Strawberry gallbladder refers to cholesterolosis with yellow cholesterol specks on red inflamed mucosa.", "B": "Klatskin tumor is an extrahepatic cholangiocarcinoma at the junction of the right and left hepatic ducts.", "C": "Phrygian cap is a fold between the gallbladder body and fundus.", "D": "Correct. Diffuse calcification of the chronically inflamed gallbladder wall is porcelain gallbladder."}}, {"id": 13, "stem": "A patient with an obstructed bile duct develops fever, jaundice, and right upper quadrant abdominal pain. Blood cultures grow gram-negative aerobes. Which diagnosis best fits this Charcot triad presentation", "topic": "Ascending cholangitis", "options": {"A": "Cholesterolosis", "B": "Acute cholangitis", "C": "Gallbladder agenesis", "D": "Von Meyenburg complex"}, "correct": "B", "explanation": "Cholangitis is infection of obstructed bile ducts. Ascending cholangitis occurs when gut bacteria, usually gram-negative aerobes such as E. coli or Klebsiella, enter through the sphincter of Oddi. Charcot triad is jaundice, fever, and abdominal pain.", "optionExplanations": {"A": "Cholesterolosis is usually asymptomatic cholesterol deposition in the gallbladder mucosa.", "B": "Correct. Fever, jaundice, RUQ pain, and gram-negative bacteria indicate ascending cholangitis.", "C": "Gallbladder agenesis is congenital absence of the gallbladder and does not cause Charcot triad.", "D": "Von Meyenburg complexes are bile duct hamartomas, not acute infection."}}, {"id": 14, "stem": "A gallbladder removed incidentally has red inflamed mucosa with many yellow specks from cholesterol deposition. The patient had high blood cholesterol and obesity but no significant symptoms. Which diagnosis is most likely", "topic": "Cholesterolosis", "options": {"A": "Porcelain gallbladder", "B": "Acute calculous cholecystitis", "C": "Cholesterolosis", "D": "Gallbladder carcinoma"}, "correct": "C", "explanation": "Cholesterolosis is associated with high blood cholesterol, obesity, and alcohol use. It produces a strawberry gallbladder appearance with yellow specks of cholesterol deposits in red inflamed mucosa and is usually innocuous/asymptomatic.", "optionExplanations": {"A": "Porcelain gallbladder is diffuse wall calcification.", "B": "Acute calculous cholecystitis would show acute inflammation due to cystic duct obstruction by a stone.", "C": "Correct. Yellow cholesterol specks in red mucosa describe strawberry gallbladder/cholesterolosis.", "D": "Gallbladder carcinoma is an adenocarcinoma that presents late and has poor prognosis."}}, {"id": 15, "stem": "A 66-year-old woman with obesity, gallstones, primary sclerosing cholangitis, and inflammatory bowel disease is diagnosed with the most common tumor of the biliary tract. Which histologic type is expected", "topic": "Gallbladder carcinoma", "options": {"A": "Squamous cell carcinoma", "B": "Neuroendocrine tumor", "C": "Hepatoblastoma", "D": "Adenocarcinoma"}, "correct": "D", "explanation": "Gallbladder carcinoma is the most common tumor of the biliary tract and is usually adenocarcinoma. Predisposing factors include obesity, gallstones, primary sclerosing cholangitis, and inflammatory bowel disease.", "optionExplanations": {"A": "Squamous carcinoma is not the biliary tumor type emphasized here.", "B": "Neuroendocrine tumor is not the typical histology of gallbladder carcinoma in this section.", "C": "Hepatoblastoma is a liver tumor, not the typical gallbladder cancer.", "D": "Correct. Gallbladder carcinoma is typically adenocarcinoma."}}, {"id": 16, "stem": "A gallbladder tumor is found to have molecular changes driven by chronic inflammation from stones. Which mutation is described as often preceding dysplasia in gallbladder carcinoma", "topic": "Gallbladder carcinoma molecular pathology", "options": {"A": "TP53 mutation", "B": "BCR-ABL fusion", "C": "PML-RARA fusion", "D": "SMN1 deletion"}, "correct": "A", "explanation": "Gallbladder carcinoma is driven by chronic inflammation, often from stones. TP53 mutations often precede dysplasia, and KRAS mutations are also described.", "optionExplanations": {"A": "Correct. TP53 mutation is highlighted as often preceding dysplasia in gallbladder carcinoma.", "B": "BCR-ABL is associated with chronic myeloid leukemia, not gallbladder carcinoma.", "C": "PML-RARA is associated with acute promyelocytic leukemia.", "D": "SMN1 deletion is associated with spinal muscular atrophy and is unrelated here."}}, {"id": 17, "stem": "A gallbladder adenocarcinoma is described as arising in the most common location for this malignancy. Where is the tumor most likely located", "topic": "Gallbladder carcinoma location", "options": {"A": "Neck of gallbladder", "B": "Fundus of gallbladder", "C": "Common hepatic duct bifurcation", "D": "Ampulla of Vater"}, "correct": "B", "explanation": "Gallbladder carcinoma may be infiltrating or exophytic and is located in the fundus in about 60% of cases, body in 30%, and neck in 10%.", "optionExplanations": {"A": "The neck is involved in a minority of gallbladder carcinoma cases in the section.", "B": "Correct. Fundus is the most common location listed for gallbladder carcinoma.", "C": "The common hepatic duct bifurcation is the site of a Klatskin tumor, a type of cholangiocarcinoma.", "D": "The ampulla of Vater is not listed as the most common gallbladder carcinoma location."}}, {"id": 18, "stem": "A patient from Cambodia with a history of liver fluke exposure develops a bile duct adenocarcinoma with marked desmoplasia. Which malignancy is most likely", "topic": "Cholangiocarcinoma risk factors", "options": {"A": "Gallbladder carcinoma", "B": "Hepatocellular adenoma", "C": "Cholangiocarcinoma", "D": "Gastric MALT lymphoma"}, "correct": "C", "explanation": "Cholangiocarcinoma arises from epithelial cells of intrahepatic or extrahepatic bile ducts. It is common in regions such as Cambodia/Laos and is associated with liver fluke infection; pathology shows adenocarcinoma with marked desmoplasia.", "optionExplanations": {"A": "Gallbladder carcinoma arises in the gallbladder and is linked strongly to stones and chronic inflammation.", "B": "Hepatocellular adenoma is not a bile duct epithelial carcinoma.", "C": "Correct. Liver fluke exposure plus bile duct adenocarcinoma with desmoplasia points to cholangiocarcinoma.", "D": "Gastric MALT lymphoma is an H. pylori-associated B-cell lymphoma of the stomach."}}, {"id": 19, "stem": "A slowly growing extrahepatic bile duct cancer occurs at the junction of the right and left hepatic ducts. Which name is used for this tumor", "topic": "Klatskin tumor", "options": {"A": "Caroli tumor", "B": "Porcelain tumor", "C": "Krukenberg tumor", "D": "Klatskin tumor"}, "correct": "D", "explanation": "Extrahepatic cholangiocarcinomas account for most bile duct cancers. A Klatskin tumor occurs at the junction of the right and left hepatic ducts and is described as slow growing.", "optionExplanations": {"A": "Caroli disease is a congenital intrahepatic duct dilation disorder, not the tumor name.", "B": "Porcelain refers to gallbladder wall calcification.", "C": "Krukenberg tumor refers to ovarian metastasis from gastric cancer, not bile duct cancer.", "D": "Correct. A tumor at the right-left hepatic duct junction is a Klatskin tumor."}}, {"id": 20, "stem": "A patient in the United States with primary sclerosing cholangitis and cystic biliary disease develops a bile duct cancer. Which additional factor listed in the section is also associated with this cancer", "topic": "Cholangiocarcinoma risk factors", "options": {"A": "Low serum cholesterol", "B": "Thorotrast exposure", "C": "Lactase deficiency", "D": "Appendectomy before age 20"}, "correct": "B", "explanation": "In the United States, cholangiocarcinoma is associated with primary sclerosing cholangitis and cystic biliary disease. Other listed risk factors include HCV, HBV, non-alcoholic fatty liver disease, and Thorotrast exposure.", "optionExplanations": {"A": "Low serum cholesterol is not listed as a cholangiocarcinoma risk factor.", "B": "Correct. Thorotrast exposure is listed among risk factors for cholangiocarcinoma.", "C": "Lactase deficiency causes osmotic diarrhea and is unrelated to bile duct cancer.", "D": "Appendectomy before age 20 is mentioned in ulcerative colitis epidemiology, not cholangiocarcinoma."}}, {"id": 21, "stem": "A patient with choledocholithiasis develops severe epigastric pain radiating to the back and elevated pancreatic enzymes. Which gallstone complication best explains this presentation", "topic": "Gallstone complications", "options": {"A": "Pancreatitis", "B": "Cholesterolosis", "C": "Von Meyenburg complex", "D": "Gallbladder duplication"}, "correct": "A", "explanation": "Stones in the biliary tree can cause obstruction and are associated with pancreatitis, cholangitis, hepatic abscess, and secondary biliary cirrhosis. Gallstones are also listed as causing pancreatitis among their complications.", "optionExplanations": {"A": "Correct. Biliary obstruction from stones can precipitate pancreatitis.", "B": "Cholesterolosis is usually asymptomatic mucosal cholesterol deposition.", "C": "Von Meyenburg complexes are bile duct hamartomas.", "D": "Gallbladder duplication is a congenital anomaly and does not explain acute pancreatitis."}}, {"id": 22, "stem": "A patient has acute cholecystitis complicated by a gallbladder filled with pus. Which named complication is this", "topic": "Acute cholecystitis complications", "options": {"A": "Mucocele", "B": "Fistula", "C": "Empyema", "D": "Cholesterolosis"}, "correct": "C", "explanation": "Complications of acute cholecystitis include empyema, gangrene, perforation, peritonitis, and pancreatitis. Empyema means a collection or bag of pus.", "optionExplanations": {"A": "Mucocele is a gallstone complication but does not specifically mean pus in the gallbladder.", "B": "A fistula is an abnormal connection, not a pus-filled gallbladder.", "C": "Correct. Empyema is the pus-filled gallbladder complication.", "D": "Cholesterolosis is cholesterol deposition in the gallbladder mucosa."}}, {"id": 23, "stem": "A patient has a congenital fold between the body and fundus of the gallbladder. The finding is present in a small percentage of the population and is a shape anomaly. Which term describes it", "topic": "Gallbladder anomalies", "options": {"A": "Porcelain gallbladder", "B": "Phrygian cap", "C": "Caroli disease", "D": "Klatskin tumor"}, "correct": "B", "explanation": "A Phrygian cap is a fold between the gallbladder body and fundus and occurs in about 1–6% of the population. It is a congenital gallbladder shape anomaly.", "optionExplanations": {"A": "Porcelain gallbladder is calcification from chronic inflammation, not a congenital fold.", "B": "Correct. The described fold is a Phrygian cap.", "C": "Caroli disease is intrahepatic biliary duct dilation with portal tract fibrosis.", "D": "Klatskin tumor is cholangiocarcinoma at the hepatic duct junction."}}, {"id": 24, "stem": "A patient has an anatomic variant in which the gallbladder is located intrahepatically. Which broad category best fits this finding", "topic": "Gallbladder anomalies", "options": {"A": "Acquired inflammatory disorder", "B": "Acquired stone disorder", "C": "Acquired neoplastic disorder", "D": "Congenital gallbladder anomaly"}, "correct": "D", "explanation": "Gallbladder anomalies are congenital and include agenesis, duplication, ectopic positions such as intrahepatic/left-sided/behind the liver, wandering gallbladder due to a long mesentery, and shape anomalies like Phrygian cap.", "optionExplanations": {"A": "Inflammatory acquired disorders include acute/chronic cholecystitis and cholangitis.", "B": "Stone disorders include cholelithiasis and choledocholithiasis.", "C": "Neoplastic disorders include gallbladder carcinoma and bile duct tumors.", "D": "Correct. Intrahepatic gallbladder position is a congenital gallbladder anomaly."}}, {"id": 25, "stem": "A woman with long-standing gallstones develops gallbladder adenocarcinoma. Which pathophysiologic driver best links gallstones to this malignancy", "topic": "Gallbladder carcinoma pathogenesis", "options": {"A": "Chronic inflammation", "B": "Acute viral cytopathic effect", "C": "Loss of inhibitory LES neurons", "D": "IgA deposition in dermal papillae"}, "correct": "A", "explanation": "Gallbladder carcinoma is driven by chronic inflammation, often due to stones. TP53 mutations often precede dysplasia and KRAS mutation is also described.", "optionExplanations": {"A": "Correct. Chronic inflammation from stones is the key pathophysiologic link.", "B": "A viral cytopathic effect is not the stated driver of gallbladder carcinoma.", "C": "Loss of inhibitory LES neurons causes achalasia, not gallbladder cancer.", "D": "IgA deposition in dermal papillae describes dermatitis herpetiformis."}}, {"id": 26, "stem": "A patient with a bile duct adenocarcinoma has spread to multiple distant sites. Which metastatic route and target organs are described for cholangiocarcinoma", "topic": "Cholangiocarcinoma spread", "options": {"A": "Direct spread only to the appendix", "B": "Transcoelomic spread only to ovaries", "C": "Lymphatic and hematogenous spread to lungs, vertebrae, adrenals, and brain", "D": "Perineural spread only to the pancreas"}, "correct": "C", "explanation": "Cholangiocarcinoma can spread by lymph nodes and blood to lungs, vertebrae, adrenals, and brain. Its prognosis is dismal, with about 15% survival at 2 years in the section.", "optionExplanations": {"A": "The appendix is not listed as a typical metastatic target.", "B": "Ovarian spread describes Krukenberg tumor in gastric cancer, not cholangiocarcinoma.", "C": "Correct. The listed pattern is lymph node and blood spread to lungs, vertebrae, adrenals, and brain.", "D": "Perineural spread only to pancreas is not the pattern described."}}, {"id": 27, "stem": "A patient is diagnosed with the most common disease of the hepatobiliary system, affecting about 10% of the population. Which disorder is this", "topic": "Cholelithiasis epidemiology", "options": {"A": "Biliary atresia", "B": "Cholelithiasis", "C": "Cholangiocarcinoma", "D": "Caroli disease"}, "correct": "B", "explanation": "Cholelithiasis affects about 10% of the population and is the most common disease of the hepatobiliary system.", "optionExplanations": {"A": "Biliary atresia is rare in infants, about 1 in 10,000 live births.", "B": "Correct. Gallstones/cholelithiasis are the most common hepatobiliary disease.", "C": "Cholangiocarcinoma is a rare, poor-prognosis bile duct cancer.", "D": "Caroli disease is a congenital intrahepatic biliary anomaly, not the most common hepatobiliary disease."}}, {"id": 28, "stem": "A patient has gallstones formed in the setting of impaired cholesterol, phospholipid, and bile acid relationships. Infections, a hypotonic gallbladder, and bilirubin supersaturation promote stone formation. Which factor most directly explains pigment stone formation in chronic hemolysis", "topic": "Pigment stone pathogenesis", "options": {"A": "Decreased bilirubin production", "B": "Increased LES pressure", "C": "Loss of parietal cells", "D": "Bilirubin supersaturation"}, "correct": "D", "explanation": "Promoters of gallstone formation include infections, a hypotonic gallbladder, and bilirubin supersaturation, often from hemolytic anemia. This links chronic hemolysis to pigment stones.", "optionExplanations": {"A": "Hemolysis increases bilirubin load rather than decreasing bilirubin production.", "B": "LES pressure is relevant to esophageal motility, not pigment stones.", "C": "Parietal cell loss is relevant to atrophic gastritis/pernicious anemia, not pigment stone formation.", "D": "Correct. Bilirubin supersaturation from hemolysis promotes pigment stones."}}, {"id": 29, "stem": "A patient with gallbladder carcinoma is counseled about prognosis. According to the biliary tract section, which statement best describes this cancer", "topic": "Gallbladder carcinoma prognosis", "options": {"A": "It often presents late and has a 5-year survival less than 5%", "B": "It is usually benign and asymptomatic", "C": "It is cured by antibiotics because it is caused by E. coli", "D": "It usually presents in infancy with jaundice at 2–8 weeks"}, "correct": "A", "explanation": "Gallbladder carcinoma presents late with few symptoms and has a very poor prognosis, with 5-year survival less than 5% in the section.", "optionExplanations": {"A": "Correct. Late presentation and very poor survival are key features.", "B": "Cholesterolosis is usually benign/asymptomatic, not gallbladder carcinoma.", "C": "Cholangitis involves bacteria such as E. coli/Klebsiella; gallbladder carcinoma is not cured by antibiotics.", "D": "Infant jaundice at 2–8 weeks suggests biliary atresia."}}, {"id": 30, "stem": "A patient has acute inflammation within the bile duct wall and lumen due to bacterial contamination of obstructed bile ducts. Which organisms are most classically implicated in the ascending form", "topic": "Ascending cholangitis microbiology", "options": {"A": "HSV and CMV", "B": "Staphylococcus aureus and Bacillus cereus", "C": "E. coli and Klebsiella", "D": "Giardia and Cryptosporidium"}, "correct": "C", "explanation": "Ascending cholangitis occurs when gut bacteria, usually gram-negative aerobes such as E. coli or Klebsiella, enter through the sphincter of Oddi into obstructed bile ducts.", "optionExplanations": {"A": "HSV and CMV are viral causes of infectious esophagitis, not classic ascending cholangitis organisms.", "B": "S. aureus and B. cereus are food-borne illness organisms in other sections, not the classic ascending cholangitis pair.", "C": "Correct. E. coli and Klebsiella are the gram-negative aerobes highlighted for ascending cholangitis.", "D": "Giardia and Cryptosporidium are protozoal causes of diarrhea, not typical biliary tract ascending infection."}}];
+let currentIndex = 0;
+const answers = {};
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'seg' + (answers[q.id] !== undefined ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.setAttribute('aria-label', `Go to question ${idx + 1}`);
+    btn.onclick = () => { currentIndex = idx; render(); };
+    progress.appendChild(btn);
+  });
+}
+function renderCounts() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(item => item.id === Number(id));
+    if (q && choice === q.correct) right += 1;
+    if (q && choice !== q.correct) wrong += 1;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+}
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+  document.getElementById('questionNum').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    if (selected && letter === q.correct) btn.className += ' correct';
+    else if (selected && letter === selected && letter !== q.correct) btn.className += ' wrong';
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; render(); };
+    optionsDiv.appendChild(btn);
+  });
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const isCorrect = selected === q.correct;
+    const details = Object.entries(q.optionExplanations).map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`).join('');
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p class="${isCorrect ? 'correct-text' : 'wrong-text'}">${isCorrect ? 'Nice job. ' : 'Good attempt. '}${q.explanation}</p>
+      <p><strong>Why each option is right or wrong:</strong></p>
+      ${details}
+    `;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+  renderProgress();
+  renderCounts();
+}
+function nextQuestion() {
+  currentIndex = (currentIndex + 1) % questions.length;
+  render();
+}
+function prevQuestion() {
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  render();
+}
+render();
+</script>
+</body>
+</html>

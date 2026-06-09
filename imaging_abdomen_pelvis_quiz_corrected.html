@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imaging of Abdomen & Pelvis Quiz</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
+      color: #111827;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .progress {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border: none;
+      border-radius: 999px;
+      background: #334155;
+      flex: 1;
+      cursor: pointer;
+      min-width: 4px;
+      transition: background 0.2s;
+    }
+    .segment.active {
+      background: #e2e8f0;
+    }
+    .segment.answered {
+      background: #6fa8dc;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .wrong-pill {
+      background: rgba(127, 29, 29, 0.65);
+      color: #fee2e2;
+    }
+    .right-pill {
+      background: rgba(6, 78, 59, 0.65);
+      color: #d1fae5;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 16px;
+    }
+    .options {
+      display: grid;
+      gap: 9px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover {
+      background: #f3f4f6;
+    }
+    .option.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .option.incorrect {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .correct-text {
+      color: #047857;
+      font-weight: 600;
+    }
+    .incorrect-text {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .option-exp p {
+      margin: 7px 0;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .nav button {
+      padding: 9px 13px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .nav button:hover {
+      background: #f3f4f6;
+    }
+    .title {
+      color: #f8fafc;
+      margin: 0 0 16px;
+      font-size: 22px;
+    }
+    @media (max-width: 700px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .status {
+        justify-content: space-between;
+      }
+      .meta {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">26. Imaging of Abdomen & Pelvis Quiz</h1>
+    <div class="topbar">
+      <div class="progress" id="progress"></div>
+      <div class="status">
+        <span id="counter">1 / 30</span>
+        <span class="pill wrong-pill">× <span id="wrongCount">0</span></span>
+        <span class="pill right-pill">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic">Topic: </span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const questions = [
+  {
+    "id": 1,
+    "stem": "A 68-year-old man has abdominal distention and vomiting. The clinician wants a rapid initial study to look for an ileus or volvulus. Which imaging modality is specifically described as useful for detecting abdominal obstruction, despite being less informative than CT overall",
+    "topic": "X-ray use in abdominal obstruction",
+    "options": {
+      "A": "PET scan",
+      "B": "MRCP",
+      "C": "Abdominal x-ray",
+      "D": "Triphasic liver CT"
+    },
+    "correct": "C",
+    "explanation": "Abdominal x-rays generally provide less information than CT, but they are useful for detecting abdominal obstruction patterns such as ileus or volvulus.",
+    "optionExplanations": {
+      "A": "PET is mainly discussed for hypermetabolic cancer detection/monitoring, not first-line obstruction patterns.",
+      "B": "MRCP is a high-resolution T2 MRI technique for biliary/pancreatic duct-type evaluation, not a basic obstruction screen.",
+      "C": "Correct. Abdominal x-rays generally provide less information than CT, but they are useful for detecting abdominal obstruction patterns such as ileus or volvulus.",
+      "D": "Triphasic liver CT is used for hepatic lesions such as hemangioma, not routine obstruction screening."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A patient with flank pain has a suspected ureteral stone. The team also wants to assess for hydronephrosis. Which imaging study is listed as best for renal stones and can also evaluate associated hydronephrosis",
+    "topic": "Renal stones and hydronephrosis",
+    "options": {
+      "A": "Non-contrast CT",
+      "B": "Plain abdominal x-ray only",
+      "C": "HIDA scan",
+      "D": "PET-CT"
+    },
+    "correct": "A",
+    "explanation": "The section states that x-ray can detect renal stones but not hydronephrosis, and that non-contrast CT is best for renal stones.",
+    "optionExplanations": {
+      "A": "Correct. The section states that x-ray can detect renal stones but not hydronephrosis, and that non-contrast CT is best for renal stones.",
+      "B": "Plain x-ray may show some renal stones but does not assess hydronephrosis reliably.",
+      "C": "HIDA evaluates gallbladder filling/ejection and is useful for unclear acute cholecystitis, not renal stones.",
+      "D": "PET-CT is used for cancer-related FDG uptake rather than renal stone diagnosis."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "An abdominal x-ray shows air-fluid levels but no clearly dilated bowel loops or transition point. According to the imaging section, this pattern most strongly suggests which process",
+    "topic": "Air-fluid levels without dilated bowel",
+    "options": {
+      "A": "Small bowel obstruction",
+      "B": "Sigmoid volvulus",
+      "C": "Pneumoperitoneum",
+      "D": "Ileus or enteritis"
+    },
+    "correct": "D",
+    "explanation": "The document states that air-fluid levels alone suggest ileus or enteritis. Dilated bowel loops with a transition point are more concerning for SBO.",
+    "optionExplanations": {
+      "A": "SBO is suggested by air-fluid levels plus dilated bowel loops, especially with a transition point.",
+      "B": "Sigmoid volvulus classically produces a coffee-bean sign and implies obstruction from twisting.",
+      "C": "Pneumoperitoneum is free intraperitoneal air, evaluated with decubitus/upright-type views.",
+      "D": "Correct. The document states that air-fluid levels alone suggest ileus or enteritis. Dilated bowel loops with a transition point are more concerning for SBO."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A patient has crampy abdominal pain, vomiting, and distention. X-ray shows multiple air-fluid levels with dilated bowel loops and a transition point. Which diagnosis best matches this imaging pattern",
+    "topic": "Small bowel obstruction pattern",
+    "options": {
+      "A": "Enteritis without obstruction",
+      "B": "Small bowel obstruction",
+      "C": "Chilaiditi sign",
+      "D": "Acute cholecystitis"
+    },
+    "correct": "B",
+    "explanation": "Air-fluid levels with dilated bowel loops, especially with a transition point, point toward small bowel obstruction.",
+    "optionExplanations": {
+      "A": "Enteritis may show air-fluid levels alone but should not have the classic dilated-loop/transition-point obstruction pattern.",
+      "B": "Correct. Air-fluid levels with dilated bowel loops, especially with a transition point, point toward small bowel obstruction.",
+      "C": "Chilaiditi sign is bowel interposed between the liver and diaphragm that can mimic free air.",
+      "D": "Acute cholecystitis is evaluated with ultrasound or HIDA rather than this SBO pattern."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient has sudden severe abdominal pain after a perforated viscus is suspected. The radiologist orders a decubitus view with the patient lying on the left side. What is the purpose of this view",
+    "topic": "Left lateral decubitus view",
+    "options": {
+      "A": "To confirm Barrett esophagus",
+      "B": "To measure gallbladder ejection fraction",
+      "C": "To evaluate for free intraperitoneal air and air-fluid levels",
+      "D": "To stage a hepatic hemangioma"
+    },
+    "correct": "C",
+    "explanation": "A left lateral decubitus view is used to rule out free intraperitoneal air (pneumoperitoneum) and to assess air-fluid levels related to obstruction.",
+    "optionExplanations": {
+      "A": "Barrett esophagus is evaluated endoscopically/biopsy, not by left decubitus abdominal x-ray.",
+      "B": "Gallbladder ejection fraction is measured in the HIDA/nuclear medicine context.",
+      "C": "Correct. A left lateral decubitus view is used to rule out free intraperitoneal air (pneumoperitoneum) and to assess air-fluid levels related to obstruction.",
+      "D": "Hepatic hemangioma evaluation uses triphasic abdominal CT phases, not a decubitus abdominal view."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A chest/abdominal radiograph appears to show air under the right hemidiaphragm, but the patient is stable and CT shows bowel interposed between the liver and diaphragm. What is this finding called",
+    "topic": "Chilaiditi sign",
+    "options": {
+      "A": "Coffee-bean sign",
+      "B": "Target sign",
+      "C": "Apple-core sign",
+      "D": "Chilaiditi sign"
+    },
+    "correct": "D",
+    "explanation": "Chilaiditi sign is a portion of colon or small intestine interposed between the liver and diaphragm; air in that bowel can mimic free air.",
+    "optionExplanations": {
+      "A": "Coffee-bean sign is associated with sigmoid volvulus.",
+      "B": "Target sign is associated with intussusception on ultrasound.",
+      "C": "Apple-core sign suggests neoplasm on contrast/barium-type imaging.",
+      "D": "Correct. Chilaiditi sign is a portion of colon or small intestine interposed between the liver and diaphragm; air in that bowel can mimic free air."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A 2-year-old has intermittent abdominal pain and currant-jelly stools. Imaging suggests intussusception without perforation. Which treatment is specifically listed for this condition",
+    "topic": "Intussusception treatment",
+    "options": {
+      "A": "Air or barium reduction",
+      "B": "Triphasic abdominal CT",
+      "C": "Endoscopic band ligation",
+      "D": "Immediate PET scan"
+    },
+    "correct": "A",
+    "explanation": "The imaging section states that intussusception in young children with bloody currant-jelly stool is treated with air or barium reduction.",
+    "optionExplanations": {
+      "A": "Correct. The imaging section states that intussusception in young children with bloody currant-jelly stool is treated with air or barium reduction.",
+      "B": "Triphasic CT is a liver lesion protocol, not intussusception treatment.",
+      "C": "Endoscopic band ligation is used for variceal bleeding, not intussusception.",
+      "D": "PET is for cancer detection/monitoring and does not reduce intussusception."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A toddler has episodic abdominal pain and bloody stool. The clinician wants the first imaging modality of choice to confirm suspected intussusception. Which finding/modality pairing is correct",
+    "topic": "Intussusception diagnosis",
+    "options": {
+      "A": "HIDA scan showing bowel but no gallbladder filling",
+      "B": "Barium swallow showing a Zenker diverticulum",
+      "C": "Ultrasound showing a target sign",
+      "D": "CT showing fat stranding near the sigmoid colon"
+    },
+    "correct": "C",
+    "explanation": "For intussusception, ultrasound is described as the first modality of choice, and the classic finding is the target sign.",
+    "optionExplanations": {
+      "A": "Bowel visualization without gallbladder filling on HIDA suggests acute cholecystitis.",
+      "B": "Barium swallow can evaluate Zenker diverticulum but not suspected pediatric intussusception.",
+      "C": "Correct. For intussusception, ultrasound is described as the first modality of choice, and the classic finding is the target sign.",
+      "D": "Fat stranding is a CT clue for diverticulitis."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "An elderly patient presents with severe abdominal distention and obstruction. Abdominal x-ray shows a classic coffee-bean sign. Which diagnosis is most likely",
+    "topic": "Sigmoid volvulus",
+    "options": {
+      "A": "Ulcerative colitis",
+      "B": "Sigmoid volvulus",
+      "C": "Chilaiditi sign",
+      "D": "Gastric ulcer"
+    },
+    "correct": "B",
+    "explanation": "Sigmoid volvulus classically produces a coffee-bean sign. Volvulus means twisting of a structure and implies obstruction; the section notes this is a surgical emergency in elderly patients.",
+    "optionExplanations": {
+      "A": "Ulcerative colitis is not defined by a coffee-bean sign in this section.",
+      "B": "Correct. Sigmoid volvulus classically produces a coffee-bean sign. Volvulus means twisting of a structure and implies obstruction; the section notes this is a surgical emergency in elderly patients.",
+      "C": "Chilaiditi sign is bowel interposed between the liver and diaphragm.",
+      "D": "Gastric ulcer is seen on upper GI/barium-type exams, not as a coffee-bean sign."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient has intermittent solid-food dysphagia, and the clinician suspects an esophageal ring or web. Which study type is described as using live x-ray fluoroscopy while the patient drinks radiopaque contrast",
+    "topic": "Barium studies",
+    "options": {
+      "A": "HIDA scan",
+      "B": "FAST exam",
+      "C": "PET scan",
+      "D": "Barium study"
+    },
+    "correct": "D",
+    "explanation": "Barium studies use live x-ray/fluoroscopy while the patient drinks radiopaque contrast and can evaluate reflux, hiatal hernia, rings, webs, Zenker diverticulum, and ulcers.",
+    "optionExplanations": {
+      "A": "HIDA is a nuclear medicine scan used for suspected acute cholecystitis.",
+      "B": "FAST is an ultrasound exam in the emergency setting, including Morrison pouch assessment.",
+      "C": "PET uses fluorodeoxyglucose uptake to evaluate cancer/metabolic activity.",
+      "D": "Correct. Barium studies use live x-ray/fluoroscopy while the patient drinks radiopaque contrast and can evaluate reflux, hiatal hernia, rings, webs, Zenker diverticulum, and ulcers."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient with Crohn disease undergoes contrast imaging that shows a narrowed terminal ileal segment. Which named sign is associated with Crohn disease in this section",
+    "topic": "Crohn disease imaging sign",
+    "options": {
+      "A": "Apple-core sign",
+      "B": "Coffee-bean sign",
+      "C": "String sign",
+      "D": "Target sign"
+    },
+    "correct": "C",
+    "explanation": "The imaging section lists Crohn disease as associated with the string sign.",
+    "optionExplanations": {
+      "A": "Apple-core sign is associated with neoplasm.",
+      "B": "Coffee-bean sign is associated with sigmoid volvulus.",
+      "C": "Correct. The imaging section lists Crohn disease as associated with the string sign.",
+      "D": "Target sign is associated with intussusception."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "Contrast imaging of the colon shows an annular constricting lesion with an apple-core appearance. Which pathology does this sign suggest in the imaging section",
+    "topic": "Apple-core sign",
+    "options": {
+      "A": "Neoplasm",
+      "B": "Crohn disease",
+      "C": "Acute pancreatitis",
+      "D": "Chilaiditi sign"
+    },
+    "correct": "A",
+    "explanation": "The section lists neoplasm as producing an apple-core sign.",
+    "optionExplanations": {
+      "A": "Correct. The section lists neoplasm as producing an apple-core sign.",
+      "B": "Crohn disease is linked with the string sign.",
+      "C": "Acute pancreatitis is evaluated on CT but is not described as an apple-core lesion.",
+      "D": "Chilaiditi sign is bowel between the liver and diaphragm mimicking free air."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A CT image includes a region with a Hounsfield unit value of approximately -1024. Which substance does this value correspond to",
+    "topic": "CT Hounsfield units",
+    "options": {
+      "A": "Water",
+      "B": "Air",
+      "C": "Bone",
+      "D": "Fat-containing gallstone"
+    },
+    "correct": "B",
+    "explanation": "The CT table in the section lists air as approximately -1024 HU.",
+    "optionExplanations": {
+      "A": "Water is listed as 0 HU.",
+      "B": "Correct. The CT table in the section lists air as approximately -1024 HU.",
+      "C": "Bone is listed as much higher, around +3000 to +4000 HU.",
+      "D": "The section does not define fat-containing gallstones by this HU value."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "On CT, a simple fluid collection measures approximately 0 Hounsfield units. What material does this value correspond to in the section",
+    "topic": "Water Hounsfield unit",
+    "options": {
+      "A": "Air",
+      "B": "Bone",
+      "C": "Calcified stone only",
+      "D": "Water"
+    },
+    "correct": "D",
+    "explanation": "The section lists water as 0 HU.",
+    "optionExplanations": {
+      "A": "Air is approximately -1024 HU.",
+      "B": "Bone is much denser, approximately +3000 to +4000 HU.",
+      "C": "Calcified stones are not the material listed as 0 HU in the section.",
+      "D": "Correct. The section lists water as 0 HU."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A patient has left lower quadrant pain and fever. CT shows inflamed diverticula with surrounding fat stranding. Which diagnosis is most supported",
+    "topic": "Diverticulitis CT finding",
+    "options": {
+      "A": "Diverticulitis",
+      "B": "Appendicitis",
+      "C": "Intussusception",
+      "D": "Hepatic hemangioma"
+    },
+    "correct": "A",
+    "explanation": "The section explicitly associates diverticulitis with CT fat stranding.",
+    "optionExplanations": {
+      "A": "Correct. The section explicitly associates diverticulitis with CT fat stranding.",
+      "B": "Appendicitis is also evaluated by CT but the described fat-stranding example is diverticulitis.",
+      "C": "Intussusception is associated with target sign, especially on ultrasound.",
+      "D": "Hepatic hemangioma is evaluated with triphasic abdominal CT rather than colonic fat stranding."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient has right lower quadrant pain, fever, and suspected appendicitis. According to the CT indications list, which CT protocol is appropriate",
+    "topic": "Appendicitis CT indication",
+    "options": {
+      "A": "CT without contrast only",
+      "B": "MRCP as first-line",
+      "C": "CT with contrast",
+      "D": "HIDA scan only"
+    },
+    "correct": "C",
+    "explanation": "The CT indications list states that appendicitis is evaluated with CT with contrast.",
+    "optionExplanations": {
+      "A": "Non-contrast CT is emphasized for renal stones, not appendicitis in this list.",
+      "B": "MRCP is a high-resolution T2 MRI study, not the CT protocol for appendicitis.",
+      "C": "Correct. The CT indications list states that appendicitis is evaluated with CT with contrast.",
+      "D": "HIDA is used for unclear acute cholecystitis, not appendicitis."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A patient with classic renal colic needs imaging for suspected renal stones. The CT indications list states renal stones should be evaluated using which approach",
+    "topic": "Renal stone CT indication",
+    "options": {
+      "A": "Triphasic CT with arterial and delayed phases",
+      "B": "HIDA scan with gallbladder ejection fraction",
+      "C": "PET scan with fluorodeoxyglucose",
+      "D": "CT without contrast or IVP"
+    },
+    "correct": "D",
+    "explanation": "The CT indications list states renal stones are evaluated without contrast or IVP.",
+    "optionExplanations": {
+      "A": "Triphasic CT phases are for hepatic lesions such as hemangioma.",
+      "B": "HIDA evaluates gallbladder filling/ejection, not renal stones.",
+      "C": "PET uses FDG uptake for cancer detection and monitoring.",
+      "D": "Correct. The CT indications list states renal stones are evaluated without contrast or IVP."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A patient with chronic pancreatitis undergoes abdominal imaging. The imaging section notes that chronic pancreatitis is associated with signs of which pathologic process",
+    "topic": "Chronic pancreatitis imaging",
+    "options": {
+      "A": "Intussusception",
+      "B": "Fibrosis",
+      "C": "Cystic duct obstruction only",
+      "D": "Bowel interposition under the diaphragm"
+    },
+    "correct": "B",
+    "explanation": "The section notes acute pancreatitis on CT and states that chronic pancreatitis shows signs of fibrosis.",
+    "optionExplanations": {
+      "A": "Intussusception is a telescoping bowel process with target sign and air/barium reduction treatment.",
+      "B": "Correct. The section notes acute pancreatitis on CT and states that chronic pancreatitis shows signs of fibrosis.",
+      "C": "Cystic duct obstruction is the HIDA explanation for acute cholecystitis.",
+      "D": "Bowel interposition under the diaphragm describes Chilaiditi sign."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A colon cancer screening study provides 2D and 3D images of an air-filled, distended colon. Which imaging test is being described",
+    "topic": "Virtual colonoscopy",
+    "options": {
+      "A": "HIDA scan",
+      "B": "FAST exam",
+      "C": "Virtual colonoscopy",
+      "D": "CT urogram"
+    },
+    "correct": "C",
+    "explanation": "Virtual colonoscopy is described as providing 2D/3D images of an air-filled, distended colon.",
+    "optionExplanations": {
+      "A": "HIDA evaluates gallbladder visualization/ejection and acute cholecystitis.",
+      "B": "FAST is an emergency ultrasound exam, including Morrison pouch assessment.",
+      "C": "Correct. Virtual colonoscopy is described as providing 2D/3D images of an air-filled, distended colon.",
+      "D": "CT urogram is a delayed urinary tract CT study, not a 3D air-distended colon study."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A patient with suspected small bowel inflammatory disease is scheduled for a thin-section CT after drinking Volumen/fluid. Which study is this",
+    "topic": "CT enterography",
+    "options": {
+      "A": "CT enterography",
+      "B": "CT angiography",
+      "C": "Triphasic liver CT",
+      "D": "MR angiography"
+    },
+    "correct": "A",
+    "explanation": "CT enterography is described as a thin-section CT study in which the patient drinks Volumen/fluid.",
+    "optionExplanations": {
+      "A": "Correct. CT enterography is described as a thin-section CT study in which the patient drinks Volumen/fluid.",
+      "B": "CT angiography evaluates blood vessels rather than using oral Volumen to distend bowel.",
+      "C": "Triphasic liver CT evaluates hepatic lesions using noncontrast, arterial, and delayed/venous phases.",
+      "D": "MR angiography is an MRI vascular study, not thin-section CT enterography."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A liver lesion is suspected to be a hemangioma. The radiologist orders a non-contrast phase, arterial phase, and delayed/venous phase. Which imaging protocol is this",
+    "topic": "Triphasic abdominal CT",
+    "options": {
+      "A": "CT enterography",
+      "B": "HIDA scan",
+      "C": "Virtual colonoscopy",
+      "D": "Triphasic abdominal CT"
+    },
+    "correct": "D",
+    "explanation": "Triphasic abdominal CT for liver hemangioma includes non-contrast, arterial, and delayed/venous phases.",
+    "optionExplanations": {
+      "A": "CT enterography uses thin sections and oral Volumen/fluid for bowel evaluation.",
+      "B": "HIDA is a nuclear medicine gallbladder study.",
+      "C": "Virtual colonoscopy provides 2D/3D images of an air-filled colon.",
+      "D": "Correct. Triphasic abdominal CT for liver hemangioma includes non-contrast, arterial, and delayed/venous phases."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient undergoes delayed CT imaging to evaluate the urinary collecting system. Which study is specifically listed in the imaging section",
+    "topic": "CT urogram",
+    "options": {
+      "A": "Barium swallow",
+      "B": "CT urogram",
+      "C": "HIDA scan",
+      "D": "MRCP"
+    },
+    "correct": "B",
+    "explanation": "The section lists CT urogram as a delayed CT study.",
+    "optionExplanations": {
+      "A": "Barium swallow/upper GI studies use fluoroscopy with radiopaque contrast for GI lumen evaluation.",
+      "B": "Correct. The section lists CT urogram as a delayed CT study.",
+      "C": "HIDA evaluates gallbladder visualization and ejection fraction.",
+      "D": "MRCP is a high-resolution T2 MRI study, not a delayed CT urogram."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A patient needs bedside abdominal imaging without ionizing radiation. The study uses sound waves from a hand-held transducer and is excellent for interfaces between solid and fluid-filled spaces. Which modality is this",
+    "topic": "Ultrasound basics",
+    "options": {
+      "A": "CT",
+      "B": "PET",
+      "C": "Ultrasound",
+      "D": "Plain x-ray"
+    },
+    "correct": "C",
+    "explanation": "Ultrasound uses sound waves, has no radiation, and is excellent for delineating interfaces between solid and fluid-filled spaces.",
+    "optionExplanations": {
+      "A": "CT uses x-rays and Hounsfield units, not sound waves.",
+      "B": "PET uses radiotracer uptake, especially FDG for cancer evaluation.",
+      "C": "Correct. Ultrasound uses sound waves, has no radiation, and is excellent for delineating interfaces between solid and fluid-filled spaces.",
+      "D": "Plain x-ray uses radiation and is less informative than CT for many abdominal conditions."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "During an ultrasound, a simple fluid-filled structure appears black. Which echogenicity term from the section describes water",
+    "topic": "Ultrasound echogenicity",
+    "options": {
+      "A": "Hyperechoic",
+      "B": "Isoechoic",
+      "C": "Radiopaque",
+      "D": "Anechoic"
+    },
+    "correct": "D",
+    "explanation": "The ultrasound table states that water is anechoic and appears black.",
+    "optionExplanations": {
+      "A": "Hyperechoic describes fat or bone appearing white.",
+      "B": "Isoechoic describes soft tissue.",
+      "C": "Radiopaque is a contrast/x-ray descriptor, not the ultrasound term for black fluid.",
+      "D": "Correct. The ultrasound table states that water is anechoic and appears black."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "An ultrasound image shows very bright white structures. According to the ultrasound table, this most closely corresponds to which tissue category",
+    "topic": "Hyperechoic ultrasound findings",
+    "options": {
+      "A": "Fat or bone",
+      "B": "Water",
+      "C": "Air at -1024 HU",
+      "D": "Soft tissue that is isoechoic"
+    },
+    "correct": "A",
+    "explanation": "The ultrasound table lists hyperechoic structures as fat or bone, appearing white.",
+    "optionExplanations": {
+      "A": "Correct. The ultrasound table lists hyperechoic structures as fat or bone, appearing white.",
+      "B": "Water is anechoic and appears black.",
+      "C": "Air at -1024 HU is a CT Hounsfield-unit concept, not an ultrasound echogenicity category.",
+      "D": "Soft tissue is listed as isoechoic."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A clinician is frustrated because bowel gas and artifacts prevent visualization of a deep abdominal structure on ultrasound. Which limitation is being illustrated",
+    "topic": "Ultrasound limitations",
+    "options": {
+      "A": "Ultrasound always requires ionizing radiation",
+      "B": "Ultrasound is operator-dependent and bowel gas/artifacts can impede visualization",
+      "C": "Ultrasound is best for intracranial structures through the skull",
+      "D": "Ultrasound provides Hounsfield unit density values"
+    },
+    "correct": "B",
+    "explanation": "The section lists ultrasound weaknesses: it is operator-dependent, bowel gas/artifacts can impede visualization, and deep structures may be difficult to access.",
+    "optionExplanations": {
+      "A": "Ultrasound has no radiation.",
+      "B": "Correct. The section lists ultrasound weaknesses: it is operator-dependent, bowel gas/artifacts can impede visualization, and deep structures may be difficult to access.",
+      "C": "The section states ultrasound cannot evaluate thoracic or intracranial structures well due to ribs/skull.",
+      "D": "Hounsfield units are a CT concept, not ultrasound."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "In a trauma patient, a FAST exam is performed to rapidly look for free fluid. Which anatomic location is specifically mentioned in the section",
+    "topic": "FAST exam",
+    "options": {
+      "A": "Peyer patch",
+      "B": "Ampulla of Vater",
+      "C": "Ligament of Treitz",
+      "D": "Morrison pouch"
+    },
+    "correct": "D",
+    "explanation": "The section lists FAST in the emergency setting and specifically mentions Morrison pouch.",
+    "optionExplanations": {
+      "A": "Peyer patches are lymphoid tissue in the ileum, not the named FAST location here.",
+      "B": "The ampulla of Vater is a biliary/pancreatic drainage structure, not the listed FAST target.",
+      "C": "The ligament of Treitz is an anatomic GI bleeding divider but not the FAST pouch listed here.",
+      "D": "Correct. The section lists FAST in the emergency setting and specifically mentions Morrison pouch."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient has suspected acute cholecystitis, but ultrasound is equivocal. HIDA scan shows tracer in the bowel but no gallbladder visualization. What is the mechanism of this finding",
+    "topic": "HIDA scan in acute cholecystitis",
+    "options": {
+      "A": "A sigmoid volvulus prevents air from entering the rectum",
+      "B": "Renal stones prevent contrast from entering the appendix",
+      "C": "Edematous cystic duct prevents nuclear material from entering the gallbladder",
+      "D": "FDG uptake is increased because all gallbladder lesions are malignant"
+    },
+    "correct": "C",
+    "explanation": "In acute cholecystitis, HIDA shows contrast in bowel but not the gallbladder because an edematous cystic duct blocks passage of nuclear material into the gallbladder.",
+    "optionExplanations": {
+      "A": "Sigmoid volvulus is an obstructive bowel twisting process with coffee-bean sign, unrelated to HIDA gallbladder filling.",
+      "B": "Renal stones and the appendix are unrelated to gallbladder HIDA visualization.",
+      "C": "Correct. In acute cholecystitis, HIDA shows contrast in bowel but not the gallbladder because an edematous cystic duct blocks passage of nuclear material into the gallbladder.",
+      "D": "FDG uptake is a PET concept for cancer/metabolism, not the HIDA mechanism."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A patient with known cancer finishes chemotherapy. The oncologist orders imaging to assess for residual hypermetabolic disease. Which scan is described as useful because cancers often have increased fluorodeoxyglucose uptake",
+    "topic": "PET scan",
+    "options": {
+      "A": "Plain abdominal x-ray",
+      "B": "PET scan",
+      "C": "Barium esophagram",
+      "D": "FAST exam"
+    },
+    "correct": "B",
+    "explanation": "PET scans detect increased uptake of fluorodeoxyglucose and are useful for cancer detection, monitoring, distinguishing benign versus malignant lesions, and assessing residual cancer after chemotherapy.",
+    "optionExplanations": {
+      "A": "Plain abdominal x-ray is useful for some obstruction patterns but not FDG uptake.",
+      "B": "Correct. PET scans detect increased uptake of fluorodeoxyglucose and are useful for cancer detection, monitoring, distinguishing benign versus malignant lesions, and assessing residual cancer after chemotherapy.",
+      "C": "Barium esophagram evaluates GI lumen anatomy under fluoroscopy, not tumor glucose uptake.",
+      "D": "FAST is a focused emergency ultrasound exam for free fluid."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A biliary tract question asks for the MRI sequence in which water is bright and which is used for MRCP as a high-resolution, low-field-of-view study. Which option best matches the section",
+    "topic": "MRI T2 and MRCP",
+    "options": {
+      "A": "T1-weighted imaging",
+      "B": "PET with fluorodeoxyglucose",
+      "C": "Plain x-ray decubitus view",
+      "D": "T2-weighted imaging"
+    },
+    "correct": "D",
+    "explanation": "The MRI section states that T2 makes water bright and that MRCP uses high-resolution T2 with a low field of view.",
+    "optionExplanations": {
+      "A": "T1 is described as water dark and useful for anatomy/marrow/post-contrast imaging.",
+      "B": "PET with FDG evaluates hypermetabolic cancer activity, not MRCP fluid-bright duct imaging.",
+      "C": "A decubitus x-ray view evaluates free intraperitoneal air/air-fluid levels, not MRCP.",
+      "D": "Correct. The MRI section states that T2 makes water bright and that MRCP uses high-resolution T2 with a low field of view."
+    }
+  }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    function renderProgress() {
+      const progress = document.getElementById('progress');
+      progress.innerHTML = '';
+      questions.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'segment' + (idx === currentIndex ? ' active' : '') + (answers[q.id] !== undefined && idx !== currentIndex ? ' answered' : '');
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.setAttribute('aria-label', `Go to question ${idx + 1}`);
+        btn.onclick = () => {
+          currentIndex = idx;
+          render();
+        };
+        progress.appendChild(btn);
+      });
+    }
+
+    function renderCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([qid, choice]) => {
+        const q = questions.find(item => item.id === Number(qid));
+        if (q && choice === q.correct) right++;
+        if (q && choice !== q.correct) wrong++;
+      });
+      document.getElementById('rightCount').textContent = right;
+      document.getElementById('wrongCount').textContent = wrong;
+    }
+
+    function selectAnswer(letter) {
+      const q = questions[currentIndex];
+      answers[q.id] = letter;
+      render();
+    }
+
+    function render() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+      document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+      document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+      document.getElementById('stem').textContent = q.stem + '?';
+
+      const optionsDiv = document.getElementById('options');
+      optionsDiv.innerHTML = '';
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        if (showExplanation && letter === q.correct) btn.className += ' correct';
+        else if (showExplanation && selected === letter && letter !== q.correct) btn.className += ' incorrect';
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.onclick = () => selectAnswer(letter);
+        optionsDiv.appendChild(btn);
+      });
+
+      const explanationDiv = document.getElementById('explanation');
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        explanationDiv.style.display = 'block';
+        const optionExps = Object.entries(q.optionExplanations).map(([letter, text]) =>
+          `<p><strong>${letter}.</strong> ${text}</p>`
+        ).join('');
+        explanationDiv.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${isCorrect ? 'Nice job. ' : 'Good attempt. '}${q.explanation}</p>
+          <div class="option-exp">
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExps}
+          </div>
+        `;
+      } else {
+        explanationDiv.style.display = 'none';
+        explanationDiv.innerHTML = '';
+      }
+
+      renderProgress();
+      renderCounts();
+    }
+
+    function goNext() {
+      currentIndex = (currentIndex + 1) % questions.length;
+      render();
+    }
+
+    function goPrev() {
+      currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

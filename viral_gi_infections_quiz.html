@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viral GI Infections Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p {
+      margin: 8px 0;
+    }
+    .correct-text { color: var(--green-text); }
+    .incorrect-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .nav button, .reset {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f8fafc; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionMeta">Question 1 of 30</span>
+        <span id="topicMeta">Topic: GI Pharmacology</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button id="prevBtn">Previous</button>
+        <button class="reset" id="resetBtn">Reset quiz</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">GI Pharmacology quiz • 30 questions</div>
+  </div>
+
+  <script>
+    const questions = [
+  {
+    "id": 1,
+    "stem": "A 14 month old child develops acute vomiting followed by watery diarrhea during the winter. Stool antigen testing is positive for a nonenveloped segmented dsRNA virus with a double layered capsid. Which viral factor acts as an enterotoxin in this illness",
+    "topic": "Rotavirus pathogenesis",
+    "options": {
+      "A": "Soluble adenoviral fiber protein",
+      "B": "Tir protein",
+      "C": "NSP4",
+      "D": "ABO blood group antigen"
+    },
+    "correct": "C",
+    "explanation": "Rotavirus is a nonenveloped dsRNA virus with a double layered capsid. The uploaded section emphasizes that NSP4 functions as a toxin that disrupts tight junctions, increases intracellular calcium, activates the enteric nervous system, and promotes chloride and water secretion.",
+    "optionExplanations": {
+      "A": "Soluble fiber protein is part of adenovirus pathogenesis, where it interferes with CAR-CAR binding and increases paracellular permeability.",
+      "B": "Tir is injected by EPEC/EHEC bacteria, not enteric viruses in this section.",
+      "C": "Correct. NSP4 is the rotavirus enterotoxin linked to secretory and osmotic watery diarrhea.",
+      "D": "ABO blood group antigens are binding factors for norovirus susceptibility, not the rotavirus toxin."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A cruise ship outbreak causes nausea, vomiting, watery diarrhea, abdominal cramps, and low grade fever in many passengers. Illness begins 24 to 48 hours after exposure and resolves within 1 to 3 days. Which virus is most likely responsible",
+    "topic": "Norovirus epidemiology",
+    "options": {
+      "A": "Norovirus",
+      "B": "Rotavirus",
+      "C": "Enteric adenovirus 40/41",
+      "D": "Astrovirus"
+    },
+    "correct": "A",
+    "explanation": "Norovirus is a calicivirus and a leading cause of foodborne outbreaks in the United States. The notes specifically associate it with cruise ship outbreaks, winter vomiting disease, a 24-48 hour incubation, and a 1-3 day course.",
+    "optionExplanations": {
+      "A": "Correct. Cruise ship outbreak plus prominent vomiting and short watery diarrheal illness strongly fits norovirus.",
+      "B": "Rotavirus classically causes severe watery diarrhea in infants and young children, especially 6-24 months.",
+      "C": "Enteric adenovirus 40/41 more often affects infants and children under 4 and causes diarrhea lasting 10-14 days.",
+      "D": "Astrovirus usually causes pediatric nonbacterial diarrhea and can be severe in elderly or immunocompromised patients."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A preschool child has prolonged watery diarrhea lasting nearly 2 weeks. PCR detects a large, naked, linear double stranded DNA virus, and the lab identifies serotype 41. Which additional association is included in the uploaded notes for this viral group",
+    "topic": "Enteric adenovirus",
+    "options": {
+      "A": "Binding to ABO blood group antigens with nonsecretor resistance",
+      "B": "NSP4 mediated chloride secretion",
+      "C": "Peyer patch replication before systemic spread",
+      "D": "Mesenteric adenitis and intussusception"
+    },
+    "correct": "D",
+    "explanation": "Enteric adenovirus types 40 and 41 are nonenveloped dsDNA viruses that cause pediatric gastroenteritis, often with a longer course than norovirus or rotavirus. The uploaded section lists associations including mesenteric adenitis and intussusception.",
+    "optionExplanations": {
+      "A": "This is a norovirus susceptibility detail, not adenovirus 40/41.",
+      "B": "NSP4 is the rotavirus toxin.",
+      "C": "Peyer patch spread is emphasized for enteric picornaviruses.",
+      "D": "Correct. Enteric adenovirus is associated with mesenteric adenitis and intussusception in the notes."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A nonenveloped icosahedral positive sense RNA virus causes a highly contagious foodborne outbreak. The instructor notes say that as little as one virion can be infectious and that recovered patients may shed virus for weeks. Which immune feature is most accurate",
+    "topic": "Norovirus immunity",
+    "options": {
+      "A": "Durable lifelong immunity prevents reinfection",
+      "B": "Short term, strain specific immunity occurs",
+      "C": "Neutralizing antibodies target VP4 and VP7",
+      "D": "Cell mediated immune deficiency causes severe worsening"
+    },
+    "correct": "B",
+    "explanation": "Norovirus produces only short-term, strain-specific immunity lasting about 2-3 months, so reinfection is common. The section also notes extreme contagiousness and weeks of shedding after recovery.",
+    "optionExplanations": {
+      "A": "Norovirus does not produce lasting immunity; reinfection is common.",
+      "B": "Correct. The notes describe short-term, strain-specific immunity for norovirus.",
+      "C": "VP4 and VP7 are rotavirus neutralizing antibody targets.",
+      "D": "The notes specifically state that cell-mediated deficiency does not worsen norovirus, with humoral immunity being most important."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A 20 month old with daycare exposure develops watery diarrhea without blood. The most likely viral agent has a genome made of 10 to 12 dsRNA segments and replicates inside viroplasma. Which age group has the highest risk for severe disease",
+    "topic": "Rotavirus epidemiology",
+    "options": {
+      "A": "Adults over 45 years",
+      "B": "Neonates only during the first week of life",
+      "C": "Infants 6 to 24 months old",
+      "D": "Adolescents with thymic enlargement"
+    },
+    "correct": "C",
+    "explanation": "Rotavirus is the most common cause of severe diarrhea in children under 3 years, with the highest risk listed as 6-24 months. The section also describes its segmented dsRNA genome, double layered capsid, and replication in viroplasma.",
+    "optionExplanations": {
+      "A": "Adults can get viral gastroenteritis, but the highest risk rotavirus group listed is infants 6-24 months.",
+      "B": "Neonates can be vulnerable to some infections, but the section identifies 6-24 months as highest risk for rotavirus.",
+      "C": "Correct. Rotavirus severe disease is most classic in infants 6-24 months.",
+      "D": "This is unrelated to viral gastroenteritis in the uploaded section."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A child has adenoviral gastroenteritis. Viral infection causes secretion of a soluble fiber protein that competes with normal receptor interactions under tight junctions, increasing paracellular permeability. Which receptor is involved",
+    "topic": "Adenovirus pathogenesis",
+    "options": {
+      "A": "CCR5",
+      "B": "ICAM-1",
+      "C": "ABO blood group antigen",
+      "D": "Coxsackie-adenovirus receptor"
+    },
+    "correct": "D",
+    "explanation": "The uploaded notes describe adenovirus binding CAR, the Coxsackie-Adenovirus Receptor. CAR is localized basally under tight junctions, and soluble fiber protein competes with CAR-CAR binding to disrupt tight junction integrity.",
+    "optionExplanations": {
+      "A": "CCR5 is not the adenovirus receptor described in this section.",
+      "B": "ICAM-1 is not listed here as the enteric adenovirus receptor.",
+      "C": "ABO blood group antigens are involved in norovirus binding and susceptibility.",
+      "D": "Correct. Adenovirus binds the Coxsackie-Adenovirus Receptor, or CAR."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A 3 year old develops watery diarrhea after exposure to a nonenveloped, positive sense RNA virus. The virus first infects intestinal epithelium, then replicates in submucosal lymphoid tissue of Peyer patches and regional lymph nodes before systemic spread in some cases. Which viral family best matches this pathway",
+    "topic": "Picornavirus enteric spread",
+    "options": {
+      "A": "Picornaviridae",
+      "B": "Reoviridae",
+      "C": "Adenoviridae",
+      "D": "Caliciviridae"
+    },
+    "correct": "A",
+    "explanation": "The enteric picornavirus section describes infection of intestinal epithelium followed by spread to Peyer patches or tonsils and regional lymph nodes, with possible systemic spread. Picornaviridae are nonenveloped, icosahedral, positive sense RNA viruses.",
+    "optionExplanations": {
+      "A": "Correct. Peyer patch and regional lymph node replication is emphasized for enteric picornaviruses.",
+      "B": "Reoviridae includes rotavirus, a segmented dsRNA virus with NSP4 toxin.",
+      "C": "Adenoviridae are nonenveloped dsDNA viruses, not positive sense RNA viruses.",
+      "D": "Caliciviridae includes norovirus, which is associated with outbreaks and ABO antigen binding."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A transplant recipient develops diarrhea followed by neurologic symptoms. Stool testing suggests an astrovirus infection. Which pathogenesis detail from the notes best explains the intestinal symptoms",
+    "topic": "Astrovirus pathogenesis",
+    "options": {
+      "A": "Replication in viroplasma with NSP4 toxin release",
+      "B": "Toxin mediated attachment to M cells in Peyer patches",
+      "C": "Targeting villus tip epithelial cells in the jejunum and duodenum causing disaccharide maldigestion",
+      "D": "Invasion of colonic mucosa with cytotoxin production"
+    },
+    "correct": "C",
+    "explanation": "Astrovirus targets villus tip epithelial cells in the jejunum and duodenum. The notes link this to disaccharide maldigestion, malabsorption, and osmotic diarrhea, with rare systemic dissemination such as encephalitis.",
+    "optionExplanations": {
+      "A": "This describes rotavirus, not astrovirus.",
+      "B": "This is not the mechanism emphasized for astrovirus in the uploaded section.",
+      "C": "Correct. Astrovirus damages villus tip cells, producing malabsorption and osmotic watery diarrhea.",
+      "D": "Colonic invasion with cytotoxin production describes bacterial dysentery mechanisms, not astrovirus."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A hospitalized child has viral gastroenteritis due to enteric adenovirus. The team wants to target testing toward the most relevant serotypes. Which serotypes should be tested for according to the section",
+    "topic": "Enteric adenovirus diagnosis",
+    "options": {
+      "A": "Adenovirus 3 and 7 only",
+      "B": "Adenovirus 40 and 41",
+      "C": "Adenovirus 16 and 18",
+      "D": "Adenovirus 1 and 2 only"
+    },
+    "correct": "B",
+    "explanation": "Enteric adenovirus gastroenteritis is mainly due to serotypes Ad40 and Ad41, which belong to serogroup F. The section lists PCR, ELISA, and latex agglutination with targets Ad40 and Ad41.",
+    "optionExplanations": {
+      "A": "Ad3/7 are listed with systemic disease, respiratory distress, diarrhea, and high fever rather than the main enteric serotypes.",
+      "B": "Correct. Ad40 and Ad41 are the key enteric adenovirus serotypes.",
+      "C": "These serotypes are not identified as enteric adenovirus targets in the uploaded notes.",
+      "D": "Ad1 and Ad2 are not the targeted enteric serotypes in this section."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A child with severe watery diarrhea is diagnosed with rotavirus. The mechanism includes villus tip enterocyte infection, death of mature absorptive cells, immature replacement cells, and decreased absorption. What type of diarrhea does this primarily cause",
+    "topic": "Rotavirus diarrhea mechanism",
+    "options": {
+      "A": "Inflammatory bloody diarrhea from colonic invasion",
+      "B": "Secretory diarrhea only from cholera toxin",
+      "C": "Fatty diarrhea from pancreatic insufficiency",
+      "D": "Osmotic watery diarrhea with possible secretory contribution"
+    },
+    "correct": "D",
+    "explanation": "Rotavirus destroys villus tip enterocytes and replaces mature absorptive cells with immature cells, reducing absorption and causing osmotic watery diarrhea. NSP4 also adds a secretory component through tight junction disruption, calcium increase, ENS activation, and chloride secretion.",
+    "optionExplanations": {
+      "A": "Viral gastroenteritis is usually watery with minimal inflammation and little or no blood.",
+      "B": "Cholera toxin is bacterial; rotavirus uses NSP4 and absorptive cell injury.",
+      "C": "The section does not describe rotavirus as pancreatic insufficiency or steatorrhea.",
+      "D": "Correct. Rotavirus causes watery diarrhea through malabsorption/osmotic effects plus NSP4-related secretion."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A 9 month old receives routine immunization against the most common cause of severe diarrhea in children under 3 years. Which vaccine schedule corresponds to Rotarix in the uploaded notes",
+    "topic": "Rotavirus vaccination",
+    "options": {
+      "A": "2 and 4 months",
+      "B": "2, 4, and 6 months",
+      "C": "Birth only",
+      "D": "12 and 15 months"
+    },
+    "correct": "A",
+    "explanation": "The vaccine section lists Rotarix at 2 and 4 months and RotaTeq at 2, 4, and 6 months. These vaccines reduce disease severity.",
+    "optionExplanations": {
+      "A": "Correct. Rotarix is given at 2 and 4 months in the notes.",
+      "B": "This is the RotaTeq schedule, not Rotarix.",
+      "C": "Rotarix is not listed as a birth-only vaccine.",
+      "D": "This timing is not the rotavirus schedule given in the uploaded section."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A child has viral gastroenteritis caused by a nonenveloped dsDNA virus. The clinical team asks which disinfectant strategy is emphasized for this organism. Which answer is most consistent with the notes",
+    "topic": "Adenovirus prevention",
+    "options": {
+      "A": "Alcohol alone is reliably sufficient for all enteric viruses",
+      "B": "No surface disinfection is needed because it is enveloped",
+      "C": "Handwashing and 10 percent bleach surface disinfection",
+      "D": "Only antiviral prophylaxis prevents spread"
+    },
+    "correct": "C",
+    "explanation": "The adenovirus prevention section lists handwashing and 10% bleach surface disinfection. The notes also emphasize that nonenveloped viruses require stronger agents than alcohol alone.",
+    "optionExplanations": {
+      "A": "The notes state alcohol best kills enveloped viruses; nonenveloped viruses need stronger agents.",
+      "B": "Adenovirus is nonenveloped and environmentally stable.",
+      "C": "Correct. Handwashing and 10% bleach are emphasized for adenovirus control.",
+      "D": "The section does not list antiviral prophylaxis as the prevention strategy."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient with norovirus is found to be a nonsecretor and is less susceptible to infection. Which viral binding interaction explains this finding",
+    "topic": "Norovirus susceptibility",
+    "options": {
+      "A": "Binding to CAR beneath tight junctions",
+      "B": "Binding to VP4 and VP7",
+      "C": "Binding to poliovirus receptor in Peyer patches",
+      "D": "Binding to ABO blood group antigens"
+    },
+    "correct": "D",
+    "explanation": "The norovirus section states that it binds ABO blood group antigens, with susceptibility A greater than O greater than B, and that nonsecretors are less susceptible.",
+    "optionExplanations": {
+      "A": "CAR is involved in adenovirus pathogenesis.",
+      "B": "VP4 and VP7 are rotavirus neutralizing antibody targets, not norovirus receptors.",
+      "C": "This is not the receptor interaction emphasized for norovirus in the notes.",
+      "D": "Correct. Norovirus binding to ABO blood group antigens explains secretor-related susceptibility."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A 2 year old has watery diarrhea from astrovirus. Which diagnosis method is most consistent with the uploaded section for routine cases",
+    "topic": "Astrovirus diagnosis",
+    "options": {
+      "A": "Blood culture on charcoal yeast extract agar",
+      "B": "Clinical diagnosis with supportive testing as needed",
+      "C": "Mandatory duodenal biopsy showing PAS positive macrophages",
+      "D": "Serum anti-endomysial IgA testing"
+    },
+    "correct": "B",
+    "explanation": "For astrovirus, the uploaded table lists diagnosis as clinical with supportive testing. Treatment is supportive.",
+    "optionExplanations": {
+      "A": "This type of culture is not used for astrovirus in the section.",
+      "B": "Correct. Astrovirus is generally diagnosed clinically, with supportive testing when needed.",
+      "C": "PAS-positive macrophages suggest Whipple disease, not astrovirus.",
+      "D": "Anti-endomysial IgA is a celiac disease test, not viral gastroenteritis testing."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A neonate with immunoglobulin deficiency develops severe disease from an enteric picornavirus with organ specific complications. Which therapy is listed in the uploaded notes for neonates or Ig deficient patients",
+    "topic": "Picornavirus treatment",
+    "options": {
+      "A": "Intravenous immunoglobulin",
+      "B": "Metronidazole followed by iodoquinol",
+      "C": "Oseltamivir",
+      "D": "Bismuth quadruple therapy"
+    },
+    "correct": "A",
+    "explanation": "For enteric picornaviruses, the section lists supportive care, IVIG for neonates or Ig-deficient patients, and organ-specific support for heart or CNS disease.",
+    "optionExplanations": {
+      "A": "Correct. IVIG is specifically listed for neonates and immunoglobulin-deficient patients.",
+      "B": "This is used for symptomatic intestinal or extraintestinal amebiasis, not enteric picornavirus.",
+      "C": "Oseltamivir targets influenza, not the enteric picornavirus category in these notes.",
+      "D": "Bismuth quadruple therapy is for H. pylori, not viral GI infection."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A child has enteric adenovirus serotype 41 infection. Which clinical course most closely matches the section",
+    "topic": "Enteric adenovirus clinical course",
+    "options": {
+      "A": "Incubation 1 to 8 hours with violent vomiting and resolution by dinner",
+      "B": "Watery diarrhea for 10 to 14 days, usually mild to moderate",
+      "C": "Bloody diarrhea with tenesmus from colonic invasion",
+      "D": "Chronic relapsing diarrhea for 2 months due to oocyst shedding"
+    },
+    "correct": "B",
+    "explanation": "Enteric adenovirus has an incubation of 3-10 days and causes diarrhea that can last 10-14 days, usually mild to moderate. The section notes this is longer than the usual norovirus course.",
+    "optionExplanations": {
+      "A": "A very short incubation with violent vomiting suggests preformed toxin food poisoning, not adenovirus.",
+      "B": "Correct. Adenovirus diarrhea commonly lasts 10-14 days.",
+      "C": "Bloody diarrhea with tenesmus suggests dysentery from invasive bacteria or amoebiasis, not typical viral gastroenteritis.",
+      "D": "This resembles prolonged protozoal illness patterns, not enteric adenovirus."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A board question asks which virus in the uploaded viral GI table is a large, naked, linear double stranded DNA virus that is environmentally stable. Which family should be selected",
+    "topic": "Viral classification",
+    "options": {
+      "A": "Reoviridae",
+      "B": "Caliciviridae",
+      "C": "Adenoviridae",
+      "D": "Astroviridae"
+    },
+    "correct": "C",
+    "explanation": "Adenoviridae are large, naked, linear dsDNA viruses. The enteric serotypes in the notes are Ad40 and Ad41.",
+    "optionExplanations": {
+      "A": "Reoviridae are dsRNA viruses with segmented genomes, including rotavirus.",
+      "B": "Caliciviridae, including norovirus, are nonenveloped positive sense ssRNA viruses.",
+      "C": "Correct. Adenoviridae are nonenveloped linear dsDNA viruses.",
+      "D": "Astroviridae are nonenveloped positive sense ssRNA viruses with some star-shaped virions."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A stool antigen test is ordered for a child with severe watery diarrhea and dehydration. The notes say stool is the best specimen and that EIA or rapid stool antigen tests are used. Which virus is being tested most directly",
+    "topic": "Rotavirus diagnosis",
+    "options": {
+      "A": "Norovirus",
+      "B": "Rotavirus",
+      "C": "Astrovirus",
+      "D": "Enteric adenovirus"
+    },
+    "correct": "B",
+    "explanation": "The rotavirus diagnosis row states that stool is the best specimen and that diagnosis is usually clinical with stool antigen testing by EIA or rapid tests.",
+    "optionExplanations": {
+      "A": "Norovirus diagnosis is usually clinical in the uploaded notes.",
+      "B": "Correct. Stool antigen testing is specifically emphasized for rotavirus.",
+      "C": "Astrovirus is listed as clinical with supportive testing.",
+      "D": "Enteric adenovirus testing targets Ad40/41 using PCR, ELISA, or latex agglutination."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A patient has viral gastroenteritis after an outbreak. The attending asks how viral gastroenteritis generally differs from bacterial dysentery and protozoal disease. Which statement best matches the board integration summary",
+    "topic": "Viral gastroenteritis differential",
+    "options": {
+      "A": "Viral illness usually has prominent blood and pus in stool",
+      "B": "Viral illness usually recurs for months like protozoal disease",
+      "C": "Viral illness requires antibacterial treatment when fever is absent",
+      "D": "Viral illness is usually watery, short course, and has minimal blood"
+    },
+    "correct": "D",
+    "explanation": "The differential section summarizes viral gastroenteritis as watery diarrhea with short course and minimal blood. Protozoa tend to have longer or recurrent disease, and bacterial infections are more associated with fever and bloody diarrhea.",
+    "optionExplanations": {
+      "A": "Blood and pus are more characteristic of dysentery, often bacterial or amoebic.",
+      "B": "Longer or recurrent disease is more typical of protozoal infection than viral gastroenteritis.",
+      "C": "The section emphasizes supportive treatment for viral gastroenteritis, not routine antibiotics.",
+      "D": "Correct. Viral gastroenteritis is classically watery, brief, and minimally inflammatory."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "An adult develops abrupt vomiting and watery diarrhea during a winter outbreak. Symptoms resolve in 48 hours. Which capsid and genome description best matches the most likely agent",
+    "topic": "Caliciviridae virology",
+    "options": {
+      "A": "Nonenveloped icosahedral positive sense ssRNA virus",
+      "B": "Enveloped helical positive sense ssRNA virus",
+      "C": "Nonenveloped double layered segmented dsRNA virus",
+      "D": "Large naked linear dsDNA virus"
+    },
+    "correct": "A",
+    "explanation": "Norovirus belongs to Caliciviridae, described in the notes as nonenveloped, icosahedral, positive sense ssRNA. It causes winter vomiting disease and outbreaks in older children and adults.",
+    "optionExplanations": {
+      "A": "Correct. This describes caliciviruses such as norovirus.",
+      "B": "This describes coronaviruses, which are enveloped and helical.",
+      "C": "This describes rotavirus in Reoviridae.",
+      "D": "This describes adenovirus, not norovirus."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A 4 year old has mild watery diarrhea and abdominal pain. Electron microscopy shows some star shaped nonenveloped icosahedral virions, and the virus has a positive sense RNA genome. Which virus is most likely",
+    "topic": "Astrovirus virology",
+    "options": {
+      "A": "Enteric adenovirus",
+      "B": "Rotavirus",
+      "C": "Astrovirus",
+      "D": "Norovirus"
+    },
+    "correct": "C",
+    "explanation": "Astrovirus is a nonenveloped, icosahedral positive sense ssRNA virus. The table notes that about 10% of virions are star-shaped and that it often affects neonates and children under 5, especially under 2.",
+    "optionExplanations": {
+      "A": "Adenovirus is dsDNA and not star-shaped in this section.",
+      "B": "Rotavirus is segmented dsRNA with a double layered capsid.",
+      "C": "Correct. Star-shaped virions point to astrovirus.",
+      "D": "Norovirus is a calicivirus associated with outbreaks, but the star-shaped virion clue fits astrovirus."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A question asks for the major global viral cause of epidemic nonbacterial gastroenteritis. The notes estimate this virus accounts for about 90 percent of epidemic nonbacterial gastroenteritis. Which answer is correct",
+    "topic": "Norovirus burden",
+    "options": {
+      "A": "Rotavirus",
+      "B": "Norovirus",
+      "C": "Astrovirus",
+      "D": "Adenovirus 41"
+    },
+    "correct": "B",
+    "explanation": "The overview states that norovirus accounts for approximately 90% of epidemic nonbacterial gastroenteritis and is a leading cause of foodborne outbreaks in the United States.",
+    "optionExplanations": {
+      "A": "Rotavirus is a major cause of severe childhood diarrhea, not the listed 90% cause of epidemic nonbacterial gastroenteritis.",
+      "B": "Correct. Norovirus is the major epidemic nonbacterial gastroenteritis agent in the notes.",
+      "C": "Astrovirus causes a smaller proportion of pediatric acute nonbacterial diarrhea.",
+      "D": "Adenovirus 40/41 causes pediatric viral gastroenteritis but is not the 90% epidemic agent listed."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A child with rotavirus develops severe dehydration. Which preventive intervention is emphasized as reducing disease severity",
+    "topic": "Rotavirus prevention",
+    "options": {
+      "A": "10 percent bleach only, because no vaccine exists",
+      "B": "Polio OPV booster",
+      "C": "Bismuth subsalicylate prophylaxis",
+      "D": "RotaTeq or Rotarix vaccination"
+    },
+    "correct": "D",
+    "explanation": "Rotavirus prevention in the section includes vaccines RotaTeq and Rotarix, which reduce disease severity, as well as handwashing and bleach.",
+    "optionExplanations": {
+      "A": "Bleach and handwashing help prevention, but the section clearly lists rotavirus vaccines.",
+      "B": "Polio vaccines are listed under Picornaviridae, not rotavirus prevention.",
+      "C": "Bismuth subsalicylate is not listed as rotavirus prophylaxis.",
+      "D": "Correct. RotaTeq and Rotarix are the rotavirus vaccines listed, and they reduce severity."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A child with adenovirus develops diarrhea after the virus disrupts tight junctions. What is the immediate barrier effect described in the uploaded notes",
+    "topic": "Adenovirus tight junction disruption",
+    "options": {
+      "A": "Decreased paracellular permeability with less fluid movement",
+      "B": "Permanent villous atrophy requiring lifelong gluten avoidance",
+      "C": "Increased paracellular permeability leading to diarrhea",
+      "D": "Inhibition of chloride secretion through CFTR blockade"
+    },
+    "correct": "C",
+    "explanation": "Adenovirus binding to CAR and soluble fiber protein interference disrupt tight junctions, which increases paracellular permeability. The section links this to epithelial death, inflammation, and diarrhea.",
+    "optionExplanations": {
+      "A": "The notes say permeability increases, not decreases.",
+      "B": "This describes celiac-type chronic villous injury, not adenoviral gastroenteritis.",
+      "C": "Correct. Tight junction disruption increases paracellular permeability.",
+      "D": "The section does not describe adenovirus as CFTR blockade."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A clinician is distinguishing viral gastroenteritis from parasites. Which pattern from the differential diagnosis table favors norovirus rather than Giardia or other protozoa",
+    "topic": "Viral vs protozoal diarrhea",
+    "options": {
+      "A": "Rapid resolution of watery symptoms after a short course",
+      "B": "Relapsing symptoms for months with cysts in stool",
+      "C": "Flask-shaped colonic ulcers",
+      "D": "Cholera-like diarrhea in AIDS due to acid-fast oocysts"
+    },
+    "correct": "A",
+    "explanation": "The board integration table emphasizes that viral symptoms resolve quickly, while protozoa often have longer duration or recurrence. Norovirus specifically has a 1-3 day course.",
+    "optionExplanations": {
+      "A": "Correct. Short watery illness strongly favors a viral cause such as norovirus.",
+      "B": "Relapsing prolonged symptoms with cysts suggest protozoal infection, not norovirus.",
+      "C": "Flask-shaped ulcers are associated with Entamoeba histolytica, not viral gastroenteritis.",
+      "D": "Acid-fast oocysts and severe cholera-like diarrhea in AIDS suggest Cryptosporidium."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A young child has a viral infection caused by a coronavirus with GI and respiratory symptoms. Which genome and envelope description matches the family in the classification table",
+    "topic": "Coronavirus classification",
+    "options": {
+      "A": "Nonenveloped dsDNA with icosahedral capsid",
+      "B": "Nonenveloped dsRNA with double layered capsid",
+      "C": "Nonenveloped positive sense ssRNA with icosahedral capsid",
+      "D": "Enveloped positive sense ssRNA with helical capsid"
+    },
+    "correct": "D",
+    "explanation": "The classification table includes Coronaviridae as positive sense ssRNA, enveloped, and helical, with SARS-CoV-2 associated with GI and respiratory disease.",
+    "optionExplanations": {
+      "A": "This describes Adenoviridae.",
+      "B": "This describes Reoviridae/rotavirus.",
+      "C": "This fits several nonenveloped positive sense RNA enteric viruses such as calicivirus or astrovirus, not coronavirus.",
+      "D": "Correct. Coronaviridae are enveloped positive sense ssRNA viruses with helical nucleocapsids."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "An infant with watery diarrhea has a rotavirus infection. Which immune targets are listed as neutralizing antibody targets for this virus",
+    "topic": "Rotavirus immunity",
+    "options": {
+      "A": "CAR and soluble fiber protein",
+      "B": "VP4 and VP7",
+      "C": "ABO A and O antigens",
+      "D": "NSP4 and p24"
+    },
+    "correct": "B",
+    "explanation": "The immunity row for rotavirus lists neutralizing antibodies to VP4 and VP7.",
+    "optionExplanations": {
+      "A": "CAR and soluble fiber protein are involved in adenovirus pathogenesis.",
+      "B": "Correct. VP4 and VP7 are the rotavirus neutralizing antibody targets listed.",
+      "C": "ABO antigens are involved in norovirus binding and susceptibility.",
+      "D": "NSP4 is the rotavirus toxin, but p24 is not relevant to the uploaded viral GI section."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A 2 year old with respiratory symptoms, high fever, and diarrhea tests positive for adenovirus. Which serotypes are associated with systemic disease in the notes rather than the classic enteric 40/41 pattern",
+    "topic": "Adenovirus systemic disease",
+    "options": {
+      "A": "Ad40 and Ad41",
+      "B": "Ad1 and Ad2",
+      "C": "Ad3 and Ad7",
+      "D": "Ad12 and Ad18"
+    },
+    "correct": "C",
+    "explanation": "The adenovirus row states that Ad3/7 can produce systemic disease with respiratory distress, diarrhea, and high fever, whereas Ad40/41 account for most adenoviral diarrhea.",
+    "optionExplanations": {
+      "A": "Ad40 and Ad41 are the classic enteric adenovirus serotypes.",
+      "B": "These are not the systemic disease serotypes highlighted in the section.",
+      "C": "Correct. Ad3/7 are associated with systemic disease, respiratory distress, diarrhea, and high fever.",
+      "D": "These serotypes are not the highlighted adenovirus systemic pattern in the notes."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A public health team is disinfecting a daycare after several cases of viral gastroenteritis. Which general statement from the notes is most accurate regarding alcohol and enteric viruses",
+    "topic": "Viral disinfection",
+    "options": {
+      "A": "Alcohol works best against enveloped viruses; nonenveloped viruses need stronger agents",
+      "B": "Alcohol is uniquely effective against all nonenveloped enteric viruses",
+      "C": "Bleach should never be used for viral gastroenteritis surfaces",
+      "D": "Handwashing is unnecessary for nonenveloped viruses"
+    },
+    "correct": "A",
+    "explanation": "The uploaded section states that alcohol can best kill enveloped viruses and that nonenveloped viruses need stronger agents. Several virus prevention rows emphasize handwashing and 10% bleach.",
+    "optionExplanations": {
+      "A": "Correct. Nonenveloped enteric viruses are environmentally stable and often need stronger disinfection than alcohol alone.",
+      "B": "This is the opposite of the note's point.",
+      "C": "Bleach is specifically listed for adenovirus, norovirus, and rotavirus prevention.",
+      "D": "Handwashing is repeatedly emphasized as prevention."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A question describes an infant with vomiting first, then watery diarrhea lasting several days, fever, cramps, and possible severe dehydration. The virus has a 7 hour replication cycle and is positive throughout disease progression in intestinal epithelia. Which diagnosis is most likely",
+    "topic": "Rotavirus clinical features",
+    "options": {
+      "A": "Norovirus infection",
+      "B": "Rotavirus infection",
+      "C": "Astrovirus infection",
+      "D": "Enteric adenovirus infection"
+    },
+    "correct": "B",
+    "explanation": "Rotavirus has vomiting first, watery diarrhea for 2-8 days, fever, cramps, and possible severe dehydration. The notes also mention a 7 hour replication cycle and that initial infection in intestinal epithelia remains virus-positive throughout disease progression.",
+    "optionExplanations": {
+      "A": "Norovirus also causes vomiting and diarrhea, but its usual duration is 1-3 days and the listed infant/7-hour replication details point to rotavirus.",
+      "B": "Correct. This is the classic rotavirus pattern from the uploaded section.",
+      "C": "Astrovirus is usually milder and linked to villus tip cell injury with possible systemic disease in immunocompromised patients.",
+      "D": "Enteric adenovirus diarrhea typically lasts 10-14 days and is associated with Ad40/41."
+    }
+  }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionMeta = document.getElementById("questionMeta");
+    const topicMeta = document.getElementById("topicMeta");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "segment" + (answers[q.id] ? " answered" : "") + (idx === currentIndex ? " active" : "");
+        btn.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(btn);
+      });
+    }
+
+    function scoreCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([id, choice]) => {
+        const q = questions.find(item => item.id === Number(id));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionMeta.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = q.stem.endsWith("?") ? q.stem : q.stem + "?";
+
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        if (showExplanation && letter === q.correct) btn.classList.add("correct");
+        if (showExplanation && letter === selected && letter !== q.correct) btn.classList.add("incorrect");
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(btn);
+      });
+
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        const optionExplanations = Object.entries(q.optionExplanations || {})
+          .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+          .join("");
+        explanationEl.style.display = "block";
+        explanationEl.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "correct-text" : "incorrect-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div>
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExplanations}
+          </div>
+        `;
+      } else {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+      }
+    }
+
+    function render() {
+      renderSegments();
+      scoreCounts();
+      renderQuestion();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === 0 ? questions.length - 1 : currentIndex - 1;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === questions.length - 1 ? 0 : currentIndex + 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.keys(answers).forEach(key => delete answers[key]);
+      currentIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

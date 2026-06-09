@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GI Cancer Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #ffffff; --muted: #64748b; --text: #0f172a; --border: #dbe3ef; --blue: #6fa8dc;
+      --green-bg: #dcfce7; --green-border: #22c55e; --green-text: #166534; --red-bg: #fee2e2; --red-border: #ef4444; --red-text: #991b1b; --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .segments { display: flex; gap: 4px; flex: 1; }
+    .segment { height: 8px; border-radius: 999px; border: 0; background: #334155; cursor: pointer; flex: 1; min-width: 4px; padding: 0; }
+    .segment.answered { background: var(--blue); } .segment.active { background: #e2e8f0; }
+    .status { display: flex; align-items: center; gap: 10px; color: #e2e8f0; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 14px; }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; } .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.18); padding: 18px; }
+    .meta { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    .stem { font-weight: 700; line-height: 1.45; margin: 0 0 14px; }
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option { width: 100%; text-align: left; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--gray-bg); cursor: pointer; font-size: 15px; line-height: 1.35; }
+    .option:hover { background: #f1f5f9; } .option.correct { background: var(--green-bg); border-color: var(--green-border); } .option.incorrect { background: var(--red-bg); border-color: var(--red-border); }
+    .explanation { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--gray-bg); border: 1px solid var(--border); font-size: 14px; line-height: 1.45; }
+    .explanation p { margin: 0 0 8px; } .explanation p:last-child { margin-bottom: 0; } .correct-text { color: var(--green-text); } .incorrect-text { color: var(--red-text); }
+    .option-explanations { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .nav { display: flex; justify-content: space-between; margin-top: 16px; }
+    .nav button { padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .nav button:hover { background: #f8fafc; }
+    .footer { color: #94a3b8; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="meta"><span id="questionNumber">Question 1 of 30</span><span id="topic"></span></div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav"><button onclick="goPrev()">Previous</button><button onclick="goNext()">Next</button></div>
+    </div>
+    <div class="footer">Food Borne Illness Quiz</div>
+  </div>
+<script>
+const questions = [
+  {
+    "id": 1,
+    "stem": "A 62 year old man with a long history of alcohol and cigarette use develops progressive dysphagia that began with solids and has advanced to liquids. Biopsy of a middle esophageal mass shows keratinizing malignant squamous cells. Which risk factor profile best fits this tumor type",
+    "topic": "Esophageal squamous cell carcinoma risk factors",
+    "options": {
+      "A": "Chronic GERD with Barrett esophagus and obesity",
+      "B": "CDH1 mutation with signet ring cells",
+      "C": "Alcohol and tobacco with chronic mucosal injury",
+      "D": "Mismatch repair defect with endometrial cancer risk"
+    },
+    "correct": "C",
+    "explanation": "Esophageal squamous cell carcinoma is associated with alcohol use, cigarette smoking, chronic mucosal damage such as caustic strictures, achalasia, radiation, tylosis, Plummer-Vinson syndrome, vitamin deficiencies, HPV infection, celiac sprue, and ingested carcinogens. It commonly presents with progressive dysphagia.",
+    "optionExplanations": {
+      "A": "This is the classic risk profile for esophageal adenocarcinoma, not SCC.",
+      "B": "CDH1 loss with signet ring cells is associated with diffuse gastric adenocarcinoma.",
+      "C": "Correct. Alcohol and tobacco are key risk factors for esophageal SCC.",
+      "D": "Mismatch repair defects describe Lynch syndrome and colorectal cancer risk."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A 58 year old obese man with chronic reflux has progressive dysphagia. Endoscopy shows a distal esophageal mass arising in a region of Barrett mucosa. Which histologic type is most likely",
+    "topic": "Esophageal adenocarcinoma",
+    "options": {
+      "A": "Adenocarcinoma",
+      "B": "Squamous cell carcinoma",
+      "C": "Gastrointestinal stromal tumor",
+      "D": "MALT lymphoma"
+    },
+    "correct": "A",
+    "explanation": "In the United States, esophageal adenocarcinoma is more common than SCC and is strongly associated with chronic GERD, reflux esophagitis, Barrett esophagus, obesity, male sex, and smoking. It typically arises distally.",
+    "optionExplanations": {
+      "A": "Correct. Barrett esophagus and distal location strongly support esophageal adenocarcinoma.",
+      "B": "SCC is classically linked to alcohol, tobacco, and chronic squamous mucosal injury.",
+      "C": "GIST is a mesenchymal tumor more commonly discussed as a gastric/small bowel sarcoma.",
+      "D": "MALT lymphoma is classically H. pylori-associated in the stomach."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A patient with esophageal cancer has new hoarseness and recurrent pneumonia. Which mechanism best explains these findings as local complications of tumor extension",
+    "topic": "Esophageal cancer local extension",
+    "options": {
+      "A": "Secretory diarrhea from serotonin production",
+      "B": "Portal hypertension with portosystemic collateral rupture",
+      "C": "Ectopic gastric mucosa causing ileal ulceration",
+      "D": "Recurrent laryngeal nerve involvement and tracheoesophageal fistula"
+    },
+    "correct": "D",
+    "explanation": "Esophageal cancer may extend locally and cause recurrent laryngeal nerve involvement leading to hoarseness and tracheoesophageal fistula leading to cough with swallowing and recurrent pneumonia.",
+    "optionExplanations": {
+      "A": "Serotonin production is associated with carcinoid syndrome, not direct esophageal tumor extension.",
+      "B": "Portal hypertension causes varices, not hoarseness and aspiration from tumor extension.",
+      "C": "Ectopic gastric mucosa in Meckel diverticulum causes painless bleeding in children.",
+      "D": "Correct. These are classic extension complications of esophageal cancer."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A patient with suspected esophageal carcinoma undergoes initial evaluation. Which test is diagnostic according to the section",
+    "topic": "Esophageal cancer diagnosis",
+    "options": {
+      "A": "Barium esophagram alone",
+      "B": "EGD with biopsy",
+      "C": "Serum CEA alone",
+      "D": "FIT testing"
+    },
+    "correct": "B",
+    "explanation": "EGD with biopsy is diagnostic for esophageal cancer. Barium esophagram can be used as screening but still requires EGD; CT/PET and EUS are used for staging.",
+    "optionExplanations": {
+      "A": "Barium esophagram may screen but is not definitive; EGD with biopsy is still needed.",
+      "B": "Correct. EGD with biopsy establishes the diagnosis.",
+      "C": "CEA is not the diagnostic test for esophageal cancer in this section.",
+      "D": "FIT is a colorectal screening/bleeding test, not the diagnostic test for esophageal cancer."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient with esophageal cancer has no distant disease on CT/PET. The team needs to assess tumor depth and nodal involvement before therapy. Which staging modality is most appropriate",
+    "topic": "Esophageal cancer staging",
+    "options": {
+      "A": "Annual fecal occult blood test",
+      "B": "Secretin stimulation test",
+      "C": "Endoscopic ultrasound with possible biopsy",
+      "D": "Hydrogen breath test"
+    },
+    "correct": "C",
+    "explanation": "For esophageal cancer staging, CT/PET evaluates distant disease. If no distant disease is present, EUS with possible biopsy is used to assess depth of invasion and nodal involvement.",
+    "optionExplanations": {
+      "A": "FOBT is used for colorectal cancer screening, not local esophageal staging.",
+      "B": "Secretin stimulation testing is used in Zollinger-Ellison syndrome.",
+      "C": "Correct. EUS evaluates depth and lymph nodes in potentially resectable esophageal cancer.",
+      "D": "Hydrogen breath testing evaluates lactose intolerance or carbohydrate malabsorption."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A 45 year old patient is diagnosed with diffuse-type gastric adenocarcinoma. Histology shows discohesive tumor cells with large mucin vacuoles and crescent-shaped peripheral nuclei. Which molecular abnormality is classically associated with this tumor",
+    "topic": "Diffuse gastric adenocarcinoma",
+    "options": {
+      "A": "APC loss only",
+      "B": "BCR-ABL fusion",
+      "C": "SOX2 amplification",
+      "D": "CDH1 mutation causing loss of E-cadherin"
+    },
+    "correct": "D",
+    "explanation": "Diffuse-type gastric adenocarcinoma is associated with CDH1 loss-of-function mutations or promoter hypermethylation, causing loss of E-cadherin-mediated cell adhesion. Histology shows signet ring cells and gross linitis plastica.",
+    "optionExplanations": {
+      "A": "APC loss is associated with WNT pathway activation in intestinal-type gastric cancer and colorectal cancer syndromes, not classic diffuse gastric cancer.",
+      "B": "BCR-ABL is associated with CML.",
+      "C": "SOX2 amplification is listed with esophageal SCC molecular abnormalities in the pathology section, not diffuse gastric cancer.",
+      "D": "Correct. CDH1/E-cadherin loss is the key diffuse gastric cancer abnormality."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A gastric resection specimen shows a thickened gastric wall with partial loss of rugal folds and a leather bottle appearance. Which gastric cancer subtype is most likely",
+    "topic": "Linitis plastica",
+    "options": {
+      "A": "Diffuse-type gastric adenocarcinoma",
+      "B": "Intestinal-type gastric adenocarcinoma",
+      "C": "Gastric MALT lymphoma",
+      "D": "Gastrointestinal stromal tumor"
+    },
+    "correct": "A",
+    "explanation": "Diffuse-type gastric adenocarcinoma classically produces diffuse wall thickening with loss of rugal folds called linitis plastica and shows signet ring cells.",
+    "optionExplanations": {
+      "A": "Correct. Linitis plastica is characteristic of diffuse-type gastric adenocarcinoma.",
+      "B": "Intestinal-type gastric adenocarcinoma more often forms exophytic or ulcerated masses and gland-forming tumors.",
+      "C": "MALT lymphoma shows lymphoid infiltration and may regress with H. pylori eradication.",
+      "D": "GIST is a sarcoma associated with c-KIT or PDGFRA mutations."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A man with chronic H. pylori gastritis, low socioeconomic status, smoking history, and pernicious anemia develops an ulcerating distal gastric mass. Biopsy shows hyperchromatic columnar cells forming glands through desmoplastic stroma. Which subtype is most likely",
+    "topic": "Intestinal-type gastric adenocarcinoma",
+    "options": {
+      "A": "Diffuse-type gastric adenocarcinoma",
+      "B": "Gastric MALT lymphoma",
+      "C": "Intestinal-type gastric adenocarcinoma",
+      "D": "Small bowel lymphoma"
+    },
+    "correct": "C",
+    "explanation": "Intestinal-type gastric adenocarcinoma is gland-forming, often forms distal ulcerating lesions, and is associated with environmental risk factors including H. pylori, smoking, alcohol, low socioeconomic status, obesity, pernicious anemia, atrophic gastritis, chronic PUD, and gastric stump.",
+    "optionExplanations": {
+      "A": "Diffuse-type gastric adenocarcinoma has signet ring cells, CDH1 loss, and linitis plastica.",
+      "B": "MALT lymphoma is a B-cell lymphoma with lymphoepithelial lesions.",
+      "C": "Correct. Gland formation with these risk factors supports intestinal-type gastric adenocarcinoma.",
+      "D": "Small bowel lymphoma usually involves the ileum and presents with abdominal symptoms/B symptoms."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A gastric tumor is described as intestinal type. Which molecular pathway abnormality listed in the section is most consistent with this subtype",
+    "topic": "Intestinal gastric cancer molecular genetics",
+    "options": {
+      "A": "CDH1 promoter hypermethylation only",
+      "B": "WNT pathway activation through APC loss or beta-catenin gain of function",
+      "C": "PML-RAR alpha fusion",
+      "D": "Loss of dystrophin"
+    },
+    "correct": "B",
+    "explanation": "Intestinal-type gastric adenocarcinoma is associated with TP53 loss, WNT pathway abnormalities including APC loss-of-function or beta-catenin/CTNNB1 gain-of-function, and RTK-RAS alterations such as HER2, EGFR, MET, and KRAS.",
+    "optionExplanations": {
+      "A": "CDH1 loss is characteristic of diffuse-type gastric cancer.",
+      "B": "Correct. WNT pathway activation is listed for intestinal-type gastric adenocarcinoma.",
+      "C": "PML-RAR alpha is acute promyelocytic leukemia.",
+      "D": "Dystrophin loss is unrelated to the GI cancer section."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient with gastric adenocarcinoma has a left supraclavicular lymph node, an umbilical nodule, and ovarian metastasis. Which pairing is accurate",
+    "topic": "Gastric cancer metastatic signs",
+    "options": {
+      "A": "Virchow node = umbilical metastasis; Sister Mary Joseph node = ovarian metastasis",
+      "B": "Blumer shelf = left supraclavicular node; Krukenberg tumor = rectal shelf",
+      "C": "Sister Mary Joseph node = left supraclavicular node; Virchow node = ovarian metastasis",
+      "D": "Virchow node = left supraclavicular node; Sister Mary Joseph node = umbilical metastasis; Krukenberg tumor = ovarian metastasis"
+    },
+    "correct": "D",
+    "explanation": "Gastric cancer metastasis signs include Virchow node at the left supraclavicular region, Sister Mary Joseph node at the umbilicus, Krukenberg tumor as ovarian metastasis, and Blumer shelf on rectal exam.",
+    "optionExplanations": {
+      "A": "Virchow is left supraclavicular, not umbilical; Krukenberg is ovarian.",
+      "B": "Blumer shelf is detected on rectal exam, not left supraclavicular.",
+      "C": "This reverses Virchow and Sister Mary Joseph and mislabels ovarian metastasis.",
+      "D": "Correct. This pairing matches the section."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient has persistent dyspepsia despite therapy and is older than 55. Which diagnostic test is indicated according to the gastric cancer diagnostic framework",
+    "topic": "Gastric cancer diagnosis",
+    "options": {
+      "A": "Upper endoscopy",
+      "B": "Hydrogen breath test",
+      "C": "Fecal calprotectin only",
+      "D": "Schilling test"
+    },
+    "correct": "A",
+    "explanation": "For gastric adenocarcinoma, upper endoscopy is indicated for suspicious symptoms, age greater than 55 with epigastric symptoms, or persistent dyspepsia despite therapy.",
+    "optionExplanations": {
+      "A": "Correct. Upper endoscopy evaluates concerning gastric symptoms and persistent dyspepsia.",
+      "B": "Hydrogen breath testing is used for lactose intolerance.",
+      "C": "Fecal calprotectin helps distinguish IBD from IBS, not gastric cancer diagnosis.",
+      "D": "Schilling testing evaluates B12 absorption and is not the test for gastric cancer."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A family has hereditary diffuse gastric cancer due to a pathogenic CDH1 mutation. Which management option is listed for this scenario",
+    "topic": "Hereditary diffuse gastric cancer management",
+    "options": {
+      "A": "Annual stool DNA testing only",
+      "B": "Aspirin as definitive primary prevention",
+      "C": "Prophylactic gastrectomy",
+      "D": "Radiation as the preferred curative therapy because gastric adenocarcinoma is radiosensitive"
+    },
+    "correct": "C",
+    "explanation": "The treatment section lists prophylactic gastrectomy for hereditary diffuse gastric cancer. It also notes that gastric adenocarcinoma is relatively radioresistant.",
+    "optionExplanations": {
+      "A": "Stool DNA testing is a colorectal screening modality, not management of hereditary diffuse gastric cancer.",
+      "B": "Aspirin may reduce adenoma formation in CRC prevention discussions but is not definitive HDGC management.",
+      "C": "Correct. Prophylactic gastrectomy is listed for HDGC.",
+      "D": "The section specifically notes gastric adenocarcinoma is relatively radioresistant."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient has an indolent extranodal marginal zone B-cell lymphoma of the stomach associated with H. pylori. Which outcome is most likely after eradication therapy when classic translocation-independent disease is present",
+    "topic": "Gastric MALT lymphoma",
+    "options": {
+      "A": "Immediate need for prophylactic colectomy",
+      "B": "Early remission is possible",
+      "C": "Conversion into carcinoid syndrome from serotonin release",
+      "D": "Guaranteed linitis plastica"
+    },
+    "correct": "B",
+    "explanation": "Gastric MALT lymphoma is commonly associated with H. pylori-driven chronic inflammation, and early remission can occur after H. pylori eradication when the tumor remains antigen dependent.",
+    "optionExplanations": {
+      "A": "Colectomy relates to colorectal disease such as UC-associated cancer risk or FAP, not gastric MALT lymphoma.",
+      "B": "Correct. H. pylori eradication can induce remission in many gastric MALT lymphomas.",
+      "C": "Carcinoid syndrome is due to neuroendocrine tumors, not MALT lymphoma.",
+      "D": "Linitis plastica is diffuse gastric adenocarcinoma."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A small bowel tumor causes ulceration, bleeding, and obstruction in the distal duodenum/proximal jejunum. Which risk factor set best matches small bowel adenocarcinoma in the section",
+    "topic": "Small bowel adenocarcinoma risk factors",
+    "options": {
+      "A": "Raw oyster ingestion and seawater wound exposure",
+      "B": "Alcohol plus tobacco with middle esophageal keratin pearls",
+      "C": "Recent macrolide therapy and pseudomembranes",
+      "D": "Crohn disease, Lynch syndrome, FAP, Peutz-Jeghers syndrome, celiac disease, cured meats, alcohol, and refined sugars"
+    },
+    "correct": "D",
+    "explanation": "Small bowel adenocarcinoma occurs most often in the distal duodenum and proximal jejunum and can cause ulceration, bleeding, and obstruction. Listed risk factors include Crohn disease, Lynch syndrome, FAP, Peutz-Jeghers, celiac disease, and diet including cured meats, alcohol, and refined sugars.",
+    "optionExplanations": {
+      "A": "This points to Vibrio vulnificus infection, not small bowel adenocarcinoma.",
+      "B": "This describes esophageal squamous cell carcinoma.",
+      "C": "This suggests C. difficile colitis, not small bowel adenocarcinoma.",
+      "D": "Correct. These are the listed risk factors for small bowel adenocarcinoma."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A patient has episodic flushing, diarrhea, bronchospasm, and right-sided cardiac lesions. Imaging shows a tumor in the ileum with liver metastases. Which lab finding is most appropriate for this syndrome",
+    "topic": "Carcinoid tumor",
+    "options": {
+      "A": "Increased urinary 5-HIAA with increased serotonin/chromogranin A",
+      "B": "Positive tissue transglutaminase IgA only",
+      "C": "Low serum gastrin after secretin stimulation",
+      "D": "Philadelphia chromosome"
+    },
+    "correct": "A",
+    "explanation": "Carcinoid tumors often arise in the ileum and can cause carcinoid syndrome after liver or lung metastases. Symptoms include flushing, diarrhea, bronchospasm, and tricuspid/pulmonic lesions. Labs include chromogranin A, serotonin, and urinary 5-HIAA.",
+    "optionExplanations": {
+      "A": "Correct. Urinary 5-HIAA, serotonin, and chromogranin A support carcinoid syndrome.",
+      "B": "tTG-IgA screens for celiac disease.",
+      "C": "Gastrin testing is used for gastrinoma/Zollinger-Ellison syndrome.",
+      "D": "Philadelphia chromosome is BCR-ABL, associated with CML."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient with carcinoid syndrome develops symptoms only after tumor spread beyond the intestine. What explains why liver metastases are classically associated with systemic carcinoid syndrome",
+    "topic": "Carcinoid syndrome and metastasis",
+    "options": {
+      "A": "Metastases cause CDH1 loss in gastric mucosa",
+      "B": "The tumor converts all serotonin into bile acids",
+      "C": "Pulmonary metastases prevent any serotonin secretion",
+      "D": "Hepatic involvement allows vasoactive products to bypass first-pass metabolism"
+    },
+    "correct": "D",
+    "explanation": "Intestinal carcinoid tumors often produce serotonin, but systemic carcinoid syndrome usually requires liver or lung metastases so vasoactive products can reach systemic circulation rather than being cleared by first-pass hepatic metabolism.",
+    "optionExplanations": {
+      "A": "CDH1 loss is linked to diffuse gastric cancer, not carcinoid syndrome.",
+      "B": "The tumor uses tryptophan to make serotonin; it does not convert serotonin into bile acids.",
+      "C": "Lung metastases can also allow systemic symptoms; they do not prevent secretion.",
+      "D": "Correct. Liver metastases allow systemic effects of serotonin and other mediators."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A small intestinal malignancy in the ileum presents with abdominal symptoms and B symptoms in a patient with autoimmune disease and celiac disease. Which tumor type best fits",
+    "topic": "Small bowel lymphoma",
+    "options": {
+      "A": "Small bowel adenocarcinoma",
+      "B": "Carcinoid tumor",
+      "C": "Small bowel lymphoma",
+      "D": "Gastric GIST"
+    },
+    "correct": "C",
+    "explanation": "Small bowel lymphoma usually occurs in the ileum and commonly presents with abdominal symptoms and B symptoms. Risk factors include immunodeficiency, autoimmune disease, Crohn disease, and celiac disease.",
+    "optionExplanations": {
+      "A": "Small bowel adenocarcinoma is typically distal duodenum/proximal jejunum and causes ulceration, bleeding, and obstruction.",
+      "B": "Carcinoid tumor often arises in the ileum but classically causes flushing, diarrhea, bronchospasm, and cardiac lesions when metastatic.",
+      "C": "Correct. Ileal tumor plus B symptoms and autoimmune/celiac risk fits small bowel lymphoma.",
+      "D": "GIST is a sarcoma associated with KIT/PDGFRA mutations and is not the best fit for B symptoms."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A 10 year old child has hundreds to thousands of adenomatous colon polyps due to an autosomal dominant APC mutation with incomplete penetrance. Which management is listed for this syndrome",
+    "topic": "Familial adenomatous polyposis",
+    "options": {
+      "A": "No screening until age 45",
+      "B": "Sigmoidoscopy age 8-12 and total proctocolectomy",
+      "C": "Annual pelvic exam only",
+      "D": "Antibiotics for H. pylori eradication"
+    },
+    "correct": "B",
+    "explanation": "Familial adenomatous polyposis is due to APC mutation and causes hundreds to thousands of adenomas with essentially 100% CRC risk by age 40. The section lists genetic testing, sigmoidoscopy starting age 8-12, and total proctocolectomy.",
+    "optionExplanations": {
+      "A": "Average-risk CRC screening starts at 45, but FAP requires much earlier surveillance.",
+      "B": "Correct. Early sigmoidoscopy and total proctocolectomy are listed for FAP.",
+      "C": "Annual pelvic exams are part of Lynch syndrome-associated gynecologic surveillance, not FAP management alone.",
+      "D": "H. pylori eradication is used for gastric MALT lymphoma and ulcer disease, not FAP."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A patient has familial adenomatous polyposis plus osteomas, desmoid tumors, lipomas, supernumerary teeth, and retinal pigment epithelium hypertrophy. Which syndrome is this",
+    "topic": "Gardner syndrome",
+    "options": {
+      "A": "Gardner syndrome",
+      "B": "Lynch syndrome",
+      "C": "Peutz-Jeghers syndrome",
+      "D": "Cronkhite-Canada syndrome"
+    },
+    "correct": "A",
+    "explanation": "Gardner syndrome is a variant of FAP with extraintestinal findings including osteomas, desmoid tumors, lipomas, supernumerary teeth, and retinal pigment epithelium hypertrophy.",
+    "optionExplanations": {
+      "A": "Correct. These extraintestinal findings with FAP define Gardner syndrome.",
+      "B": "Lynch syndrome is due to mismatch repair defects and is associated with endometrial, ovarian, stomach, small bowel, and urinary tract cancers.",
+      "C": "Peutz-Jeghers is associated with STK11 mutation and mucocutaneous pigmentation.",
+      "D": "Cronkhite-Canada is listed among hamartomatous polyposis syndromes but not with these FAP features."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A patient has FAP with a CNS tumor. Which syndrome is described by this combination according to the section",
+    "topic": "Turcot syndrome",
+    "options": {
+      "A": "Peutz-Jeghers syndrome",
+      "B": "Hereditary diffuse gastric cancer",
+      "C": "Gardner syndrome",
+      "D": "Turcot syndrome"
+    },
+    "correct": "D",
+    "explanation": "Turcot syndrome is a variant of FAP associated with CNS tumors, including glioblastoma, medulloblastoma, and ependymoma.",
+    "optionExplanations": {
+      "A": "Peutz-Jeghers involves STK11 mutation and mucocutaneous pigmentation.",
+      "B": "Hereditary diffuse gastric cancer is associated with CDH1 mutations.",
+      "C": "Gardner syndrome is FAP plus osteomas, desmoid tumors, lipomas, supernumerary teeth, and retinal pigment epithelium hypertrophy.",
+      "D": "Correct. FAP plus CNS tumors is Turcot syndrome."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A 42 year old patient has colon cancer and a family history of endometrial and ovarian cancers. Testing shows microsatellite instability due to a mismatch repair defect involving MLH1/MSH2. Which screening recommendation is listed for this syndrome",
+    "topic": "Lynch syndrome screening",
+    "options": {
+      "A": "Sigmoidoscopy only at age 8-12 followed by total proctocolectomy",
+      "B": "No colonoscopy until age 75",
+      "C": "Colonoscopy every 1-2 years starting age 25 with gynecologic surveillance for women",
+      "D": "Bleach surface disinfection and handwashing only"
+    },
+    "correct": "C",
+    "explanation": "Lynch syndrome/HNPCC is due to mismatch repair defects such as MLH1 or MSH2 and is associated with early-onset CRC plus endometrial, ovarian, stomach, small bowel, and urinary tract cancers. Screening includes colonoscopy every 1-2 years starting age 25 and, for women, annual pelvic exam, transvaginal ultrasound, and endometrial biopsy.",
+    "optionExplanations": {
+      "A": "This matches FAP rather than Lynch syndrome.",
+      "B": "Lynch syndrome requires early and frequent colonoscopy.",
+      "C": "Correct. This is the listed Lynch screening approach.",
+      "D": "This is viral outbreak prevention, not hereditary cancer screening."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient has mucocutaneous pigmentation and hamartomatous polyps involving the small intestine. Genetic testing shows an STK11 mutation. Which syndrome is most likely",
+    "topic": "Peutz-Jeghers syndrome",
+    "options": {
+      "A": "Lynch syndrome",
+      "B": "Peutz-Jeghers syndrome",
+      "C": "Gardner syndrome",
+      "D": "FAP"
+    },
+    "correct": "B",
+    "explanation": "Peutz-Jeghers syndrome is an autosomal dominant hamartomatous polyposis syndrome due to STK11 mutation and is associated with mucocutaneous pigmentation and increased GI, pancreatic, breast, and gonadal cancer risk.",
+    "optionExplanations": {
+      "A": "Lynch syndrome is due to mismatch repair defects.",
+      "B": "Correct. STK11 plus mucocutaneous pigmentation indicates Peutz-Jeghers.",
+      "C": "Gardner is a variant of FAP with osteomas and soft tissue findings.",
+      "D": "FAP is due to APC mutation and causes hundreds to thousands of adenomas."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A 68 year old man has iron deficiency anemia and occult blood loss. Colonoscopy finds a proximal colon mass. Which clinical pattern is most typical of proximal colorectal cancer",
+    "topic": "Colorectal cancer presentation by location",
+    "options": {
+      "A": "Early stool caliber change from napkin-ring constriction only",
+      "B": "Tracheoesophageal fistula with cough during swallowing",
+      "C": "Dysphagia from gastroesophageal junction involvement",
+      "D": "Bleeding and anemia"
+    },
+    "correct": "D",
+    "explanation": "Colorectal cancer may be asymptomatic early. Proximal colon cancers often present with bleeding and iron deficiency anemia, while distal cancers more often cause stool caliber change from luminal narrowing.",
+    "optionExplanations": {
+      "A": "Stool caliber change is more typical of distal colon cancer.",
+      "B": "Tracheoesophageal fistula is a complication of esophageal cancer extension.",
+      "C": "Dysphagia from GE junction involvement is an advanced gastric/esophageal-type presentation.",
+      "D": "Correct. Proximal CRC often presents with occult bleeding and anemia."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A distal colon tumor forms a circumferential constricting lesion with luminal narrowing. Which gross description from the section matches this pattern",
+    "topic": "Distal colorectal cancer morphology",
+    "options": {
+      "A": "Napkin-ring constriction",
+      "B": "Linitis plastica",
+      "C": "Watermelon stomach",
+      "D": "Corkscrew esophagus"
+    },
+    "correct": "A",
+    "explanation": "The section contrasts proximal colon polypoid masses with distal colon napkin-ring constrictions causing luminal narrowing.",
+    "optionExplanations": {
+      "A": "Correct. Distal CRC can form napkin-ring constrictions.",
+      "B": "Linitis plastica is diffuse gastric adenocarcinoma.",
+      "C": "Watermelon stomach describes gastric antral vascular ectasia.",
+      "D": "Corkscrew esophagus is seen in diffuse esophageal spasm."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A clinician is counseling an asymptomatic average-risk adult about colorectal cancer screening. According to the section, what age range should routine screening generally cover",
+    "topic": "Average-risk CRC screening",
+    "options": {
+      "A": "Age 8-12 only",
+      "B": "Only after age 85",
+      "C": "Age 45-75, with individualization from 76-85",
+      "D": "Only after symptoms develop"
+    },
+    "correct": "C",
+    "explanation": "The section states that average-risk asymptomatic colorectal cancer screening starts at age 45 and continues through 75, with individualized decisions from age 76-85.",
+    "optionExplanations": {
+      "A": "Age 8-12 sigmoidoscopy applies to FAP screening.",
+      "B": "Routine screening is not only after 85.",
+      "C": "Correct. Average-risk screening is age 45-75, individualized 76-85.",
+      "D": "Screening is specifically for asymptomatic patients and aims to detect precancerous lesions."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A patient asks how often a colonoscopy is recommended as an average-risk colorectal cancer screening modality according to the table. What is the listed interval",
+    "topic": "CRC screening interval",
+    "options": {
+      "A": "Every year",
+      "B": "Every 10 years",
+      "C": "Every 3 years",
+      "D": "Every 5 years"
+    },
+    "correct": "B",
+    "explanation": "The CRC screening table lists colonoscopy every 10 years for average-risk screening. FIT/FOBT is annual, stool DNA is every 3 years, and sigmoidoscopy, CT colonography, and capsule colonoscopy are every 5 years.",
+    "optionExplanations": {
+      "A": "Annual screening applies to FIT/FOBT.",
+      "B": "Correct. Colonoscopy is listed every 10 years.",
+      "C": "Every 3 years applies to stool DNA testing.",
+      "D": "Every 5 years applies to sigmoidoscopy, CT colonography, and capsule colonoscopy."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A patient has one first-degree relative diagnosed with colorectal cancer at age 52. Which high-risk screening recommendation is listed",
+    "topic": "High-risk CRC screening family history",
+    "options": {
+      "A": "Start at age 45 and repeat every 10 years only",
+      "B": "Start only after symptoms begin",
+      "C": "Screen with annual upper endoscopy only",
+      "D": "Start at age 40 or 10 years younger than the youngest affected relative, whichever comes first, and repeat every 5 years"
+    },
+    "correct": "D",
+    "explanation": "For one first-degree relative with CRC before age 60, or at least two first-degree relatives, the section lists colonoscopy starting at age 40 or 10 years younger than the youngest affected relative, whichever comes first, every 5 years.",
+    "optionExplanations": {
+      "A": "This is closer to average-risk timing or the recommendation when one FDR is diagnosed after age 60.",
+      "B": "High-risk patients need screening before symptoms.",
+      "C": "Upper endoscopy is not the listed high-risk CRC screening method.",
+      "D": "Correct. This is the listed high-risk family history recommendation."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient with ulcerative colitis involving the colon asks about colon cancer surveillance. Which recommendation is listed for UC or Crohn colitis",
+    "topic": "IBD-associated CRC surveillance",
+    "options": {
+      "A": "Begin at age 8 regardless of disease duration",
+      "B": "No surveillance because inflammation protects against cancer",
+      "C": "Start 8-10 years after diagnosis and repeat every 1-2 years",
+      "D": "Use FIT only every 10 years"
+    },
+    "correct": "C",
+    "explanation": "For UC or Crohn colitis, the section lists starting colorectal cancer surveillance 8-10 years after diagnosis and repeating every 1-2 years.",
+    "optionExplanations": {
+      "A": "Age 8-12 screening is for FAP, not IBD colitis surveillance.",
+      "B": "IBD colitis increases CRC risk and requires surveillance.",
+      "C": "Correct. Start 8-10 years after diagnosis, then every 1-2 years.",
+      "D": "FIT every 10 years is not the listed IBD surveillance plan."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A patient with colorectal cancer has a serum tumor marker of 8 ng/mL before surgery. According to the section, which statement best describes this marker",
+    "topic": "CEA in colorectal cancer",
+    "options": {
+      "A": "CEA is nonspecific but is used for prognosis and surveillance; values above 5 ng/mL are poor prognostic signs",
+      "B": "CEA is diagnostic and replaces colonoscopy",
+      "C": "CEA is only elevated in viral gastroenteritis",
+      "D": "CEA is the genetic mutation that causes FAP"
+    },
+    "correct": "A",
+    "explanation": "The section lists CEA as a nonspecific colorectal cancer lab used for prognosis and surveillance, with poor prognosis if above 5 ng/mL.",
+    "optionExplanations": {
+      "A": "Correct. CEA is nonspecific but useful for prognosis/surveillance.",
+      "B": "Colonoscopy is diagnostic; CEA does not replace it.",
+      "C": "CEA is not a viral gastroenteritis marker.",
+      "D": "FAP is due to APC mutation, not CEA."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A patient has stage III colon cancer without distant metastasis. Which treatment approach is listed for this stage",
+    "topic": "Colon cancer treatment by stage",
+    "options": {
+      "A": "Observation only",
+      "B": "Surgery with adjuvant chemotherapy",
+      "C": "Neoadjuvant chemoradiation before surgery as the standard colon cancer approach",
+      "D": "Antibiotics and bismuth quadruple therapy"
+    },
+    "correct": "B",
+    "explanation": "For colon cancer, the section lists stage I as surgery, stage II high-risk as surgery plus adjuvant chemotherapy, stage III as surgery plus adjuvant chemotherapy, and metastatic disease as chemotherapy. Rectal stage II-III uses neoadjuvant chemoradiation before surgery.",
+    "optionExplanations": {
+      "A": "Stage III colon cancer requires treatment beyond observation.",
+      "B": "Correct. Stage III colon cancer is treated with surgery plus adjuvant chemotherapy.",
+      "C": "Neoadjuvant chemoradiation is listed for stage II-III rectal cancer, not standard colon cancer in this section.",
+      "D": "Bismuth quadruple therapy is for H. pylori, not colon cancer."
+    }
+  }
+];
+let currentIndex = 0;
+const answers = {};
+function renderSegments() {
+  const el = document.getElementById('segments'); el.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const b = document.createElement('button');
+    b.className = 'segment' + (answers[q.id] !== undefined ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    b.title = q.topic || `Question ${idx + 1}`;
+    b.onclick = () => { currentIndex = idx; render(); };
+    el.appendChild(b);
+  });
+}
+function renderCounts() {
+  let right = 0, wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(x => x.id === Number(id));
+    if (q && choice === q.correct) right++; else if (q) wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+}
+function render() {
+  const q = questions[currentIndex]; const selected = answers[q.id] || null;
+  document.getElementById('progressText').textContent = `${currentIndex + 1} / ${questions.length}`;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+  const opts = document.getElementById('options'); opts.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    if (selected && letter === q.correct) btn.classList.add('correct');
+    else if (selected && letter === selected && letter !== q.correct) btn.classList.add('incorrect');
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; render(); };
+    opts.appendChild(btn);
+  });
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const isCorrect = selected === q.correct;
+    exp.style.display = 'block';
+    exp.innerHTML = `<p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p><p class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${isCorrect ? 'Nice job. ' : 'Good attempt. '}${q.explanation}</p><div class="option-explanations"><p><strong>Why each option is right or wrong:</strong></p>${Object.entries(q.optionExplanations).map(([l,t]) => `<p><strong>${l}.</strong> ${t}</p>`).join('')}</div>`;
+  } else { exp.style.display = 'none'; exp.innerHTML = ''; }
+  renderSegments(); renderCounts();
+}
+function goNext() { currentIndex = (currentIndex + 1) % questions.length; render(); }
+function goPrev() { currentIndex = (currentIndex - 1 + questions.length) % questions.length; render(); }
+render();
+</script>
+</body>
+</html>

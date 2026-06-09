@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cirrhosis Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      background: #334155;
+      transition: background 0.15s ease;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .pill.red { background: rgba(127, 29, 29, 0.65); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, 0.65); color: #d1fae5; }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+      background: var(--card);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px 0;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #eef2f7; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 0 0 8px 0; }
+    .explanation p:last-child { margin-bottom: 0; }
+    .green-text { color: var(--green-text); }
+    .red-text { color: var(--red-text); }
+    .option-explanations {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .nav button {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .nav button:hover { background: #f1f5f9; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red"><span>×</span><span id="wrongCount">0</span></span>
+        <span class="pill green"><span>✓</span><span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionCount">Question 1 of 30</span>
+        <span id="topicText">Topic: Cirrhosis</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display: none;"></div>
+      <div class="nav">
+        <button id="prevButton">Previous</button>
+        <button id="nextButton">Next</button>
+      </div>
+    </div>
+
+    <p class="footer"></p>
+  </div>
+
+  <script>
+    const questions = [
+    {
+        "id": 1,
+        "stem": "A 58 year old man with chronic hepatitis C undergoes liver biopsy. The report describes diffuse bridging fibrosis, regenerative hepatocellular nodules, and distortion of normal hepatic architecture. Which statement best describes this process",
+        "topic": "Cirrhosis definition",
+        "options": {
+            "A": "A reversible accumulation of triglycerides in hepatocytes without architectural distortion",
+            "B": "An acute neutrophilic inflammation of bile ducts caused by ascending infection",
+            "C": "A congenital absence of intestinal bile excretion due to neonatal biliary obstruction",
+            "D": "An irreversible end result of chronic liver injury with fibrosis and regenerative nodules"
+        },
+        "correct": "D",
+        "explanation": "Cirrhosis is the irreversible final common pathway of chronic inflammatory, metabolic, toxic, or congestive injury and is characterized by diffuse fibrosis, regenerative nodules, and distorted hepatic architecture.",
+        "optionExplanations": {
+            "A": "Incorrect. A reversible accumulation of triglycerides in hepatocytes without architectural distortion does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. An acute neutrophilic inflammation of bile ducts caused by ascending infection does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. A congenital absence of intestinal bile excretion due to neonatal biliary obstruction does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Cirrhosis is the irreversible final common pathway of chronic inflammatory, metabolic, toxic, or congestive injury and is characterized by diffuse fibrosis, regenerative nodules, and distorted hepatic architecture."
+        }
+    },
+    {
+        "id": 2,
+        "stem": "A pathology slide from a patient with end stage liver disease shows islands of regenerating hepatocytes surrounded by interconnecting fibrous bands. Which paired finding is the pathologic hallmark of this diagnosis",
+        "topic": "Pathologic hallmark",
+        "options": {
+            "A": "Nodular regeneration plus fibrosis",
+            "B": "Fatty change plus ballooning degeneration",
+            "C": "Lymphoid follicles plus germinal centers",
+            "D": "Crypt abscesses plus continuous mucosal ulceration"
+        },
+        "correct": "A",
+        "explanation": "The hallmark of cirrhosis is nodular regeneration with fibrosis. This represents attempted liver repair that becomes uncoordinated and ineffective, producing distorted vascular architecture and impaired hepatocyte perfusion.",
+        "optionExplanations": {
+            "A": "Correct. The hallmark of cirrhosis is nodular regeneration with fibrosis. This represents attempted liver repair that becomes uncoordinated and ineffective, producing distorted vascular architecture and impaired hepatocyte perfusion.",
+            "B": "Incorrect. Fatty change plus ballooning degeneration does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Lymphoid follicles plus germinal centers does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Crypt abscesses plus continuous mucosal ulceration does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 3,
+        "stem": "A patient with long standing alcohol use disorder develops cirrhosis. Gross examination shows many small nodules measuring less than 3 mm throughout the liver. Which morphologic type is most consistent with this cause",
+        "topic": "Morphologic type",
+        "options": {
+            "A": "Macronodular cirrhosis",
+            "B": "Post necrotic cirrhosis with nodules greater than 3 mm",
+            "C": "Micronodular cirrhosis",
+            "D": "Biliary atresia with absence of extrahepatic bile ducts"
+        },
+        "correct": "C",
+        "explanation": "Micronodular cirrhosis has nodules less than 3 mm and is classically associated with alcoholic cirrhosis.",
+        "optionExplanations": {
+            "A": "Incorrect. Macronodular cirrhosis does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Post necrotic cirrhosis with nodules greater than 3 mm does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Micronodular cirrhosis has nodules less than 3 mm and is classically associated with alcoholic cirrhosis.",
+            "D": "Incorrect. Biliary atresia with absence of extrahepatic bile ducts does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 4,
+        "stem": "A toxic exposure preferentially injures the hepatic region with the lowest oxygen tension and greatest toxin exposure. Which hepatic zone is most vulnerable",
+        "topic": "Zonal organization",
+        "options": {
+            "A": "Zone 1 periportal region",
+            "B": "Zone 3 pericentral region",
+            "C": "Zone 2 intermediate region",
+            "D": "Portal triad connective tissue"
+        },
+        "correct": "B",
+        "explanation": "Zone 3, the pericentral region, receives the least oxygen and has the greatest toxin exposure, making it vulnerable to ischemic and toxic injury.",
+        "optionExplanations": {
+            "A": "Incorrect. Zone 1 periportal region does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Zone 3, the pericentral region, receives the least oxygen and has the greatest toxin exposure, making it vulnerable to ischemic and toxic injury.",
+            "C": "Incorrect. Zone 2 intermediate region does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Portal triad connective tissue does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 5,
+        "stem": "A 49 year old woman with chronic autoimmune hepatitis develops progressive hepatic fibrosis. Activation of which cell type is the key driver of collagen and extracellular matrix deposition in this process",
+        "topic": "Hepatic stellate cells",
+        "options": {
+            "A": "Kupffer cells in hepatic sinusoids",
+            "B": "Cholangiocytes lining large extrahepatic ducts",
+            "C": "Fenestrated endothelial cells of the central vein",
+            "D": "Hepatic stellate Ito cells in the space of Disse"
+        },
+        "correct": "D",
+        "explanation": "Hepatic stellate cells, also called Ito cells, are located in the space of Disse, store vitamin A, and when activated become myofibroblasts that deposit collagen and extracellular matrix.",
+        "optionExplanations": {
+            "A": "Incorrect. Kupffer cells in hepatic sinusoids does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Cholangiocytes lining large extrahepatic ducts does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Fenestrated endothelial cells of the central vein does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Hepatic stellate cells, also called Ito cells, are located in the space of Disse, store vitamin A, and when activated become myofibroblasts that deposit collagen and extracellular matrix."
+        }
+    },
+    {
+        "id": 6,
+        "stem": "A histology question asks where the vitamin A storing liver cell that becomes a collagen producing myofibroblast is located. Which space is being described",
+        "topic": "Space of Disse",
+        "options": {
+            "A": "Space of Mall",
+            "B": "Peritoneal cavity",
+            "C": "Space of Disse",
+            "D": "Submucosal venous plexus"
+        },
+        "correct": "C",
+        "explanation": "Hepatic stellate cells are in the space of Disse, between hepatocytes and sinusoidal endothelium. When activated they drive hepatic fibrosis.",
+        "optionExplanations": {
+            "A": "Incorrect. Space of Mall does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Peritoneal cavity does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Hepatic stellate cells are in the space of Disse, between hepatocytes and sinusoidal endothelium. When activated they drive hepatic fibrosis.",
+            "D": "Incorrect. Submucosal venous plexus does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 7,
+        "stem": "A medical student reviewing normal liver histology identifies a portal triad. Which set of structures belongs in this region",
+        "topic": "Portal triad",
+        "options": {
+            "A": "Portal vein, hepatic artery, bile duct, lymphatics, and nerves",
+            "B": "Central vein, Kupffer cell, hepatocyte plate, and sinusoids only",
+            "C": "Azygos vein, esophageal varix, and gastric submucosal vein",
+            "D": "Splenic vein, renal vein, ureter, and pancreatic duct"
+        },
+        "correct": "A",
+        "explanation": "The portal triad contains branches of the portal vein, hepatic artery, bile duct, lymphatics, and nerves.",
+        "optionExplanations": {
+            "A": "Correct. The portal triad contains branches of the portal vein, hepatic artery, bile duct, lymphatics, and nerves.",
+            "B": "Incorrect. Central vein, Kupffer cell, hepatocyte plate, and sinusoids only does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Azygos vein, esophageal varix, and gastric submucosal vein does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Splenic vein, renal vein, ureter, and pancreatic duct does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 8,
+        "stem": "A cirrhotic liver has extensive fibrous scarring and architectural distortion. Which hemodynamic consequence follows directly from this structural change",
+        "topic": "Structural consequences",
+        "options": {
+            "A": "Increased intrahepatic blood flow with decreased portal pressure",
+            "B": "Decreased intrahepatic blood flow with increased intrahepatic resistance",
+            "C": "Decreased splanchnic blood flow as the primary driver of portal hypertension",
+            "D": "Complete obstruction of the common bile duct without portal hypertension"
+        },
+        "correct": "B",
+        "explanation": "Fibrous scarring and architectural distortion decrease intrahepatic blood flow and increase intrahepatic resistance, leading to portal hypertension and intrahepatic shunting.",
+        "optionExplanations": {
+            "A": "Incorrect. Increased intrahepatic blood flow with decreased portal pressure does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Fibrous scarring and architectural distortion decrease intrahepatic blood flow and increase intrahepatic resistance, leading to portal hypertension and intrahepatic shunting.",
+            "C": "Incorrect. Decreased splanchnic blood flow as the primary driver of portal hypertension does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Complete obstruction of the common bile duct without portal hypertension does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 9,
+        "stem": "A board question asks for the most common causes of cirrhosis in the Western world. Which pair is most appropriate",
+        "topic": "Etiology by region",
+        "options": {
+            "A": "Hepatitis B and schistosomiasis",
+            "B": "Primary biliary cholangitis and Wilson disease only",
+            "C": "Alcohol and hepatitis C",
+            "D": "Biliary atresia and neonatal cholestasis"
+        },
+        "correct": "C",
+        "explanation": "In the Western world, the most common causes of cirrhosis listed in the material are alcohol and hepatitis C.",
+        "optionExplanations": {
+            "A": "Incorrect. Hepatitis B and schistosomiasis does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Primary biliary cholangitis and Wilson disease only does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. In the Western world, the most common causes of cirrhosis listed in the material are alcohol and hepatitis C.",
+            "D": "Incorrect. Biliary atresia and neonatal cholestasis does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 10,
+        "stem": "A physician is comparing common causes of cirrhosis worldwide. Which cause is emphasized as a major cause in developing countries",
+        "topic": "Etiology developing countries",
+        "options": {
+            "A": "Alcohol only",
+            "B": "Primary sclerosing cholangitis",
+            "C": "Cryptogenic cirrhosis only",
+            "D": "Hepatitis B"
+        },
+        "correct": "D",
+        "explanation": "The section lists hepatitis B as a common cause of cirrhosis in developing countries.",
+        "optionExplanations": {
+            "A": "Incorrect. Alcohol only does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Primary sclerosing cholangitis does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Cryptogenic cirrhosis only does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. The section lists hepatitis B as a common cause of cirrhosis in developing countries."
+        }
+    },
+    {
+        "id": 11,
+        "stem": "A patient with cirrhosis has thrombocytopenia, leukopenia, ascites, and dilated submucosal veins in the distal esophagus. These findings are best explained by which complication",
+        "topic": "Portal hypertension complications",
+        "options": {
+            "A": "Impaired bilirubin conjugation alone",
+            "B": "Portal hypertension",
+            "C": "Hepatic adenoma",
+            "D": "Acute viral hepatitis without architectural distortion"
+        },
+        "correct": "B",
+        "explanation": "Portal hypertension explains ascites, gastroesophageal varices, and hypersplenism, which can cause thrombocytopenia and leukopenia.",
+        "optionExplanations": {
+            "A": "Incorrect. Impaired bilirubin conjugation alone does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Portal hypertension explains ascites, gastroesophageal varices, and hypersplenism, which can cause thrombocytopenia and leukopenia.",
+            "C": "Incorrect. Hepatic adenoma does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Acute viral hepatitis without architectural distortion does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 12,
+        "stem": "A patient with advanced cirrhosis has edema, ascites, easy bleeding, jaundice, and confusion. Which lab pattern is most directly attributable to hepatocellular dysfunction from impaired protein synthesis and metabolic failure",
+        "topic": "Hepatocellular dysfunction labs",
+        "options": {
+            "A": "Low albumin, elevated PT/INR, elevated bilirubin, low BUN, and elevated ammonia",
+            "B": "High albumin, shortened PT, low bilirubin, high BUN, and low ammonia",
+            "C": "Isolated elevated amylase and lipase with normal synthetic function",
+            "D": "High urinary coproporphyrins with otherwise normal liver function"
+        },
+        "correct": "A",
+        "explanation": "Hepatocellular dysfunction causes decreased albumin, increased PT/INR, impaired bilirubin metabolism with jaundice, low BUN, and increased ammonia causing encephalopathy.",
+        "optionExplanations": {
+            "A": "Correct. Hepatocellular dysfunction causes decreased albumin, increased PT/INR, impaired bilirubin metabolism with jaundice, low BUN, and increased ammonia causing encephalopathy.",
+            "B": "Incorrect. High albumin, shortened PT, low bilirubin, high BUN, and low ammonia does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Isolated elevated amylase and lipase with normal synthetic function does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. High urinary coproporphyrins with otherwise normal liver function does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 13,
+        "stem": "A patient asks whether all alcohol associated liver injuries are irreversible. Which sequence correctly describes alcohol related liver disease progression",
+        "topic": "Alcohol liver disease progression",
+        "options": {
+            "A": "Cirrhosis, fatty liver, then alcoholic hepatitis",
+            "B": "Primary biliary cirrhosis, hepatitis B, then fatty liver",
+            "C": "Fatty liver, alcoholic hepatitis, then cirrhosis",
+            "D": "Hepatorenal syndrome, ascites, then fatty liver"
+        },
+        "correct": "C",
+        "explanation": "Alcohol related liver disease progresses from fatty liver, which is reversible, to alcoholic hepatitis, also reversible, and then cirrhosis, which is irreversible. All three may coexist.",
+        "optionExplanations": {
+            "A": "Incorrect. Cirrhosis, fatty liver, then alcoholic hepatitis does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Primary biliary cirrhosis, hepatitis B, then fatty liver does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Alcohol related liver disease progresses from fatty liver, which is reversible, to alcoholic hepatitis, also reversible, and then cirrhosis, which is irreversible. All three may coexist.",
+            "D": "Incorrect. Hepatorenal syndrome, ascites, then fatty liver does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 14,
+        "stem": "A 52 year old man has chronic hepatitis C and heavy alcohol use. His clinician warns that this combination accelerates progression to cirrhosis. Which concept explains this warning",
+        "topic": "Synergistic injury",
+        "options": {
+            "A": "Alcohol completely prevents hepatitis C induced fibrosis",
+            "B": "Hepatitis C only causes acute self limited injury",
+            "C": "Alcohol use protects against portal hypertension",
+            "D": "Alcohol and hepatitis C produce synergistic liver injury"
+        },
+        "correct": "D",
+        "explanation": "The material emphasizes that alcohol plus hepatitis C causes synergistic injury and more rapid progression.",
+        "optionExplanations": {
+            "A": "Incorrect. Alcohol completely prevents hepatitis C induced fibrosis does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Hepatitis C only causes acute self limited injury does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Alcohol use protects against portal hypertension does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. The material emphasizes that alcohol plus hepatitis C causes synergistic injury and more rapid progression."
+        }
+    },
+    {
+        "id": 15,
+        "stem": "A 48 year old woman has fatigue, pruritus, and autoimmune features including Sjogren syndrome. Testing reveals anti mitochondrial antibodies. Which lesion best explains her disease",
+        "topic": "Primary biliary cirrhosis",
+        "options": {
+            "A": "Progressive immune mediated destruction of interlobular bile ducts",
+            "B": "Granulomatous inflammation of the terminal ileum",
+            "C": "Loss of inhibitory neurons in the lower esophageal sphincter",
+            "D": "Liquefactive necrosis of the esophagus after alkali ingestion"
+        },
+        "correct": "A",
+        "explanation": "Primary biliary cirrhosis has a female predominance, anti mitochondrial antibodies, fatigue and pruritus, and progressive immune mediated destruction of interlobular bile ducts. It is associated with Sjogren syndrome, scleroderma, and CREST syndrome.",
+        "optionExplanations": {
+            "A": "Correct. Primary biliary cirrhosis has a female predominance, anti mitochondrial antibodies, fatigue and pruritus, and progressive immune mediated destruction of interlobular bile ducts. It is associated with Sjogren syndrome, scleroderma, and CREST syndrome.",
+            "B": "Incorrect. Granulomatous inflammation of the terminal ileum does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Loss of inhibitory neurons in the lower esophageal sphincter does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Liquefactive necrosis of the esophagus after alkali ingestion does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 16,
+        "stem": "A 55 year old woman with anti mitochondrial antibody positive primary biliary cirrhosis has pruritus. Which therapy from the material can decrease pruritus, slow progression, and delay transplant",
+        "topic": "PBC treatment",
+        "options": {
+            "A": "Octreotide",
+            "B": "Ursodeoxycholic acid",
+            "C": "Nonselective beta blockers",
+            "D": "Albumin plus antibiotics"
+        },
+        "correct": "B",
+        "explanation": "Ursodeoxycholic acid replaces toxic bile acids and can reduce pruritus, slow progression, and delay transplant in primary biliary cirrhosis.",
+        "optionExplanations": {
+            "A": "Incorrect. Octreotide does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Ursodeoxycholic acid replaces toxic bile acids and can reduce pruritus, slow progression, and delay transplant in primary biliary cirrhosis.",
+            "C": "Incorrect. Nonselective beta blockers does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Albumin plus antibiotics does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 17,
+        "stem": "A patient with cirrhosis undergoes hepatic venous pressure assessment. At which portal pressure gradient do varices begin to form according to the section",
+        "topic": "Portal pressure thresholds",
+        "options": {
+            "A": "3 to 6 mm Hg",
+            "B": "Greater than or equal to 12 mm Hg",
+            "C": "Exactly 1 mm Hg",
+            "D": "Greater than 10 mm Hg"
+        },
+        "correct": "D",
+        "explanation": "Normal portal pressure gradient is 3 to 6 mm Hg. Varices form when the gradient is greater than 10 mm Hg, and rupture risk increases at 12 mm Hg or more.",
+        "optionExplanations": {
+            "A": "Incorrect. 3 to 6 mm Hg does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Greater than or equal to 12 mm Hg does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Exactly 1 mm Hg does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Normal portal pressure gradient is 3 to 6 mm Hg. Varices form when the gradient is greater than 10 mm Hg, and rupture risk increases at 12 mm Hg or more."
+        }
+    },
+    {
+        "id": 18,
+        "stem": "A patient with cirrhosis presents with acute upper GI bleeding from large esophageal varices. Which acute management pairing is most appropriate based on the section",
+        "topic": "Variceal hemorrhage acute management",
+        "options": {
+            "A": "Phenobarbital plus phototherapy",
+            "B": "Ursodeoxycholic acid plus liver biopsy",
+            "C": "Octreotide or somatostatin plus endoscopic band ligation",
+            "D": "Oral lactase plus gluten free diet"
+        },
+        "correct": "C",
+        "explanation": "Acute variceal hemorrhage is treated with octreotide or somatostatin to reduce splanchnic blood flow plus endoscopic band ligation.",
+        "optionExplanations": {
+            "A": "Incorrect. Phenobarbital plus phototherapy does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Ursodeoxycholic acid plus liver biopsy does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Acute variceal hemorrhage is treated with octreotide or somatostatin to reduce splanchnic blood flow plus endoscopic band ligation.",
+            "D": "Incorrect. Oral lactase plus gluten free diet does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 19,
+        "stem": "A patient with cirrhosis has large esophageal varices found on screening endoscopy but no active bleeding. Which medication strategy is used for primary prophylaxis",
+        "topic": "Primary prophylaxis varices",
+        "options": {
+            "A": "Nonselective beta blockers such as propranolol or nadolol",
+            "B": "High dose corticosteroids",
+            "C": "Metoclopramide before meals",
+            "D": "Tetracycline and bismuth quadruple therapy"
+        },
+        "correct": "A",
+        "explanation": "Primary prophylaxis for variceal bleeding uses nonselective beta blockers such as propranolol or nadolol to decrease portal flow and resistance, lowering portal pressure. Long acting nitrates are an alternative.",
+        "optionExplanations": {
+            "A": "Correct. Primary prophylaxis for variceal bleeding uses nonselective beta blockers such as propranolol or nadolol to decrease portal flow and resistance, lowering portal pressure. Long acting nitrates are an alternative.",
+            "B": "Incorrect. High dose corticosteroids does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Metoclopramide before meals does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Tetracycline and bismuth quadruple therapy does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 20,
+        "stem": "A patient with decompensated cirrhosis develops a distended abdomen with shifting dullness. Which mechanism best explains this ascites",
+        "topic": "Ascites mechanism",
+        "options": {
+            "A": "Direct pancreatic enzyme leakage into the peritoneal cavity",
+            "B": "Autoimmune destruction of parietal cells causing achlorhydria",
+            "C": "IgA deposition in mesangium causing nephritic syndrome only",
+            "D": "Portal hypertension causing splanchnic vasodilation, renal sodium and water retention, and fluid transudation"
+        },
+        "correct": "D",
+        "explanation": "Ascites is excess fluid in the peritoneal cavity, most commonly due to cirrhosis. Portal hypertension leads to splanchnic vasodilation, increased renal sodium and water retention, and fluid transudation.",
+        "optionExplanations": {
+            "A": "Incorrect. Direct pancreatic enzyme leakage into the peritoneal cavity does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Autoimmune destruction of parietal cells causing achlorhydria does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. IgA deposition in mesangium causing nephritic syndrome only does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Ascites is excess fluid in the peritoneal cavity, most commonly due to cirrhosis. Portal hypertension leads to splanchnic vasodilation, increased renal sodium and water retention, and fluid transudation."
+        }
+    },
+    {
+        "id": 21,
+        "stem": "A cirrhotic patient with ascites is treated with overly aggressive diuresis. Which complication set is specifically warned about in the section",
+        "topic": "Aggressive diuresis",
+        "options": {
+            "A": "Kernicterus, biliary atresia, and neonatal seizures",
+            "B": "Electrolyte imbalance, hypovolemia, and hepatic encephalopathy",
+            "C": "Steatorrhea, dermatitis herpetiformis, and villous atrophy",
+            "D": "Achalasia, bird beak sign, and regurgitation of non acidic food"
+        },
+        "correct": "B",
+        "explanation": "Aggressive diuresis for ascites can cause electrolyte imbalance, hypovolemia, and hepatic encephalopathy.",
+        "optionExplanations": {
+            "A": "Incorrect. Kernicterus, biliary atresia, and neonatal seizures does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Aggressive diuresis for ascites can cause electrolyte imbalance, hypovolemia, and hepatic encephalopathy.",
+            "C": "Incorrect. Steatorrhea, dermatitis herpetiformis, and villous atrophy does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Achalasia, bird beak sign, and regurgitation of non acidic food does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 22,
+        "stem": "A hospitalized patient with cirrhosis and ascites develops fever, abdominal pain, and diffuse tenderness. Paracentesis is concerning for infection of ascitic fluid. Which management is emphasized",
+        "topic": "Spontaneous bacterial peritonitis",
+        "options": {
+            "A": "No treatment because it is always asymptomatic",
+            "B": "Immediate esophagectomy",
+            "C": "Antibiotics plus albumin because this is a medical emergency",
+            "D": "Ursodeoxycholic acid only"
+        },
+        "correct": "C",
+        "explanation": "Spontaneous bacterial peritonitis is infection of ascitic fluid, may present with fever, abdominal pain, and tenderness, and is a medical emergency treated with antibiotics and albumin.",
+        "optionExplanations": {
+            "A": "Incorrect. No treatment because it is always asymptomatic does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Immediate esophagectomy does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Spontaneous bacterial peritonitis is infection of ascitic fluid, may present with fever, abdominal pain, and tenderness, and is a medical emergency treated with antibiotics and albumin.",
+            "D": "Incorrect. Ursodeoxycholic acid only does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 23,
+        "stem": "A patient with cirrhosis develops spontaneous bacterial peritonitis. Which organisms are listed as associated pathogens in the section",
+        "topic": "SBP organisms",
+        "options": {
+            "A": "Enterobacteriaceae and pneumococcus",
+            "B": "Candida pseudohyphae and HSV multinucleated cells",
+            "C": "Giardia cysts and Entamoeba trophozoites",
+            "D": "Rotavirus and norovirus only"
+        },
+        "correct": "A",
+        "explanation": "Spontaneous bacterial peritonitis is associated with organisms such as Enterobacteriaceae and pneumococcus.",
+        "optionExplanations": {
+            "A": "Correct. Spontaneous bacterial peritonitis is associated with organisms such as Enterobacteriaceae and pneumococcus.",
+            "B": "Incorrect. Candida pseudohyphae and HSV multinucleated cells does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Giardia cysts and Entamoeba trophozoites does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Rotavirus and norovirus only does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 24,
+        "stem": "A patient with severe cirrhosis and ascites develops rapidly worsening renal function. Kidney biopsy would be expected to show structurally normal kidneys, and renal function could recover if liver function recovered. What is the diagnosis",
+        "topic": "Hepatorenal syndrome definition",
+        "options": {
+            "A": "Acute tubular necrosis from myoglobin casts",
+            "B": "Poststreptococcal glomerulonephritis",
+            "C": "Autosomal dominant polycystic kidney disease",
+            "D": "Hepatorenal syndrome"
+        },
+        "correct": "D",
+        "explanation": "Hepatorenal syndrome is functional renal failure in serious liver disease, almost always with liver dysfunction and ascites. The kidneys are structurally normal and can regain function with recovery of liver function.",
+        "optionExplanations": {
+            "A": "Incorrect. Acute tubular necrosis from myoglobin casts does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Poststreptococcal glomerulonephritis does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Autosomal dominant polycystic kidney disease does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Hepatorenal syndrome is functional renal failure in serious liver disease, almost always with liver dysfunction and ascites. The kidneys are structurally normal and can regain function with recovery of liver function."
+        }
+    },
+    {
+        "id": 25,
+        "stem": "A patient with cirrhosis and ascites develops functional renal failure after a large volume paracentesis. Which additional precipitating event is also listed for this syndrome",
+        "topic": "Hepatorenal syndrome triggers",
+        "options": {
+            "A": "Lactose ingestion",
+            "B": "Infection or aggressive diuresis",
+            "C": "Short segment Barrett esophagus",
+            "D": "Adenovirus CAR receptor binding"
+        },
+        "correct": "B",
+        "explanation": "Hepatorenal syndrome can be precipitated by infection, aggressive diuresis, or large volume paracentesis in patients with cirrhosis and ascites.",
+        "optionExplanations": {
+            "A": "Incorrect. Lactose ingestion does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. Hepatorenal syndrome can be precipitated by infection, aggressive diuresis, or large volume paracentesis in patients with cirrhosis and ascites.",
+            "C": "Incorrect. Short segment Barrett esophagus does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Adenovirus CAR receptor binding does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 26,
+        "stem": "A patient with end stage cirrhosis has personality changes, cognitive impairment, and altered consciousness. Which abnormality is most directly associated with this syndrome",
+        "topic": "Hepatic encephalopathy",
+        "options": {
+            "A": "Low serum gastrin from parietal cell failure",
+            "B": "Low IgA from Peyer patch dysfunction",
+            "C": "Increased ammonia due to liver failure and portosystemic shunting",
+            "D": "High urinary 5 HIAA from carcinoid syndrome"
+        },
+        "correct": "C",
+        "explanation": "Hepatic encephalopathy is a neuropsychiatric syndrome due to liver failure and portosystemic shunting, associated with increased ammonia.",
+        "optionExplanations": {
+            "A": "Incorrect. Low serum gastrin from parietal cell failure does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Low IgA from Peyer patch dysfunction does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. Hepatic encephalopathy is a neuropsychiatric syndrome due to liver failure and portosystemic shunting, associated with increased ammonia.",
+            "D": "Incorrect. High urinary 5 HIAA from carcinoid syndrome does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 27,
+        "stem": "A cirrhotic patient has hypoxemia from intrapulmonary vascular dilation without architectural lung damage. Oxygenation improves with 100 percent oxygen. Which mechanism best describes this syndrome",
+        "topic": "Hepatopulmonary syndrome",
+        "options": {
+            "A": "Bronchoconstriction from histamine release after allergen exposure",
+            "B": "Pulmonary embolism from a deep venous thrombus",
+            "C": "Reduced respiratory drive from opioid intoxication",
+            "D": "Functional right to left shunt from impaired oxygen transfer across dilated pulmonary vessels"
+        },
+        "correct": "D",
+        "explanation": "Hepatopulmonary syndrome occurs in cirrhosis and is due to intrapulmonary vascular dilation that impairs oxygen transfer, producing a functional right to left shunt. It can improve with 100 percent oxygen and is reversed by liver transplant.",
+        "optionExplanations": {
+            "A": "Incorrect. Bronchoconstriction from histamine release after allergen exposure does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. Pulmonary embolism from a deep venous thrombus does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. Reduced respiratory drive from opioid intoxication does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Correct. Hepatopulmonary syndrome occurs in cirrhosis and is due to intrapulmonary vascular dilation that impairs oxygen transfer, producing a functional right to left shunt. It can improve with 100 percent oxygen and is reversed by liver transplant."
+        }
+    },
+    {
+        "id": 28,
+        "stem": "A patient with cirrhosis is being evaluated for transplant priority. Which tool is used to predict mortality and prioritize the sickest patients",
+        "topic": "Liver transplantation",
+        "options": {
+            "A": "MELD score",
+            "B": "FIB 4 only",
+            "C": "APGAR score",
+            "D": "CHADS VASc score"
+        },
+        "correct": "A",
+        "explanation": "The MELD score predicts mortality and is used to prioritize the sickest patients for liver transplantation.",
+        "optionExplanations": {
+            "A": "Correct. The MELD score predicts mortality and is used to prioritize the sickest patients for liver transplantation.",
+            "B": "Incorrect. FIB 4 only does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Incorrect. APGAR score does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. CHADS VASc score does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 29,
+        "stem": "A clinician wants a noninvasive fibrosis assessment tool mainly used for hepatitis C and hepatitis B. Which risk stratification tool is named in the section",
+        "topic": "FIB-4",
+        "options": {
+            "A": "Ranson criteria",
+            "B": "FIB 4 calculator",
+            "C": "Wells score",
+            "D": "Child Pugh is the only tool named"
+        },
+        "correct": "B",
+        "explanation": "The section names the FIB 4 calculator as a fibrosis assessment tool mainly for HCV and HBV.",
+        "optionExplanations": {
+            "A": "Incorrect. Ranson criteria does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Correct. The section names the FIB 4 calculator as a fibrosis assessment tool mainly for HCV and HBV.",
+            "C": "Incorrect. Wells score does not match the cirrhosis concept being tested in this vignette.",
+            "D": "Incorrect. Child Pugh is the only tool named does not match the cirrhosis concept being tested in this vignette."
+        }
+    },
+    {
+        "id": 30,
+        "stem": "A patient with cirrhosis asks why so many different problems occur, including varices, ascites, hypersplenism, and hepatorenal syndrome. Which high yield principle best connects these complications",
+        "topic": "Cirrhosis board pearl",
+        "options": {
+            "A": "Cirrhosis is fully reversible with diuresis alone",
+            "B": "The kidneys are always structurally destroyed early in cirrhosis",
+            "C": "Portal hypertension explains most complications of cirrhosis",
+            "D": "Hepatic stellate cell activation prevents fibrosis"
+        },
+        "correct": "C",
+        "explanation": "A core board pearl is that portal hypertension explains most complications of cirrhosis. Activated stellate cells drive fibrosis, hepatorenal syndrome has structurally normal kidneys, and cirrhosis itself is irreversible.",
+        "optionExplanations": {
+            "A": "Incorrect. Cirrhosis is fully reversible with diuresis alone does not match the cirrhosis concept being tested in this vignette.",
+            "B": "Incorrect. The kidneys are always structurally destroyed early in cirrhosis does not match the cirrhosis concept being tested in this vignette.",
+            "C": "Correct. A core board pearl is that portal hypertension explains most complications of cirrhosis. Activated stellate cells drive fibrosis, hepatorenal syndrome has structurally normal kidneys, and cirrhosis itself is irreversible.",
+            "D": "Incorrect. Hepatic stellate cell activation prevents fibrosis does not match the cirrhosis concept being tested in this vignette."
+        }
+    }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionCount = document.getElementById("questionCount");
+    const topicText = document.getElementById("topicText");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function updateCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([qid, choice]) => {
+        const q = questions.find((item) => item.id === Number(qid));
+        if (!q) return;
+        if (choice === q.correct) right += 1;
+        else wrong += 1;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const button = document.createElement("button");
+        button.className = "segment" +
+          (answers[q.id] !== undefined ? " answered" : "") +
+          (idx === currentIndex ? " active" : "");
+        button.title = q.topic || `Question ${idx + 1}`;
+        button.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        button.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(button);
+      });
+    }
+
+    function renderOptions(q, selectedChoice) {
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const button = document.createElement("button");
+        let cls = "option";
+        if (selectedChoice !== null && letter === q.correct) cls += " correct";
+        else if (selectedChoice !== null && letter === selectedChoice && letter !== q.correct) cls += " incorrect";
+        button.className = cls;
+        button.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        button.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(button);
+      });
+    }
+
+    function renderExplanation(q, selectedChoice) {
+      if (selectedChoice === null) {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+        return;
+      }
+      const isCorrect = selectedChoice === q.correct;
+      const optionLines = Object.entries(q.optionExplanations || {})
+        .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+        .join("");
+      explanationEl.style.display = "block";
+      explanationEl.innerHTML = `
+        <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+        <p class="${isCorrect ? "green-text" : "red-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+        <div class="option-explanations">
+          <p><strong>Why each option is right or wrong:</strong></p>
+          ${optionLines}
+        </div>
+      `;
+    }
+
+    function goToQuestion(index) {
+      if (index < 0) currentIndex = questions.length - 1;
+      else if (index >= questions.length) currentIndex = 0;
+      else currentIndex = index;
+      render();
+    }
+
+    function render() {
+      const q = questions[currentIndex];
+      const selectedChoice = answers[q.id] !== undefined ? answers[q.id] : null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionCount.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicText.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = `${q.stem}?`;
+
+      renderSegments();
+      renderOptions(q, selectedChoice);
+      renderExplanation(q, selectedChoice);
+      updateCounts();
+    }
+
+    document.getElementById("prevButton").addEventListener("click", () => goToQuestion(currentIndex - 1));
+    document.getElementById("nextButton").addEventListener("click", () => goToQuestion(currentIndex + 1));
+
+    render();
+  </script>
+</body>
+</html>

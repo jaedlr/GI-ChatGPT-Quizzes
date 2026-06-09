@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malabsorption Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p {
+      margin: 8px 0;
+    }
+    .correct-text { color: var(--green-text); }
+    .incorrect-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .nav button, .reset {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f8fafc; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionMeta">Question 1 of 30</span>
+        <span id="topicMeta">Topic: GI Pharmacology</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button id="prevBtn">Previous</button>
+        <button class="reset" id="resetBtn">Reset quiz</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">GI Pharmacology quiz • 30 questions</div>
+  </div>
+
+  <script>
+    const questions = [
+  {
+    "id": 1,
+    "stem": "A 35-year-old man develops chronic loose stools that improve when he stops eating. Stool studies show increased stool osmotic gap, preserved electrolyte absorption, and no blood or fecal leukocytes. Which category best explains this diarrhea",
+    "topic": "Osmotic diarrhea framework",
+    "options": {
+      "A": "Secretory diarrhea from active chloride secretion",
+      "B": "Inflammatory diarrhea from mucosal ulceration",
+      "C": "Osmotic diarrhea from poorly absorbed solutes",
+      "D": "Motility-related diarrhea from rapid transit only"
+    },
+    "correct": "C",
+    "explanation": "The malabsorption section defines osmotic diarrhea as diarrhea with an increased stool osmotic gap, intact electrolyte absorption, and stool volume that decreases with fasting or stopping the offending substance.",
+    "optionExplanations": {
+      "A": "Secretory diarrhea is large-volume, painless, persists with fasting, and has no osmotic gap.",
+      "B": "Inflammatory diarrhea would suggest blood, fecal leukocytes, fever, or mucosal injury.",
+      "C": "Correct. Increased osmotic gap with improvement on fasting is classic osmotic diarrhea.",
+      "D": "Motility disorders can cause chronic diarrhea, but the osmotic gap and fasting response point more specifically to osmotic diarrhea."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A patient with chronic diarrhea continues to have large-volume watery stools despite fasting overnight. The diarrhea is described as painless and stool testing shows no osmotic gap. Which mechanism is most likely",
+    "topic": "Secretory diarrhea",
+    "options": {
+      "A": "Secretory diarrhea",
+      "B": "Lactose intolerance",
+      "C": "Factitious magnesium-induced osmotic diarrhea",
+      "D": "Celiac sprue with villous atrophy only"
+    },
+    "correct": "A",
+    "explanation": "Secretory diarrhea is characterized in the section as large-volume and painless, persisting with fasting, and lacking an osmotic gap.",
+    "optionExplanations": {
+      "A": "Correct. Persistence during fasting with no osmotic gap is the key secretory pattern.",
+      "B": "Lactose intolerance is osmotic and should improve after lactose avoidance or fasting.",
+      "C": "Magnesium causes osmotic diarrhea and would produce an osmotic gap.",
+      "D": "Celiac disease is a malabsorptive disorder, but the most direct pattern here is secretory diarrhea."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A 32-year-old man has bloating, gas, abdominal discomfort, and diarrhea after milk and dairy products. He has no weight loss, no fecal blood, and no fecal white blood cells. Which next step is most appropriate according to the section",
+    "topic": "Lactose intolerance management",
+    "options": {
+      "A": "Immediate jejunal biopsy",
+      "B": "Colonoscopy with random biopsies",
+      "C": "Empiric broad-spectrum antibiotics",
+      "D": "Trial of a strict lactose-free diet"
+    },
+    "correct": "D",
+    "explanation": "The section emphasizes clinical response to a lactose-free diet and lists trial of lactose-free diet before testing as a board pearl for lactose intolerance.",
+    "optionExplanations": {
+      "A": "Jejunal biopsy is used to confirm celiac disease after positive serology, not typical lactose intolerance.",
+      "B": "Colonoscopy is unnecessary for classic lactose-triggered symptoms without alarm features in this section.",
+      "C": "Antibiotics are not the indicated first step for lactose intolerance.",
+      "D": "Correct. A lactose-free diet trial is the appropriate initial approach."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "An adult develops bloating, abdominal discomfort, gas, and diarrhea after switching to a diet with more dairy. Hydrogen breath testing shows elevated hydrogen in expired air. Which diagnosis is most likely",
+    "topic": "Lactose intolerance diagnosis",
+    "options": {
+      "A": "Celiac disease",
+      "B": "Lactose intolerance",
+      "C": "Whipple disease",
+      "D": "Tropical sprue"
+    },
+    "correct": "B",
+    "explanation": "Lactase deficiency leaves undigested lactose in the gut, increasing stool osmolality and allowing colonic fermentation that produces gas and elevated hydrogen on breath testing.",
+    "optionExplanations": {
+      "A": "Celiac disease is gluten-related and is screened with tTG-IgA, not primarily diagnosed by hydrogen breath testing.",
+      "B": "Correct. Dairy-triggered gas, bloating, osmotic diarrhea, and positive hydrogen breath test fit lactose intolerance.",
+      "C": "Whipple disease causes malabsorption with systemic features and PAS-positive macrophages.",
+      "D": "Tropical sprue is not the classic dairy-triggered hydrogen breath test diagnosis in this section."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient with lactase deficiency develops diarrhea after ingesting dairy. Which mechanism best explains the abdominal distention and gas",
+    "topic": "Lactose intolerance pathophysiology",
+    "options": {
+      "A": "Autoimmune destruction of parietal cells",
+      "B": "Toxin-mediated chloride secretion",
+      "C": "Colonic fermentation of undigested lactose",
+      "D": "Transmural granulomatous inflammation"
+    },
+    "correct": "C",
+    "explanation": "The section states that undigested lactose increases stool osmotic gap and is fermented by colonic bacteria, producing gas, bloating, and discomfort.",
+    "optionExplanations": {
+      "A": "Parietal cell loss is related to pernicious anemia, not lactase deficiency.",
+      "B": "Toxin-mediated chloride secretion would be a secretory diarrheal mechanism, not lactose intolerance.",
+      "C": "Correct. Bacterial fermentation of undigested lactose produces gas and bloating.",
+      "D": "Transmural granulomatous inflammation is more consistent with Crohn disease, not this section's lactose pattern."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A patient with suspected lactose intolerance asks how quickly symptoms should improve after removing dairy. Which time course best matches the section",
+    "topic": "Lactose intolerance treatment response",
+    "options": {
+      "A": "Within 1 to 2 hours",
+      "B": "After 7 to 10 days",
+      "C": "Only after several months of a gluten-free diet",
+      "D": "Within 24 to 36 hours"
+    },
+    "correct": "D",
+    "explanation": "For lactose intolerance, treatment is removal of dairy except yogurt and use of lactase supplements; symptoms are expected to resolve within 24 to 36 hours.",
+    "optionExplanations": {
+      "A": "This is faster than the time course listed in the section.",
+      "B": "A week is not the expected symptom-resolution window given for lactose intolerance.",
+      "C": "Months on a gluten-free diet refers more to celiac disease management, not lactose intolerance.",
+      "D": "Correct. Symptoms typically resolve within 24 to 36 hours after dairy removal."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A 21-year-old man has fatigue, iron deficiency anemia, bone pain, and malabsorption. Prior endoscopic studies did not reveal another source of anemia. Which initial serologic test is best for the suspected gluten-sensitive enteropathy",
+    "topic": "Celiac disease screening",
+    "options": {
+      "A": "Tissue transglutaminase IgA",
+      "B": "Antigliadin IgG only",
+      "C": "ASCA antibody",
+      "D": "Stool antigen for Giardia"
+    },
+    "correct": "A",
+    "explanation": "The section lists tTG-IgA as the best screening test for celiac disease because it is very sensitive, specific, and cost-effective.",
+    "optionExplanations": {
+      "A": "Correct. tTG-IgA is the best initial screening test for celiac disease in this section.",
+      "B": "Antigliadin antibodies are less specific; IgG may be more sensitive but is not the best standard screen.",
+      "C": "ASCA is associated with Crohn disease and is not the best celiac test here.",
+      "D": "Giardia testing would fit a parasitic diarrheal syndrome, not classic gluten-sensitive enteropathy."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A patient has chronic diarrhea, anemia, and suspected celiac disease. Serology is positive. Which biopsy site is used to confirm the diagnosis according to the section",
+    "topic": "Celiac disease confirmation",
+    "options": {
+      "A": "Gastric antrum",
+      "B": "Rectum",
+      "C": "Distal duodenum or proximal jejunum",
+      "D": "Terminal ileum only"
+    },
+    "correct": "C",
+    "explanation": "Positive celiac serology is confirmed with endoscopic mucosal biopsy of the distal duodenum or proximal jejunum.",
+    "optionExplanations": {
+      "A": "Gastric biopsy is not the confirming site for celiac disease.",
+      "B": "Rectal biopsy is not used to confirm celiac disease in this section.",
+      "C": "Correct. The distal duodenum or proximal jejunum is the recommended biopsy site.",
+      "D": "Terminal ileum involvement is more associated with Crohn-related B12/bile acid issues, not the celiac confirmation site here."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A patient with gluten-sensitive enteropathy undergoes small bowel biopsy. Which histologic finding best matches the section",
+    "topic": "Celiac disease histology",
+    "options": {
+      "A": "Punched-out mucosal ulcer with fibrous base",
+      "B": "Villous atrophy with crypt hyperplasia and increased lymphocytes/plasma cells",
+      "C": "PAS-positive macrophages in the submucosa",
+      "D": "Caseating granulomas involving the entire intestinal wall"
+    },
+    "correct": "B",
+    "explanation": "Celiac disease causes intestinal villous atrophy, crypt hyperplasia, and increased lymphocytes and plasma cells in the lamina propria.",
+    "optionExplanations": {
+      "A": "A punched-out ulcer describes peptic ulcer morphology, not celiac disease.",
+      "B": "Correct. Villous atrophy with crypt hyperplasia and lymphoplasmacytic inflammation fits celiac disease.",
+      "C": "PAS-positive macrophages are a board pearl for Whipple disease.",
+      "D": "Caseating granulomas are not the celiac pattern described in this section."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient with celiac disease asks which foods must be avoided lifelong. Which set is correct",
+    "topic": "Celiac disease treatment",
+    "options": {
+      "A": "Rice, corn, and potatoes",
+      "B": "Dairy products only",
+      "C": "All fermented foods",
+      "D": "Wheat, barley, and rye"
+    },
+    "correct": "D",
+    "explanation": "Treatment of celiac disease is a lifelong gluten-free diet. The section specifically lists avoidance of wheat, barley, and rye.",
+    "optionExplanations": {
+      "A": "Rice, corn, and potatoes are not the gluten sources listed for avoidance in the section.",
+      "B": "Dairy avoidance is the key intervention for lactose intolerance, not celiac disease.",
+      "C": "Fermented foods as a group are not the listed target of therapy.",
+      "D": "Correct. Wheat, barley, and rye are the key foods to avoid."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient has suspected celiac disease, but testing reveals IgA deficiency. Which serologic test is specifically listed as useful in this setting",
+    "topic": "Celiac disease with IgA deficiency",
+    "options": {
+      "A": "Deamidated gliadin peptide IgG",
+      "B": "Anti-endomysial IgA",
+      "C": "Tissue transglutaminase IgA only",
+      "D": "Fecal lactoferrin"
+    },
+    "correct": "A",
+    "explanation": "The section lists DGP-IgG as the test to use if the patient is IgA deficient.",
+    "optionExplanations": {
+      "A": "Correct. DGP-IgG is recommended when IgA deficiency makes IgA-based tests unreliable.",
+      "B": "Anti-endomysial IgA is highly specific but depends on IgA and is more costly.",
+      "C": "tTG-IgA is the best general screen, but IgA deficiency can cause false-negative IgA-based testing.",
+      "D": "Fecal lactoferrin helps distinguish inflammatory bowel disease from IBS, not celiac with IgA deficiency."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A woman with chronic fatigue and microcytic anemia develops intensely pruritic vesicles on her elbows. Skin biopsy shows neutrophils, microblisters at dermal papillae, and IgA immunofluorescence. Which associated finding is most likely",
+    "topic": "Dermatitis herpetiformis and celiac disease",
+    "options": {
+      "A": "Positive ASCA antibodies",
+      "B": "Positive stool guaiac from colon cancer",
+      "C": "Positive tissue transglutaminase antibodies",
+      "D": "Low serum erythropoietin as the primary cause"
+    },
+    "correct": "C",
+    "explanation": "Pruritic blistering lesions on the elbows with IgA at dermal papillae are dermatitis herpetiformis, which is associated with celiac disease and positive celiac serologies such as tTG antibodies.",
+    "optionExplanations": {
+      "A": "ASCA is associated with Crohn disease rather than dermatitis herpetiformis in this section.",
+      "B": "Colon cancer is not the most direct association with this rash pattern.",
+      "C": "Correct. Dermatitis herpetiformis points to celiac disease and positive tTG antibodies.",
+      "D": "Low erythropoietin does not explain the celiac-associated rash and malabsorption pattern."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient with dermatitis herpetiformis from celiac disease has persistent skin symptoms despite dietary planning. Which medication is listed for the rash if needed",
+    "topic": "Dermatitis herpetiformis treatment",
+    "options": {
+      "A": "Metronidazole",
+      "B": "Dapsone",
+      "C": "Lactase",
+      "D": "Bismuth subsalicylate"
+    },
+    "correct": "B",
+    "explanation": "The celiac section lists a lifelong gluten-free diet and dapsone for dermatitis herpetiformis if needed.",
+    "optionExplanations": {
+      "A": "Metronidazole is not the treatment listed for dermatitis herpetiformis.",
+      "B": "Correct. Dapsone may be used for dermatitis herpetiformis symptoms.",
+      "C": "Lactase supplements treat lactose intolerance, not dermatitis herpetiformis.",
+      "D": "Bismuth subsalicylate is not the listed dermatitis herpetiformis treatment."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A patient with celiac disease stops eating gluten. Which lab trend is expected with successful dietary treatment according to the section",
+    "topic": "Celiac disease monitoring",
+    "options": {
+      "A": "Antibody levels rise as villi recover",
+      "B": "Hydrogen breath test becomes permanently positive",
+      "C": "Fecal WBCs become markedly elevated",
+      "D": "Celiac antibody levels decrease"
+    },
+    "correct": "D",
+    "explanation": "The section states that antibody levels decrease on a gluten-free diet.",
+    "optionExplanations": {
+      "A": "Antibody levels should decrease, not rise, with gluten avoidance.",
+      "B": "Hydrogen breath testing is used for lactose intolerance, not celiac monitoring here.",
+      "C": "Celiac disease is not monitored by development of fecal WBCs in this section.",
+      "D": "Correct. Celiac antibody levels fall with a gluten-free diet."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A 42-year-old man has steatorrhea, weight loss, fever, and polyarthritis. Duodenal biopsy shows broad flattened villi and PAS-positive macrophages in the submucosa. Which therapy is indicated",
+    "topic": "Whipple disease",
+    "options": {
+      "A": "Gluten-free diet",
+      "B": "Local duodenal resection",
+      "C": "Antibiotic treatment",
+      "D": "Corticosteroids only"
+    },
+    "correct": "C",
+    "explanation": "PAS-positive macrophages in a patient with malabsorption, steatorrhea, fever, weight loss, and polyarthritis indicate Whipple disease. The section's case identifies antibiotic treatment as indicated.",
+    "optionExplanations": {
+      "A": "A gluten-free diet treats celiac disease, not PAS-positive macrophage disease.",
+      "B": "Resection is not the indicated therapy for the systemic infectious process described.",
+      "C": "Correct. Whipple disease requires antibiotic treatment.",
+      "D": "Steroids alone do not treat the underlying infection."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient has diarrhea, steatorrhea, weight loss, and an abnormal Schilling test after partial small bowel resection for Crohn disease. Fecal leukocytes are normal. Which diagnosis best fits",
+    "topic": "Short bowel syndrome",
+    "options": {
+      "A": "Malabsorption due to short gut syndrome",
+      "B": "Acute inflammatory dysentery",
+      "C": "Lactose intolerance alone",
+      "D": "Secretory diarrhea from a toxin"
+    },
+    "correct": "A",
+    "explanation": "The section includes a case of Crohn disease after partial small bowel resection with diarrhea, steatorrhea, weight loss, normal fecal leukocytes, osmotic gap, fecal fat, and abnormal Schilling test; the working diagnosis is malabsorption due to short gut syndrome.",
+    "optionExplanations": {
+      "A": "Correct. Small bowel resection can cause short gut malabsorption with steatorrhea and abnormal absorption testing.",
+      "B": "Normal fecal leukocytes and chronic steatorrhea do not fit acute inflammatory dysentery.",
+      "C": "Lactose intolerance causes gas and dairy-triggered osmotic diarrhea but does not best explain post-resection steatorrhea and abnormal Schilling test.",
+      "D": "Secretory diarrhea would persist with fasting and does not explain abnormal Schilling test after resection."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A patient asks why celiac disease can cause iron deficiency anemia and bone pain. Which explanation best fits the section",
+    "topic": "Celiac malabsorption complications",
+    "options": {
+      "A": "It causes isolated colonic bleeding from hemorrhoids",
+      "B": "Villous blunting reduces absorption of iron, calcium, and vitamin D",
+      "C": "It directly destroys red cells by complement activation",
+      "D": "It increases erythropoietin clearance in the kidney"
+    },
+    "correct": "B",
+    "explanation": "The section's celiac case explains anemia and bone pain by villous blunting with decreased iron absorption and decreased calcium/vitamin D absorption.",
+    "optionExplanations": {
+      "A": "Hemorrhoids are not the mechanism described for celiac-related iron deficiency and bone pain.",
+      "B": "Correct. Villous injury causes malabsorption of iron, calcium, and vitamin D.",
+      "C": "Complement-mediated hemolysis is not the celiac mechanism listed here.",
+      "D": "Erythropoietin clearance is not the mechanism in the section."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A patient with gluten-sensitive enteropathy asks what enzyme modifies gliadin to drive the immune response. Which enzyme is involved",
+    "topic": "Celiac disease pathogenesis",
+    "options": {
+      "A": "Lactase",
+      "B": "Pancreatic lipase",
+      "C": "Urease",
+      "D": "Tissue transglutaminase"
+    },
+    "correct": "D",
+    "explanation": "The section states that tissue transglutaminase modifies gliadin by deamidating it, which contributes to T-cell activation in celiac disease.",
+    "optionExplanations": {
+      "A": "Lactase deficiency causes lactose intolerance, not gluten immune activation.",
+      "B": "Pancreatic lipase is not the enzyme described in celiac pathogenesis.",
+      "C": "Urease is associated with H. pylori, not celiac disease.",
+      "D": "Correct. tTG deamidates gliadin and is central to celiac pathogenesis and testing."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A patient with celiac disease has duodenal fold abnormalities on endoscopy. Which gross/endoscopic feature is listed in the section",
+    "topic": "Celiac endoscopic findings",
+    "options": {
+      "A": "Corkscrew esophagus",
+      "B": "Watermelon stomach",
+      "C": "Atrophy or scalloping of duodenal folds",
+      "D": "Bird's beak narrowing"
+    },
+    "correct": "C",
+    "explanation": "The celiac disease section lists atrophy or scalloping of duodenal folds as a feature.",
+    "optionExplanations": {
+      "A": "Corkscrew esophagus belongs to esophageal spasm, not malabsorption.",
+      "B": "Watermelon stomach describes gastric antral vascular ectasia, not celiac disease.",
+      "C": "Correct. Celiac disease can show atrophy or scalloping of duodenal folds.",
+      "D": "Bird's beak narrowing is an achalasia imaging clue, not celiac disease."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A patient has chronic diarrhea. The clinician notes that stool weight greater than a specific cutoff per day defines chronic diarrhea in the section. What is that cutoff",
+    "topic": "Chronic diarrhea definition",
+    "options": {
+      "A": "Greater than 200 g per 24 hours",
+      "B": "Greater than 20 g per 24 hours",
+      "C": "Greater than 2 L per 24 hours only",
+      "D": "Any loose stool for more than 12 hours"
+    },
+    "correct": "A",
+    "explanation": "The section defines chronic diarrhea as stool weight greater than 200 g per 24 hours and emphasizes that it is a symptom, not a disease.",
+    "optionExplanations": {
+      "A": "Correct. Stool weight >200 g/24 h is the cutoff listed.",
+      "B": "20 g is too low and not the section's definition.",
+      "C": "Large volume can be clinically relevant, but the listed definition is >200 g/24 h.",
+      "D": "Duration and looseness alone are not the definition given in this section."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A patient has osmotic diarrhea due to an ingested substance. Which substance is specifically listed as a clue for factitious diarrhea in the section",
+    "topic": "Factitious osmotic diarrhea",
+    "options": {
+      "A": "Secretin",
+      "B": "Serotonin",
+      "C": "Bile acids only",
+      "D": "Magnesium from antacids or laxatives"
+    },
+    "correct": "D",
+    "explanation": "The section lists magnesium from antacids or laxative abuse as a clue to factitious osmotic diarrhea and notes that it disappears with fasting or cessation of the offending substance.",
+    "optionExplanations": {
+      "A": "Secretin is not the listed factitious osmotic diarrhea clue.",
+      "B": "Serotonin is not the specific factitious diarrhea clue in this section.",
+      "C": "Bile acids are not the listed example for factitious diarrhea here.",
+      "D": "Correct. Magnesium-containing antacids or laxatives can cause osmotic diarrhea."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient with chronic diarrhea has no weight loss, no fecal blood, and no fecal white blood cells. Symptoms are strongly triggered by milk. Which additional finding best supports lactose intolerance rather than inflammatory diarrhea",
+    "topic": "Lactose intolerance clinical clues",
+    "options": {
+      "A": "Persistent bloody stools",
+      "B": "Bloating and gas from colonic fermentation",
+      "C": "Fever with fecal leukocytes",
+      "D": "Tenesmus with pus"
+    },
+    "correct": "B",
+    "explanation": "Lactose intolerance causes bloating, gas, and abdominal discomfort from fermentation of undigested lactose; the section notes no fecal WBCs or blood and no weight loss.",
+    "optionExplanations": {
+      "A": "Blood would point away from lactose intolerance and toward inflammatory causes.",
+      "B": "Correct. Gas and bloating after dairy are classic lactose intolerance clues.",
+      "C": "Fever and fecal leukocytes indicate inflammation or infection rather than lactose intolerance.",
+      "D": "Tenesmus and pus suggest dysentery or inflammatory disease, not lactose intolerance."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A patient with suspected celiac disease has negative initial IgA-based serology, but total IgA is low. Which reason explains why an IgG-based test may be needed",
+    "topic": "Celiac serology interpretation",
+    "options": {
+      "A": "Gluten-free diets increase IgA concentration",
+      "B": "Celiac disease never produces IgA antibodies",
+      "C": "IgA deficiency can make IgA-based celiac tests falsely negative",
+      "D": "IgG testing is used only to diagnose lactose intolerance"
+    },
+    "correct": "C",
+    "explanation": "The section lists DGP-IgG for IgA deficient patients, implying that IgA-based tests such as tTG-IgA can be unreliable when IgA is deficient.",
+    "optionExplanations": {
+      "A": "The section states antibody levels decrease on a gluten-free diet; it does not say gluten-free diet increases IgA.",
+      "B": "Celiac disease commonly uses IgA-based tests such as tTG-IgA.",
+      "C": "Correct. IgA deficiency can cause false-negative IgA-based testing, so DGP-IgG is useful.",
+      "D": "IgG celiac testing is not for lactose intolerance."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A patient with chronic diarrhea has a stool osmotic gap. Which listed condition can cause this osmotic gap through malabsorption-related mechanisms",
+    "topic": "Causes of stool osmotic gap",
+    "options": {
+      "A": "Celiac sprue",
+      "B": "Esophageal varices",
+      "C": "Boerhaave syndrome",
+      "D": "Gastric volvulus"
+    },
+    "correct": "A",
+    "explanation": "The section lists causes of stool osmolar gap including magnesium, polyethylene glycol, celiac sprue, and bacterial overgrowth.",
+    "optionExplanations": {
+      "A": "Correct. Celiac sprue is listed as a cause of stool osmotic gap.",
+      "B": "Esophageal varices cause upper GI bleeding, not osmotic diarrhea in this section.",
+      "C": "Boerhaave syndrome is an esophageal rupture, not an osmotic diarrhea cause.",
+      "D": "Gastric volvulus causes obstruction/ischemia symptoms, not the listed osmotic gap mechanism."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A patient with celiac disease asks about the difference between anti-endomysial IgA and tTG-IgA. Which statement matches the section",
+    "topic": "Celiac antibody tests",
+    "options": {
+      "A": "Anti-endomysial IgA is the least specific celiac test",
+      "B": "Antigliadin IgG/IgA is more specific than all other tests",
+      "C": "tTG-IgA is useful only after biopsy has already confirmed disease",
+      "D": "Anti-endomysial IgA is highly specific but more costly"
+    },
+    "correct": "D",
+    "explanation": "The section describes tTG-IgA as the best screening test and anti-endomysial IgA as highly specific but more costly.",
+    "optionExplanations": {
+      "A": "Anti-endomysial IgA is high specificity, not the least specific.",
+      "B": "Antigliadin tests are described as less specific.",
+      "C": "tTG-IgA is the best screening test before confirmatory biopsy.",
+      "D": "Correct. Anti-endomysial IgA is highly specific but more costly."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A patient with celiac disease has chronic symptoms and is diagnosed with gluten-mediated villous injury. Which immune process is described in the section",
+    "topic": "Celiac immune mechanism",
+    "options": {
+      "A": "IgE-mediated mast cell degranulation against milk proteins",
+      "B": "T-cell activation after tTG deamidates gliadin",
+      "C": "Direct toxin-mediated destruction by a bacterial enterotoxin",
+      "D": "Loss of inhibitory neurons in the enteric plexus"
+    },
+    "correct": "B",
+    "explanation": "The section states that tTG modifies gliadin by deamidating it, leading to T-cell activation and villous atrophy in celiac disease.",
+    "optionExplanations": {
+      "A": "IgE-mediated food allergy is not the celiac mechanism described.",
+      "B": "Correct. Deamidated gliadin promotes T-cell activation in celiac disease.",
+      "C": "Toxin-mediated diarrhea is not the immune mechanism of celiac disease.",
+      "D": "Loss of inhibitory neurons describes achalasia, not malabsorption."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A patient has chronic diarrhea from magnesium laxative abuse. What should happen to symptoms after fasting or stopping the offending substance",
+    "topic": "Osmotic diarrhea response",
+    "options": {
+      "A": "Symptoms disappear or improve substantially",
+      "B": "Symptoms persist unchanged because there is no osmotic gap",
+      "C": "Symptoms become bloody due to colonic ulceration",
+      "D": "Symptoms progress to systemic bacteremia"
+    },
+    "correct": "A",
+    "explanation": "Osmotic diarrhea from substances such as magnesium disappears with fasting or cessation of the offending substance because electrolyte absorption remains intact.",
+    "optionExplanations": {
+      "A": "Correct. Osmotic diarrhea improves with fasting or stopping the osmotic agent.",
+      "B": "Persistence with fasting and no osmotic gap describes secretory diarrhea, not osmotic diarrhea.",
+      "C": "Blood suggests inflammatory diarrhea, not magnesium-induced osmotic diarrhea.",
+      "D": "Bacteremia is not a feature of this osmotic mechanism."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient with suspected gluten-sensitive enteropathy has positive tTG-IgA. Which next diagnostic principle is emphasized in the section",
+    "topic": "Celiac diagnostic sequence",
+    "options": {
+      "A": "No further evaluation is ever needed after serology",
+      "B": "Diagnosis requires colonoscopy with rectal biopsy",
+      "C": "Positive serology should generally be confirmed with biopsy",
+      "D": "Diagnosis is made by serum calcium excretion"
+    },
+    "correct": "C",
+    "explanation": "The board pearls state that positive celiac serology should be followed by biopsy, except in special high-titer situations; the section specifically lists endoscopic mucosal biopsy for confirmation.",
+    "optionExplanations": {
+      "A": "The section emphasizes biopsy confirmation after positive serology.",
+      "B": "The confirmatory biopsy is distal duodenum/proximal jejunum, not rectum.",
+      "C": "Correct. Positive serology generally leads to confirmatory small bowel biopsy.",
+      "D": "Urine calcium excretion is not the diagnostic step for celiac disease."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A clinician is categorizing chronic diarrhea. Which group matches the major pathophysiologic categories listed in the section",
+    "topic": "Chronic diarrhea categories",
+    "options": {
+      "A": "Only infectious, autoimmune, and malignant",
+      "B": "Only obstructive and ischemic",
+      "C": "Only upper GI and lower GI",
+      "D": "Osmotic, malabsorptive, secretory, inflammatory, motility, and chronic infectious"
+    },
+    "correct": "D",
+    "explanation": "The section lists the major pathophysiologic categories of chronic diarrhea as osmotic diarrhea, malabsorptive conditions, secretory diarrhea, inflammatory diarrhea, motility disorders, and chronic infections.",
+    "optionExplanations": {
+      "A": "These categories are incomplete and do not match the framework in the section.",
+      "B": "Obstructive and ischemic processes do not represent the listed chronic diarrhea framework.",
+      "C": "Upper vs lower GI is not the chronic diarrhea pathophysiologic classification used here.",
+      "D": "Correct. This is the full category framework given in the section."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A patient with suspected lactose intolerance asks what can be used if dairy cannot be fully avoided. Which supportive treatment is listed",
+    "topic": "Lactose intolerance treatment",
+    "options": {
+      "A": "Dapsone",
+      "B": "Lactase supplements",
+      "C": "High-gluten diet",
+      "D": "Broad-spectrum antibiotics for all patients"
+    },
+    "correct": "B",
+    "explanation": "The lactose intolerance treatment section lists removal of dairy except yogurt and lactase supplements.",
+    "optionExplanations": {
+      "A": "Dapsone is listed for dermatitis herpetiformis in celiac disease, not lactose intolerance.",
+      "B": "Correct. Lactase supplements can help patients with lactose intolerance.",
+      "C": "High-gluten diet is not a lactose intolerance treatment and would worsen celiac disease.",
+      "D": "Antibiotics are not listed as routine treatment for lactose intolerance."
+    }
+  }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionMeta = document.getElementById("questionMeta");
+    const topicMeta = document.getElementById("topicMeta");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "segment" + (answers[q.id] ? " answered" : "") + (idx === currentIndex ? " active" : "");
+        btn.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(btn);
+      });
+    }
+
+    function scoreCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([id, choice]) => {
+        const q = questions.find(item => item.id === Number(id));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionMeta.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = q.stem.endsWith("?") ? q.stem : q.stem + "?";
+
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        if (showExplanation && letter === q.correct) btn.classList.add("correct");
+        if (showExplanation && letter === selected && letter !== q.correct) btn.classList.add("incorrect");
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(btn);
+      });
+
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        const optionExplanations = Object.entries(q.optionExplanations || {})
+          .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+          .join("");
+        explanationEl.style.display = "block";
+        explanationEl.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "correct-text" : "incorrect-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div>
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExplanations}
+          </div>
+        `;
+      } else {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+      }
+    }
+
+    function render() {
+      renderSegments();
+      scoreCounts();
+      renderQuestion();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === 0 ? questions.length - 1 : currentIndex - 1;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === questions.length - 1 ? 0 : currentIndex + 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.keys(answers).forEach(key => delete answers[key]);
+      currentIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

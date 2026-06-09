@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inflammatory Bowel Disease Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fb; margin: 0; padding: 24px; color: #1f2937; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .subtitle { color: #6b7280; font-size: 14px; }
+    .progress-wrap { display: flex; align-items: center; gap: 12px; margin: 14px 0; }
+    .progress { display: flex; gap: 4px; flex: 1; }
+    .seg { height: 8px; border-radius: 999px; background: #374151; flex: 1; cursor: pointer; border: none; padding: 0; }
+    .seg.answered { background: #6fa8dc; }
+    .seg.active { background: #d1d5db; }
+    .score { display: flex; gap: 8px; font-size: 13px; font-weight: 700; }
+    .pill { padding: 4px 10px; border-radius: 999px; }
+    .right { background: #d1fae5; color: #065f46; }
+    .wrong { background: #fee2e2; color: #991b1b; }
+    .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .meta { display: flex; justify-content: space-between; color: #6b7280; font-size: 12px; margin-bottom: 14px; gap: 12px; }
+    .stem { font-weight: 700; line-height: 1.45; margin-bottom: 16px; }
+    .option { width: 100%; text-align: left; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 10px; padding: 12px; margin: 6px 0; cursor: pointer; font-size: 15px; }
+    .option:hover { background: #f3f4f6; }
+    .option.correct { background: #dcfce7; border-color: #22c55e; }
+    .option.incorrect { background: #fee2e2; border-color: #ef4444; }
+    .explanation { margin-top: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; font-size: 14px; line-height: 1.45; }
+    .option-explanations p { margin: 6px 0; }
+    .controls { display: flex; justify-content: space-between; margin-top: 18px; }
+    .nav { background: #ffffff; border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+    .nav:hover { background: #f3f4f6; }
+    .footer { color: #6b7280; font-size: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Inflammatory Bowel Disease Quiz</h1>
+    <div class="subtitle">30 board-style questions from section 17. Inflammatory Bowel Disease</div>
+    <div class="progress-wrap">
+      <div class="progress" id="progress"></div>
+      <div class="score">
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="meta"><span id="qNum"></span><span id="topic"></span></div>
+    <div class="stem" id="stem"></div>
+    <div id="options"></div>
+    <div id="explanation" class="explanation" style="display:none;"></div>
+    <div class="controls">
+      <button class="nav" onclick="prevQuestion()">Previous</button>
+      <button class="nav" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+  <div class="footer">Answers reveal after selection. Use the progress bar to jump between questions.</div>
+</div>
+<script>
+const questions = [
+  {
+    id: 1,
+    topic: "IBD pathogenesis",
+    stem: "A 23-year-old woman develops chronic relapsing abdominal pain and diarrhea. Her physician explains that both major forms of inflammatory bowel disease arise from genetic susceptibility plus an environmental trigger causing failure to down-regulate mucosal immune responses. Which immune abnormality best describes the shared pathogenesis?",
+    options: {
+      A: "IgE-mediated mast cell degranulation against dietary antigens",
+      B: "Loss of mucosal immune homeostasis with chronic inflammation",
+      C: "Toxin-mediated inhibition of enterocyte protein synthesis",
+      D: "Immune complex deposition in submucosal vessels"
+    },
+    correct: "B",
+    explanation: "IBD is described as chronic, relapsing inflammation caused by genetic susceptibility plus environmental triggers leading to failure to down-regulate mucosal immune responses.",
+    optionExplanations: {
+      A: "IgE-mediated mast cell activation fits allergy, not the core IBD mechanism.",
+      B: "Correct. IBD reflects increased immune activation and/or decreased regulatory control against luminal antigens.",
+      C: "Toxin-mediated epithelial injury is more typical of infectious diarrheal syndromes.",
+      D: "Immune complex vasculitis is not the main mechanism of Crohn disease or ulcerative colitis."
+    }
+  },
+  {
+    id: 2,
+    topic: "Crohn disease distribution",
+    stem: "A 28-year-old woman has crampy right lower quadrant pain, fever, non-bloody diarrhea, weight loss, and perianal fistulas. Colonoscopy shows discontinuous areas of inflamed mucosa with intervening normal tissue. Which anatomic distribution best fits this disease?",
+    options: {
+      A: "Any part of the GI tract from mouth to anus, most commonly terminal ileum",
+      B: "Colon only with rectum always involved",
+      C: "Stomach body and fundus only",
+      D: "Proximal esophagus only"
+    },
+    correct: "A",
+    explanation: "Crohn disease can involve the entire GI tract from mouth to anus and most commonly affects the terminal ileum; skip lesions and perianal disease support Crohn disease.",
+    optionExplanations: {
+      A: "Correct. Crohn disease may affect mouth to anus, with terminal ileum as the most common site.",
+      B: "This describes ulcerative colitis, which is limited to colon and always involves the rectum.",
+      C: "This is not the typical distribution of either major IBD subtype.",
+      D: "Proximal esophagus only is not an IBD distribution pattern."
+    }
+  },
+  {
+    id: 3,
+    topic: "Ulcerative colitis distribution",
+    stem: "A 31-year-old man has bloody diarrhea, urgency, tenesmus, and left lower quadrant pain relieved by defecation. Colonoscopy shows continuous erythema, friability, mucous, and erosions beginning at the rectum. Which pattern is most characteristic of his disease?",
+    options: {
+      A: "Patchy transmural inflammation with skip lesions",
+      B: "Granulomatous disease most commonly affecting the terminal ileum",
+      C: "Isolated jejunal villous atrophy with crypt hyperplasia",
+      D: "Colon-limited disease with rectal involvement and continuous spread proximally"
+    },
+    correct: "D",
+    explanation: "Ulcerative colitis involves the colon only, always involves the rectum, and spreads continuously proximally. Bloody diarrhea with urgency and tenesmus is classic.",
+    optionExplanations: {
+      A: "Patchy transmural skip lesions are characteristic of Crohn disease.",
+      B: "Terminal ileum-predominant granulomatous disease points to Crohn disease.",
+      C: "Villous atrophy with crypt hyperplasia suggests celiac disease, not UC.",
+      D: "Correct. UC is continuous, colon-limited, and starts at the rectum."
+    }
+  },
+  {
+    id: 4,
+    topic: "Crohn cytokines",
+    stem: "A biopsy from a patient with regional enteritis shows an immune profile dominated by Th1-type inflammation. Which cytokine pattern is most consistent with the disease described in the lecture section?",
+    options: {
+      A: "IL-4 and IL-5 only",
+      B: "IL-13 with minimal IFN-gamma",
+      C: "TNF-alpha and IFN-gamma predominance",
+      D: "Histamine and leukotriene release from mast cells"
+    },
+    correct: "C",
+    explanation: "Crohn disease is described as Th1 dominant with TNF-alpha and IFN-gamma involvement.",
+    optionExplanations: {
+      A: "IL-4 and IL-5 fit a Th2 pattern more than Crohn disease.",
+      B: "IL-13 is emphasized in ulcerative colitis, not classic Crohn disease.",
+      C: "Correct. Crohn disease is Th1 dominant with TNF-alpha and IFN-gamma.",
+      D: "Mast cell mediator release is not the core cytokine pattern of Crohn disease."
+    }
+  },
+  {
+    id: 5,
+    topic: "Ulcerative colitis cytokines",
+    stem: "A patient with continuous colitis beginning at the rectum has increased mucosal release of IL-13, IL-5, and IFN-gamma. Which diagnosis best matches this cytokine pattern and distribution?",
+    options: {
+      A: "Whipple disease",
+      B: "Ulcerative colitis",
+      C: "Crohn disease",
+      D: "Irritable bowel syndrome"
+    },
+    correct: "B",
+    explanation: "Ulcerative colitis has a mixed Th2 pattern with IL-4, IL-5, IL-13 plus some Th1 activity, and it continuously involves the colon starting at the rectum.",
+    optionExplanations: {
+      A: "Whipple disease is associated with PAS-positive macrophages, not this IBD cytokine profile.",
+      B: "Correct. UC is associated with IL-13, IL-5, IFN-gamma and continuous rectal involvement.",
+      C: "Crohn disease is more Th1 dominant and classically has skip lesions and transmural inflammation.",
+      D: "IBS is not an inflammatory disorder and should not show elevated inflammatory cytokine activity."
+    }
+  },
+  {
+    id: 6,
+    topic: "Smoking and IBD",
+    stem: "A board question asks how cigarette smoking affects the two major forms of inflammatory bowel disease. Which statement is most accurate?",
+    options: {
+      A: "Smoking decreases both Crohn disease and ulcerative colitis risk",
+      B: "Smoking increases both Crohn disease and ulcerative colitis risk",
+      C: "Smoking has no relationship to either disease",
+      D: "Smoking increases Crohn disease severity but decreases ulcerative colitis incidence"
+    },
+    correct: "D",
+    explanation: "The section notes that smoking increases the incidence and severity of Crohn disease but decreases the incidence of ulcerative colitis.",
+    optionExplanations: {
+      A: "Smoking is not protective for Crohn disease.",
+      B: "Smoking does not increase UC incidence in the provided material.",
+      C: "Smoking is specifically listed as an environmental factor affecting IBD.",
+      D: "Correct. Smoking worsens Crohn risk/severity but is associated with decreased UC incidence."
+    }
+  },
+  {
+    id: 7,
+    topic: "Crohn morphology",
+    stem: "A 24-year-old man has chronic abdominal pain and diarrhea. Imaging and endoscopy show cobblestoning, a string sign due to stenosis, and separated segments of affected bowel. Which pathologic feature explains the fistulas and strictures seen in this disease?",
+    options: {
+      A: "Transmural inflammation",
+      B: "Mucosa-only inflammation",
+      C: "Pseudomembrane formation",
+      D: "Noninflammatory visceral hypersensitivity"
+    },
+    correct: "A",
+    explanation: "Crohn disease causes transmural inflammation, which predisposes to strictures, obstruction, abscesses, fissures, and fistulas.",
+    optionExplanations: {
+      A: "Correct. Transmural inflammation explains fistulas, strictures, and obstruction in Crohn disease.",
+      B: "Mucosa-only inflammation describes UC and does not typically produce fistulas.",
+      C: "Pseudomembranes are associated with C. difficile colitis.",
+      D: "Visceral hypersensitivity fits IBS, not inflammatory stricturing disease."
+    }
+  },
+  {
+    id: 8,
+    topic: "UC morphology",
+    stem: "A patient with severe bloody diarrhea undergoes evaluation. Imaging shows loss of haustra with a lead-pipe appearance. Which inflammatory bowel disease feature best explains this finding?",
+    options: {
+      A: "Skip lesions involving the terminal ileum",
+      B: "Transmural granulomatous inflammation causing fistulas",
+      C: "Chronic continuous mucosal inflammation of the colon",
+      D: "Isolated pancreatic insufficiency causing fat malabsorption"
+    },
+    correct: "C",
+    explanation: "Loss of haustra or lead-pipe appearance is listed with ulcerative colitis, which causes continuous mucosal colonic inflammation.",
+    optionExplanations: {
+      A: "Skip lesions are typical of Crohn disease, not UC lead-pipe colon.",
+      B: "Transmural inflammation with fistulas is Crohn disease.",
+      C: "Correct. Chronic continuous UC can lead to loss of haustra.",
+      D: "Pancreatic insufficiency causes malabsorption rather than lead-pipe colitis."
+    }
+  },
+  {
+    id: 9,
+    topic: "Fecal calprotectin/lactoferrin",
+    stem: "A 26-year-old woman has chronic abdominal pain and altered bowel habits. Her clinician wants a stool marker that helps distinguish inflammatory bowel disease from irritable bowel syndrome. Which result would support IBD over IBS?",
+    options: {
+      A: "Decreased fecal calprotectin and lactoferrin",
+      B: "Normal fecal fat with no inflammatory markers",
+      C: "Positive hydrogen breath test only",
+      D: "Increased fecal calprotectin or lactoferrin"
+    },
+    correct: "D",
+    explanation: "Fecal calprotectin and lactoferrin are used to distinguish IBD from IBS; they increase in IBD.",
+    optionExplanations: {
+      A: "Decreased markers would not support active intestinal inflammation.",
+      B: "Normal inflammatory markers would fit IBS more than IBD.",
+      C: "Hydrogen breath testing is used for lactose intolerance or bacterial overgrowth, not IBD vs IBS.",
+      D: "Correct. Increased fecal calprotectin/lactoferrin supports IBD."
+    }
+  },
+  {
+    id: 10,
+    topic: "Crohn diagnosis",
+    stem: "A patient with suspected Crohn disease has crampy RLQ pain, weight loss, and perianal fissures. Which diagnostic approach is most appropriate according to the section?",
+    options: {
+      A: "Serum anti-tTG IgA alone",
+      B: "Clinical, endoscopic, and radiographic evaluation because no single lab test is diagnostic",
+      C: "Diagnosis by stool guaiac alone",
+      D: "Diagnosis by abdominal auscultation alone"
+    },
+    correct: "B",
+    explanation: "The section states that Crohn disease has no single diagnostic lab test; diagnosis relies on clinical, endoscopic, and radiographic evaluation with supportive labs and stool testing.",
+    optionExplanations: {
+      A: "Anti-tTG IgA screens for celiac disease.",
+      B: "Correct. Crohn diagnosis is integrated from clinical features, endoscopy, imaging, and labs.",
+      C: "Stool blood testing does not diagnose Crohn disease.",
+      D: "Auscultation alone cannot diagnose IBD."
+    }
+  },
+  {
+    id: 11,
+    topic: "Colonoscopy caution",
+    stem: "A patient presents with a severe flare of inflammatory bowel disease and marked abdominal tenderness. Why should colonoscopy be avoided or used cautiously during a severe acute flare?",
+    options: {
+      A: "It carries a risk of perforation",
+      B: "It can worsen iron absorption",
+      C: "It increases acid secretion",
+      D: "It falsely normalizes fecal calprotectin"
+    },
+    correct: "A",
+    explanation: "The section warns to avoid colonoscopy during acute or severe flares because of perforation risk.",
+    optionExplanations: {
+      A: "Correct. Severe inflamed bowel is vulnerable to perforation during colonoscopy.",
+      B: "Iron absorption is not the reason colonoscopy is avoided in severe flares.",
+      C: "Acid secretion is unrelated to colonoscopy risk in IBD.",
+      D: "Colonoscopy does not falsely normalize fecal inflammatory markers."
+    }
+  },
+  {
+    id: 12,
+    topic: "Crohn clinical features",
+    stem: "A 30-year-old patient has insidious onset of fever, weight loss, malaise, fatigue, loud borborygmi, and multiple liquid stools that are usually non-bloody. Pain is most prominent in the right lower quadrant. Which diagnosis is most likely?",
+    options: {
+      A: "Ulcerative colitis",
+      B: "Lactose intolerance",
+      C: "Irritable bowel syndrome",
+      D: "Crohn disease"
+    },
+    correct: "D",
+    explanation: "Crohn disease commonly presents with insidious crampy abdominal pain, often RLQ, fever, non-bloody liquid stools, weight loss, malaise, fatigue, and borborygmi.",
+    optionExplanations: {
+      A: "UC classically causes bloody diarrhea, urgency, tenesmus, and LLQ pain.",
+      B: "Lactose intolerance causes bloating/gas and osmotic diarrhea without systemic inflammatory symptoms.",
+      C: "IBS does not cause fever, weight loss, or inflammatory complications.",
+      D: "Correct. RLQ pain with non-bloody diarrhea, weight loss, and systemic symptoms fits Crohn disease."
+    }
+  },
+  {
+    id: 13,
+    topic: "UC clinical features",
+    stem: "A 34-year-old nonsmoker has frequent bloody stools, urgency, tenesmus, dehydration, and anemia. Pain is crampy in the left lower quadrant and improves after defecation. Which disease best fits?",
+    options: {
+      A: "Crohn disease",
+      B: "Small bowel lymphoma",
+      C: "Ulcerative colitis",
+      D: "Achalasia"
+    },
+    correct: "C",
+    explanation: "Ulcerative colitis classically presents with bloody diarrhea, urgency, tenesmus, LLQ pain relieved by defecation, anemia, and dehydration.",
+    optionExplanations: {
+      A: "Crohn more commonly causes RLQ pain and non-bloody diarrhea with perianal disease.",
+      B: "Small bowel lymphoma is not characterized by continuous rectal colitis with tenesmus.",
+      C: "Correct. The symptoms are classic for ulcerative colitis.",
+      D: "Achalasia causes esophageal dysphagia, not bloody colitis."
+    }
+  },
+  {
+    id: 14,
+    topic: "IBD extraintestinal manifestations",
+    stem: "A patient with inflammatory bowel disease develops large-joint asymmetric seronegative arthritis, erythema nodosum, pyoderma gangrenosum, and iritis. Which additional hepatobiliary manifestation is associated with both major forms of IBD in the section?",
+    options: {
+      A: "Acute cholecystitis from gallstone impaction only",
+      B: "Primary sclerosing cholangitis",
+      C: "Hepatic hemangioma rupture",
+      D: "Wilson disease"
+    },
+    correct: "B",
+    explanation: "The section lists primary sclerosing cholangitis as an extraintestinal hepatobiliary manifestation of IBD, approximately 5%.",
+    optionExplanations: {
+      A: "Gallstones may occur in some GI disorders, but PSC is the IBD-associated board finding emphasized here.",
+      B: "Correct. PSC is associated with IBD, especially UC but listed among shared manifestations.",
+      C: "Hepatic hemangioma rupture is not a classic IBD extraintestinal manifestation.",
+      D: "Wilson disease is a copper metabolism disorder, not an IBD extraintestinal manifestation."
+    }
+  },
+  {
+    id: 15,
+    topic: "Crohn complications",
+    stem: "A patient with long-standing Crohn disease involving the ileum undergoes resection and later develops anemia, osteoporosis, and calcium oxalate kidney stones. Which explanation best connects these findings to his disease location?",
+    options: {
+      A: "Rectal bleeding causes isolated folate loss",
+      B: "Terminal ileal disease can cause B12 deficiency, vitamin D-related osteoporosis, and calcium oxalate stones",
+      C: "Colon-only mucosal inflammation causes hypercalcemia",
+      D: "Pancreatic enzyme hypersecretion causes uric acid stones"
+    },
+    correct: "B",
+    explanation: "Crohn disease commonly involves the terminal ileum and can cause B12 deficiency, calcium oxalate stones, osteoporosis from vitamin D issues, and malabsorption after extensive ileal disease/resection.",
+    optionExplanations: {
+      A: "Rectal bleeding is more prominent in UC and does not explain ileal B12/vitamin D-related issues.",
+      B: "Correct. Ileal Crohn disease/resection explains these malabsorptive and stone complications.",
+      C: "Colon-only mucosal inflammation describes UC, not ileal Crohn complications.",
+      D: "Pancreatic enzyme hypersecretion is unrelated to these Crohn findings."
+    }
+  },
+  {
+    id: 16,
+    topic: "UC surgery",
+    stem: "A patient with ulcerative colitis has refractory severe disease and toxic megacolon lasting more than 48 hours. Surgery is planned. Which statement about surgery in this disease is most accurate?",
+    options: {
+      A: "Surgery is indicated only for oral aphthous ulcers",
+      B: "Surgery is never indicated because disease always recurs immediately",
+      C: "Resection cures Crohn disease but not ulcerative colitis",
+      D: "Total colectomy is curative with no recurrence at anastomosis"
+    },
+    correct: "D",
+    explanation: "For UC, surgery may be required for refractory severe disease, toxic megacolon, obstruction, hemorrhage, carcinoma, or perforation; total colectomy is curative with no recurrence at anastomosis.",
+    optionExplanations: {
+      A: "Oral aphthous ulcers are more associated with Crohn and are not a colectomy indication.",
+      B: "Surgery is indicated in severe UC complications and can be curative.",
+      C: "Crohn disease commonly recurs after surgery; UC is the surgically curable one.",
+      D: "Correct. UC is colon-limited, so total colectomy is curative."
+    }
+  },
+  {
+    id: 17,
+    topic: "Crohn surgery recurrence",
+    stem: "A patient with Crohn disease undergoes surgery for obstruction and fistulas. Which postoperative expectation is most consistent with the section?",
+    options: {
+      A: "Recurrence is common, including about 80% at 10 years near the anastomosis",
+      B: "Total colectomy is universally curative",
+      C: "Recurrence is impossible if the rectum is removed",
+      D: "Surgery eliminates the need to monitor for malabsorption"
+    },
+    correct: "A",
+    explanation: "About 50% of Crohn patients require surgery, but recurrence is common: 20% at 1 year and 80% at 10 years, often at the anastomosis.",
+    optionExplanations: {
+      A: "Correct. Crohn disease frequently recurs after surgery.",
+      B: "Crohn is not cured by colectomy because it can involve any GI segment.",
+      C: "Rectal removal does not prevent recurrence elsewhere in the GI tract.",
+      D: "Malabsorption can persist or worsen after extensive ileal resection."
+    }
+  },
+  {
+    id: 18,
+    topic: "Toxic megacolon",
+    stem: "A patient with ulcerative colitis develops fever, severe abdominal pain, and colonic dilation concerning for toxic megacolon. Which initial imaging modality is listed in the section to evaluate this complication?",
+    options: {
+      A: "Barium swallow",
+      B: "Hydrogen breath test",
+      C: "Plain abdominal films",
+      D: "HIDA scan"
+    },
+    correct: "C",
+    explanation: "The UC diagnostic evaluation lists plain films for toxic megacolon.",
+    optionExplanations: {
+      A: "Barium swallow evaluates esophageal disorders, not toxic megacolon.",
+      B: "Hydrogen breath testing evaluates carbohydrate malabsorption or bacterial overgrowth.",
+      C: "Correct. Plain films can evaluate colonic dilation in toxic megacolon.",
+      D: "HIDA scan evaluates gallbladder function."
+    }
+  },
+  {
+    id: 19,
+    topic: "UC cancer risk",
+    stem: "A 45-year-old man has had extensive ulcerative colitis for 12 years. Which long-term complication requires surveillance and is described as increasing about 1% per year after 10 years?",
+    options: {
+      A: "Small bowel adenocarcinoma of the ileum only",
+      B: "Colon cancer risk proximal to the sigmoid colon",
+      C: "Esophageal squamous cell carcinoma",
+      D: "Gastric MALT lymphoma"
+    },
+    correct: "B",
+    explanation: "UC increases colon cancer risk, especially proximal to the sigmoid colon, with risk rising about 1% per year after 10 years according to the section.",
+    optionExplanations: {
+      A: "Small bowel adenocarcinoma of the ileum is more associated with Crohn disease involving the ileum.",
+      B: "Correct. Long-standing UC increases colon cancer risk.",
+      C: "Esophageal SCC is not a long-term complication of UC in this section.",
+      D: "Gastric MALT lymphoma is associated with H. pylori, not UC duration."
+    }
+  },
+  {
+    id: 20,
+    topic: "Crohn cancer risk",
+    stem: "A patient with long-standing Crohn disease involving the ileum asks about malignancy risk. Which cancer risk is specifically listed as increased in this setting?",
+    options: {
+      A: "Hepatoblastoma",
+      B: "Medullary thyroid carcinoma",
+      C: "Pancreatic neuroendocrine tumor only",
+      D: "Small bowel adenocarcinoma of the ileum"
+    },
+    correct: "D",
+    explanation: "The section lists increased small bowel adenocarcinoma, especially ileal, as a long-term complication of Crohn disease.",
+    optionExplanations: {
+      A: "Hepatoblastoma is a pediatric liver tumor and not a Crohn complication.",
+      B: "Medullary thyroid carcinoma is associated with MEN2, not Crohn disease.",
+      C: "Pancreatic neuroendocrine tumor is not the Crohn malignancy emphasized here.",
+      D: "Correct. Crohn disease increases small bowel adenocarcinoma risk, particularly when ileal disease is present."
+    }
+  },
+  {
+    id: 21,
+    topic: "IBD treatment classes",
+    stem: "A patient with inflammatory bowel disease is treated with a 5-ASA derivative, then corticosteroids for a flare, and later azathioprine to reduce steroid dependence. Which treatment principle matches this sequence?",
+    options: {
+      A: "Only antibiotics are used in all IBD patients indefinitely",
+      B: "IBD therapy consists only of lactose restriction",
+      C: "Therapy escalates from anti-inflammatory agents to corticosteroids, immunomodulators, and biologics depending on severity",
+      D: "All IBD treatment is surgical at diagnosis"
+    },
+    correct: "C",
+    explanation: "The treatment section lists anti-inflammatory 5-ASA derivatives, corticosteroids, immunomodulators, biologics, antibiotics for acute flares, and adjunctive therapies.",
+    optionExplanations: {
+      A: "Antibiotics are listed for acute flares, not as the only indefinite treatment.",
+      B: "Lactose restriction is not the core therapy for IBD.",
+      C: "Correct. Treatment escalates by severity and goal, including anti-inflammatory, steroid, immunomodulator, and biologic therapy.",
+      D: "Surgery is reserved for complications or refractory disease, not all new diagnoses."
+    }
+  },
+  {
+    id: 22,
+    topic: "Infliximab",
+    stem: "A patient with severe Crohn disease is started on infliximab. Which target best explains the use of this biologic in the IBD treatment section?",
+    options: {
+      A: "TNF-alpha",
+      B: "Tissue transglutaminase",
+      C: "H2 receptor on parietal cells",
+      D: "Viral neuraminidase"
+    },
+    correct: "A",
+    explanation: "Infliximab is listed as IV biologic therapy for Crohn disease and is a TNF-alpha antagonist.",
+    optionExplanations: {
+      A: "Correct. Infliximab targets TNF-alpha.",
+      B: "Tissue transglutaminase is relevant to celiac disease serology.",
+      C: "H2 receptor blockade is used for acid suppression, not IBD biologic therapy.",
+      D: "Neuraminidase inhibitors treat influenza, not IBD."
+    }
+  },
+  {
+    id: 23,
+    topic: "Crohn imaging",
+    stem: "A barium study in a patient with chronic RLQ pain and non-bloody diarrhea demonstrates a narrowed segment of bowel described as a string sign. Which disease is most likely?",
+    options: {
+      A: "Ulcerative colitis",
+      B: "Crohn disease",
+      C: "Irritable bowel syndrome",
+      D: "Viral gastroenteritis"
+    },
+    correct: "B",
+    explanation: "Crohn disease imaging can show skip lesions, cobblestoning, and the string sign due to bowel stenosis.",
+    optionExplanations: {
+      A: "UC imaging is more associated with loss of haustra/lead-pipe appearance.",
+      B: "Correct. String sign suggests Crohn-related stenosis.",
+      C: "IBS should not produce structural narrowing.",
+      D: "Viral gastroenteritis is acute and does not produce chronic stenotic bowel changes."
+    }
+  },
+  {
+    id: 24,
+    topic: "IBD genetics",
+    stem: "A study of families with inflammatory bowel disease identifies a susceptibility locus on chromosome 16 present in a subset of patients. Which genetic point matches the lecture section?",
+    options: {
+      A: "Crohn disease has no genetic contribution",
+      B: "All IBD patients have identical HLA genotypes",
+      C: "Ulcerative colitis has 100% monozygotic twin concordance",
+      D: "IBD1 locus abnormalities occur in approximately 15–25% of IBD patients"
+    },
+    correct: "D",
+    explanation: "The section lists the IBD1 locus on chromosome 16 as abnormal in 15–25% of IBD patients and also notes HLA involvement and family history risk.",
+    optionExplanations: {
+      A: "Crohn disease has genetic susceptibility, including IBD1 and HLA associations.",
+      B: "HLA contributes, but IBD patients do not all have identical genotypes.",
+      C: "Monozygotic twin concordance is listed as about 10% for UC, not 100%.",
+      D: "Correct. IBD1 locus abnormalities are reported in 15–25% of IBD patients."
+    }
+  },
+  {
+    id: 25,
+    topic: "Twin concordance",
+    stem: "A lecturer compares genetic contribution between Crohn disease and ulcerative colitis using monozygotic twin concordance. Which statement is most consistent with the section?",
+    options: {
+      A: "Both have 0% concordance",
+      B: "Ulcerative colitis has approximately 90% concordance, higher than Crohn disease",
+      C: "Crohn disease has approximately 50% concordance, higher than ulcerative colitis at approximately 10%",
+      D: "Both have 100% concordance"
+    },
+    correct: "C",
+    explanation: "The genetic section lists monozygotic twin concordance of approximately 50% for Crohn disease and approximately 10% for ulcerative colitis.",
+    optionExplanations: {
+      A: "Both diseases have a genetic contribution.",
+      B: "This reverses and exaggerates the provided values.",
+      C: "Correct. Crohn has stronger monozygotic twin concordance than UC in the section.",
+      D: "Neither disease is purely genetic with 100% concordance."
+    }
+  },
+  {
+    id: 26,
+    topic: "Age of onset",
+    stem: "A board review asks for the typical age distribution of inflammatory bowel disease onset. Which pattern is listed in the section?",
+    options: {
+      A: "Bimodal onset at 15–30 years and 50–80 years",
+      B: "Only after age 80",
+      C: "Only infancy",
+      D: "Only during pregnancy"
+    },
+    correct: "A",
+    explanation: "The section lists a bimodal age of onset for IBD: 15–30 years and 50–80 years.",
+    optionExplanations: {
+      A: "Correct. IBD has a bimodal onset pattern in the section.",
+      B: "IBD can occur in older adults, but not only after age 80.",
+      C: "IBD is not limited to infancy.",
+      D: "Pregnancy is not the defining age distribution."
+    }
+  },
+  {
+    id: 27,
+    topic: "Appendectomy and UC",
+    stem: "A patient asks why a prior appendectomy before age 20 was mentioned during a discussion of ulcerative colitis risk. According to the section, what is the association?",
+    options: {
+      A: "Appendectomy before age 20 increases ulcerative colitis risk tenfold",
+      B: "Appendectomy before age 20 decreases ulcerative colitis risk",
+      C: "Appendectomy causes Crohn disease in all patients",
+      D: "Appendectomy is diagnostic for toxic megacolon"
+    },
+    correct: "B",
+    explanation: "The UC section notes appendectomy before age 20 is associated with decreased risk of ulcerative colitis.",
+    optionExplanations: {
+      A: "The association in the section is decreased, not increased, UC risk.",
+      B: "Correct. Appendectomy before age 20 is listed as decreasing UC risk.",
+      C: "Appendectomy is not described as causing Crohn disease in all patients.",
+      D: "Toxic megacolon is evaluated with imaging and clinical findings, not diagnosed by appendectomy."
+    }
+  },
+  {
+    id: 28,
+    topic: "Crohn vs UC hallmark",
+    stem: "A pathology professor asks for the single best contrast between Crohn disease and ulcerative colitis. Which pairing is most accurate?",
+    options: {
+      A: "Crohn: colon only and continuous; UC: mouth-to-anus skip lesions",
+      B: "Crohn: mucosa only; UC: transmural inflammation",
+      C: "Crohn: always curative with colectomy; UC: always recurs at anastomosis",
+      D: "Crohn: transmural skip lesions; UC: continuous mucosal disease beginning in rectum"
+    },
+    correct: "D",
+    explanation: "Crohn disease has transmural inflammation with skip lesions and may involve any GI segment; UC is mucosa-limited, continuous, colon-only disease beginning at the rectum.",
+    optionExplanations: {
+      A: "This reverses the classic distributions.",
+      B: "This reverses the depth of inflammation.",
+      C: "This reverses surgical outcomes; colectomy cures UC, while Crohn can recur.",
+      D: "Correct. This is the core board contrast."
+    }
+  },
+  {
+    id: 29,
+    topic: "Differential diagnosis",
+    stem: "A patient has chronic diarrhea and abdominal pain. Before diagnosing IBD, the clinician considers IBS, celiac disease, appendicitis, infectious colitis, ischemic colitis, drug-induced colitis, diverticulitis, intestinal lymphoma, and undiagnosed AIDS. What principle does this list illustrate?",
+    options: {
+      A: "IBD has no differential diagnosis",
+      B: "IBS and IBD are always the same disease",
+      C: "IBD should be diagnosed only after considering mimics with overlapping symptoms",
+      D: "Celiac disease is a subtype of Crohn disease"
+    },
+    correct: "C",
+    explanation: "The IBD section explicitly lists a broad differential diagnosis that can mimic IBD, so evaluation should consider alternative inflammatory, infectious, ischemic, drug-induced, malignant, and functional causes.",
+    optionExplanations: {
+      A: "The section provides a broad differential, so this is incorrect.",
+      B: "IBS is functional and noninflammatory; IBD is inflammatory.",
+      C: "Correct. Many disorders can mimic IBD and should be considered.",
+      D: "Celiac disease is a gluten-sensitive enteropathy, not a Crohn subtype."
+    }
+  },
+  {
+    id: 30,
+    topic: "Adjunctive therapy",
+    stem: "A patient with inflammatory bowel disease asks about adjunctive therapies. Which adjunctive treatment relationship is specifically listed in the section?",
+    options: {
+      A: "Alcohol intake is recommended to suppress mucosal inflammation",
+      B: "All patients require chronic aspirin for primary colon cancer prevention",
+      C: "Acetaminophen is curative for Crohn fistulas",
+      D: "Nicotine patch may be used preventively in ulcerative colitis, and probiotics may help especially in small bowel Crohn disease or post-antibiotics"
+    },
+    correct: "D",
+    explanation: "The treatment section lists nicotine patch as a preventive adjunct in UC and probiotics especially for small bowel Crohn disease and post-antibiotics.",
+    optionExplanations: {
+      A: "Alcohol intake is not recommended as IBD therapy.",
+      B: "Chronic aspirin as primary prevention is not listed as an IBD adjunctive therapy here.",
+      C: "Acetaminophen is not curative for Crohn fistulas.",
+      D: "Correct. These adjunctive therapy associations are listed in the section."
+    }
+  }
+];
+
+let currentIndex = 0;
+const answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'seg' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; renderQuestion(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(x => x.id === Number(id));
+    if (!q) return;
+    if (choice === q.correct) right++; else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('qNum').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = `Topic: ${q.topic}`;
+  document.getElementById('stem').textContent = q.stem;
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    if (selected && letter === q.correct) btn.classList.add('correct');
+    if (selected && letter === selected && letter !== q.correct) btn.classList.add('incorrect');
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; renderQuestion(); };
+    optionsDiv.appendChild(btn);
+  });
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const isCorrect = selected === q.correct;
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p style="color:${isCorrect ? '#047857' : '#b91c1c'};"><strong>${isCorrect ? 'Nice job.' : 'Good attempt.'}</strong> ${q.explanation}</p>
+      <div class="option-explanations"><p><strong>Why each option is right or wrong:</strong></p>
+      ${Object.entries(q.optionExplanations).map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`).join('')}
+      </div>`;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+  renderProgress();
+  renderScore();
+}
+
+function nextQuestion() { currentIndex = (currentIndex + 1) % questions.length; renderQuestion(); }
+function prevQuestion() { currentIndex = (currentIndex - 1 + questions.length) % questions.length; renderQuestion(); }
+renderQuestion();
+</script>
+</body>
+</html>

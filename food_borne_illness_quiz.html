@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Borne Illness Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #ffffff; --muted: #64748b; --text: #0f172a; --border: #dbe3ef; --blue: #6fa8dc;
+      --green-bg: #dcfce7; --green-border: #22c55e; --green-text: #166534; --red-bg: #fee2e2; --red-border: #ef4444; --red-text: #991b1b; --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .segments { display: flex; gap: 4px; flex: 1; }
+    .segment { height: 8px; border-radius: 999px; border: 0; background: #334155; cursor: pointer; flex: 1; min-width: 4px; padding: 0; }
+    .segment.answered { background: var(--blue); } .segment.active { background: #e2e8f0; }
+    .status { display: flex; align-items: center; gap: 10px; color: #e2e8f0; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 14px; }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; } .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.18); padding: 18px; }
+    .meta { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    .stem { font-weight: 700; line-height: 1.45; margin: 0 0 14px; }
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option { width: 100%; text-align: left; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--gray-bg); cursor: pointer; font-size: 15px; line-height: 1.35; }
+    .option:hover { background: #f1f5f9; } .option.correct { background: var(--green-bg); border-color: var(--green-border); } .option.incorrect { background: var(--red-bg); border-color: var(--red-border); }
+    .explanation { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--gray-bg); border: 1px solid var(--border); font-size: 14px; line-height: 1.45; }
+    .explanation p { margin: 0 0 8px; } .explanation p:last-child { margin-bottom: 0; } .correct-text { color: var(--green-text); } .incorrect-text { color: var(--red-text); }
+    .option-explanations { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .nav { display: flex; justify-content: space-between; margin-top: 16px; }
+    .nav button { padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .nav button:hover { background: #f8fafc; }
+    .footer { color: #94a3b8; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="meta"><span id="questionNumber">Question 1 of 30</span><span id="topic"></span></div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav"><button onclick="goPrev()">Previous</button><button onclick="goNext()">Next</button></div>
+    </div>
+    <div class="footer">Food Borne Illness Quiz</div>
+  </div>
+<script>
+const questions = [
+  {
+    "id": 1,
+    "stem": "A group of people develop abrupt severe nausea, profuse vomiting, abdominal cramps, and diarrhea a few hours after eating custard-filled pastries at a party. Symptoms resolve within 24-48 hours. Which mechanism best explains the illness",
+    "topic": "Staphylococcus aureus food poisoning",
+    "options": {
+      "A": "Invasion of colonic mucosa with flask-shaped ulcers",
+      "B": "Germination of spores in the gut with delayed enterotoxin release",
+      "C": "Ingestion of preformed heat-resistant enterotoxin",
+      "D": "Toxin-mediated blockade of acetylcholine release at neuromuscular junctions"
+    },
+    "correct": "C",
+    "explanation": "Staphylococcus aureus food poisoning is an intoxication caused by preformed, heat-resistant enterotoxin in food, producing abrupt vomiting and cramps with short duration.",
+    "optionExplanations": {
+      "A": "This describes invasive amebiasis due to Entamoeba histolytica, not abrupt toxin-mediated vomiting.",
+      "B": "This is more consistent with Clostridium perfringens or diarrheal Bacillus cereus, which require intestinal growth/toxin production.",
+      "C": "Correct. S. aureus causes abrupt symptoms from preformed heat-resistant enterotoxin.",
+      "D": "This describes botulinum toxin, which causes flaccid paralysis rather than isolated abrupt vomiting."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A food handler with no symptoms prepares sliced ham and potato salad for a picnic. Several attendees develop violent vomiting shortly after eating. Which organism is the most likely cause",
+    "topic": "S. aureus transmission and foods",
+    "options": {
+      "A": "Staphylococcus aureus",
+      "B": "Vibrio vulnificus",
+      "C": "Cyclospora cayetanensis",
+      "D": "Cryptosporidium parvum"
+    },
+    "correct": "A",
+    "explanation": "S. aureus food poisoning is commonly transmitted from asymptomatic food handlers to cut, sliced, grated, or mixed foods such as processed meats, custard pastries, potato salad, and ice cream.",
+    "optionExplanations": {
+      "A": "Correct. Asymptomatic food handlers contaminating prepared foods is classic for S. aureus intoxication.",
+      "B": "V. vulnificus is associated with raw oysters or seawater exposure.",
+      "C": "Cyclospora is associated with fresh produce/water and a longer course of watery diarrhea.",
+      "D": "Cryptosporidium is waterborne and causes watery diarrhea, especially severe in immunocompromised patients."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A stool isolate from a food poisoning outbreak grows as gram-positive cocci in clusters. It is catalase positive, coagulase positive, beta-hemolytic on sheep blood agar, and ferments mannitol. Which diagnosis is most consistent with this organism",
+    "topic": "S. aureus microbiology",
+    "options": {
+      "A": "Clostridium perfringens enteritis",
+      "B": "Bacillus cereus diarrheal syndrome",
+      "C": "Giardiasis",
+      "D": "Staphylococcal gastroenteritis intoxication"
+    },
+    "correct": "D",
+    "explanation": "Gram-positive cocci in clusters that are catalase positive, coagulase positive, beta-hemolytic, and mannitol fermenting are S. aureus, a cause of gastroenteritis intoxication from preformed enterotoxin.",
+    "optionExplanations": {
+      "A": "C. perfringens is a gram-positive spore-forming rod, not cocci in clusters.",
+      "B": "B. cereus is a gram-positive motile spore-forming rod.",
+      "C": "Giardia is a flagellated protozoan, not a gram-positive coccus.",
+      "D": "Correct. These lab features identify S. aureus."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "Several residents at a nursing facility develop watery diarrhea and severe abdominal cramps 10 hours after eating reheated turkey. They have little to no fever, chills, vomiting, or headache. Which organism is most likely",
+    "topic": "Clostridium perfringens food poisoning",
+    "options": {
+      "A": "Staphylococcus aureus",
+      "B": "Clostridium perfringens",
+      "C": "Entamoeba histolytica",
+      "D": "Vibrio vulnificus"
+    },
+    "correct": "B",
+    "explanation": "Clostridium perfringens food poisoning follows ingestion of precooked, improperly cooled, reheated meat or poultry and presents after about 8-14 hours with watery diarrhea and cramping, usually without fever or vomiting.",
+    "optionExplanations": {
+      "A": "S. aureus causes abrupt vomiting from preformed toxin, often within a few hours.",
+      "B": "Correct. Reheated meat/poultry with delayed watery diarrhea and cramping is classic for C. perfringens.",
+      "C": "E. histolytica causes dysentery and can cause liver abscesses.",
+      "D": "V. vulnificus is linked to raw oysters or seawater exposure and can cause sepsis or necrotizing fasciitis."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A gram-positive spore-forming obligate anaerobe isolated from contaminated beef demonstrates double-zone hemolysis on blood agar. Which diagnostic finding would also support this organism",
+    "topic": "C. perfringens diagnostics",
+    "options": {
+      "A": "Green colonies on TCBS agar",
+      "B": "Mannitol fermentation on high-salt agar",
+      "C": "Binucleate trophozoites with multiple flagella in stool",
+      "D": "Lecithinase activity producing precipitation on egg yolk agar"
+    },
+    "correct": "D",
+    "explanation": "Clostridium perfringens can be identified by lecithinase activity on egg yolk agar, antitoxin A plate testing, and double-zone hemolysis on blood agar.",
+    "optionExplanations": {
+      "A": "Green colonies on TCBS agar are associated with Vibrio vulnificus.",
+      "B": "Mannitol salt agar helps identify S. aureus.",
+      "C": "Binucleate flagellated trophozoites indicate Giardia lamblia.",
+      "D": "Correct. C. perfringens produces lecithinase activity on egg yolk agar."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A patient develops food poisoning from a heat-labile enterotoxin that inhibits glucose transport, damages intestinal epithelium, and causes protein loss into the intestinal lumen. Which exposure best matches this illness",
+    "topic": "C. perfringens toxin and exposure",
+    "options": {
+      "A": "Home-canned green beans with neurologic symptoms",
+      "B": "Raw oysters during summer",
+      "C": "Improperly cooled and reheated chicken served at a large gathering",
+      "D": "Contaminated swimming pool water"
+    },
+    "correct": "C",
+    "explanation": "C. perfringens food poisoning is associated with meat or poultry that is precooked, improperly cooled, and reheated; its heat-labile enterotoxin damages intestinal epithelium and causes watery diarrhea.",
+    "optionExplanations": {
+      "A": "Home-canned vegetables with neurologic symptoms suggest C. botulinum.",
+      "B": "Raw oysters suggest V. vulnificus.",
+      "C": "Correct. Reheated meat or poultry at large gatherings is classic for C. perfringens.",
+      "D": "Contaminated pool water is more suggestive of Cryptosporidium."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "Several campers develop nausea, vomiting, diarrhea, diplopia, blurred vision, fixed dilated pupils, and descending symmetric weakness after eating home-canned vegetables. Which toxin mechanism is responsible",
+    "topic": "Clostridium botulinum mechanism",
+    "options": {
+      "A": "Blockade of acetylcholine release from presynaptic cholinergic terminals",
+      "B": "Activation of adenylate cyclase causing watery secretory diarrhea",
+      "C": "Disruption of intestinal barrier by N-acetyl-D-galactosamine lectin",
+      "D": "Release of cytokines that stimulate chloride and water secretion"
+    },
+    "correct": "A",
+    "explanation": "Botulinum toxin binds presynaptic cholinergic terminals and proteolyzes exocytosis proteins, blocking acetylcholine release and causing descending symmetric flaccid paralysis.",
+    "optionExplanations": {
+      "A": "Correct. Botulinum toxin blocks acetylcholine release at presynaptic cholinergic terminals.",
+      "B": "This describes the diarrheal mechanism of some enterotoxins such as diarrheal B. cereus.",
+      "C": "This is related to Entamoeba histolytica adherence and invasion.",
+      "D": "This describes Cryptosporidium-associated epithelial cytokine effects."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A toxin causing foodborne illness is a cytoplasmic protein of about 150 kDa that is released when bacterial cells lyse. About 1 microgram can be lethal. Which organism produces this toxin",
+    "topic": "Botulinum toxin potency",
+    "options": {
+      "A": "Bacillus cereus",
+      "B": "Staphylococcus aureus",
+      "C": "Clostridium perfringens",
+      "D": "Clostridium botulinum"
+    },
+    "correct": "D",
+    "explanation": "Clostridium botulinum produces an extremely potent neurotoxin released when cells lyse; very small amounts can cause paralysis and death.",
+    "optionExplanations": {
+      "A": "B. cereus causes emetic or diarrheal syndromes but not descending flaccid paralysis.",
+      "B": "S. aureus produces heat-resistant enterotoxins causing vomiting.",
+      "C": "C. perfringens causes watery diarrhea and cramping from enterotoxin.",
+      "D": "Correct. The highly potent neurotoxin is produced by C. botulinum."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A patient with suspected foodborne botulism is evaluated after developing cranial nerve palsies and respiratory weakness. Which diagnostic approach is most appropriate according to the section",
+    "topic": "Botulism diagnosis",
+    "options": {
+      "A": "Hydrogen breath test",
+      "B": "Detection of organism or toxin in stool, vomitus, or gastric fluid",
+      "C": "Modified acid-fast stain of stool for small oocysts",
+      "D": "TCBS agar showing green colonies"
+    },
+    "correct": "B",
+    "explanation": "Botulism is diagnosed by detecting the organism or toxin in stool, vomitus, or gastric fluid.",
+    "optionExplanations": {
+      "A": "Hydrogen breath testing is used for carbohydrate malabsorption, not botulism.",
+      "B": "Correct. Botulism workup involves detection of organism/toxin in stool, vomitus, or gastric fluid.",
+      "C": "Modified acid-fast staining is used for Cryptosporidium and Cyclospora oocysts.",
+      "D": "TCBS green colonies point to Vibrio vulnificus."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient develops nausea, vomiting, and abdominal cramps 2 hours after eating reheated fried rice that had been left unrefrigerated. Which toxin property best explains this rapid emetic syndrome",
+    "topic": "Bacillus cereus emetic syndrome",
+    "options": {
+      "A": "Heat-labile enterotoxin requiring intestinal colonization",
+      "B": "Preformed botulinum neurotoxin that blocks acetylcholine release",
+      "C": "Heat-stable, proteolysis-resistant toxin",
+      "D": "Toxin encoded by a plasmid that blocks inhibitory neurons"
+    },
+    "correct": "C",
+    "explanation": "The emetic form of Bacillus cereus food poisoning is associated with reheated fried rice and is caused by a heat-stable, proteolysis-resistant toxin with short incubation.",
+    "optionExplanations": {
+      "A": "This better describes the diarrheal B. cereus syndrome, which has a longer incubation.",
+      "B": "Botulinum toxin causes neurologic paralysis, not isolated fried-rice emesis.",
+      "C": "Correct. The emetic toxin of B. cereus is heat-stable and proteolysis-resistant.",
+      "D": "A plasmid toxin that blocks inhibitory neurons describes tetanospasmin, not foodborne B. cereus."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A gram-positive, motile, spore-forming, facultative anaerobic rod is isolated from contaminated food. It is beta-hemolytic on blood agar, lecithinase positive on egg yolk agar, gelatin hydrolysis positive, and penicillin resistant. Which organism is most likely",
+    "topic": "Bacillus cereus microbiology",
+    "options": {
+      "A": "Bacillus cereus",
+      "B": "Clostridium botulinum",
+      "C": "Staphylococcus aureus",
+      "D": "Giardia lamblia"
+    },
+    "correct": "A",
+    "explanation": "Bacillus cereus is a gram-positive, motile, spore-forming, facultative anaerobic rod that is beta-hemolytic and can be lecithinase positive.",
+    "optionExplanations": {
+      "A": "Correct. These microbiologic features match B. cereus.",
+      "B": "C. botulinum is an obligate anaerobic gram-positive spore-forming rod and causes neurologic disease.",
+      "C": "S. aureus is gram-positive cocci in clusters, not rods.",
+      "D": "Giardia is a flagellated protozoan, not a bacterium."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A patient develops diarrhea, nausea, and abdominal cramps about 9 hours after eating contaminated spaghetti sauce. The illness is attributed to activation of adenylate cyclase with increased cAMP and water/electrolyte secretion. Which organism is most likely",
+    "topic": "Bacillus cereus diarrheal syndrome",
+    "options": {
+      "A": "Staphylococcus aureus",
+      "B": "Clostridium botulinum",
+      "C": "Cyclospora cayetanensis",
+      "D": "Bacillus cereus"
+    },
+    "correct": "D",
+    "explanation": "The diarrheal syndrome of B. cereus has a longer incubation, is associated with foods such as meat, vegetables, spaghetti sauces, dried potatoes, and dried milk, and involves a heat-labile enterotoxin that increases cAMP-mediated secretion.",
+    "optionExplanations": {
+      "A": "S. aureus causes abrupt vomiting from preformed enterotoxin.",
+      "B": "C. botulinum causes flaccid paralysis after ingestion of preformed neurotoxin.",
+      "C": "Cyclospora causes prolonged watery diarrhea associated with fresh produce/water.",
+      "D": "Correct. This is the diarrheal syndrome of B. cereus."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A man with chronic liver disease eats raw oysters during the summer and later develops vomiting, diarrhea, abdominal pain, fever, altered mental status, septic shock, cellulitis, ecchymoses, and bullae. Which organism is most likely",
+    "topic": "Vibrio vulnificus clinical presentation",
+    "options": {
+      "A": "Entamoeba histolytica",
+      "B": "Vibrio vulnificus",
+      "C": "Staphylococcus aureus",
+      "D": "Bacillus cereus"
+    },
+    "correct": "B",
+    "explanation": "Vibrio vulnificus is associated with raw or undercooked oysters, especially in summer, and can cause acute gastroenteritis, primary septicemia, bullous skin lesions, and necrotizing fasciitis.",
+    "optionExplanations": {
+      "A": "E. histolytica causes dysentery and liver abscesses, not oyster-associated bullous septicemia.",
+      "B": "Correct. Raw oysters plus septic shock and bullae is classic for V. vulnificus.",
+      "C": "S. aureus causes short-incubation vomiting from preformed toxin.",
+      "D": "B. cereus causes emetic or diarrheal food poisoning, not septic shock with bullae."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "A curved gram-negative motile rod from a marine exposure grows on thiosulfate citrate bile salts sucrose agar as green colonies. Which organism is most consistent with this finding",
+    "topic": "Vibrio vulnificus diagnosis",
+    "options": {
+      "A": "Vibrio cholerae",
+      "B": "Campylobacter jejuni",
+      "C": "Vibrio vulnificus",
+      "D": "Yersinia enterocolitica"
+    },
+    "correct": "C",
+    "explanation": "Vibrio vulnificus is a slightly curved gram-negative motile marine rod. On TCBS agar, V. vulnificus forms green colonies, whereas V. cholerae forms yellow colonies.",
+    "optionExplanations": {
+      "A": "V. cholerae forms yellow colonies on TCBS in the section contrast.",
+      "B": "Campylobacter is not the marine oyster-associated organism described here.",
+      "C": "Correct. Green colonies on TCBS fit V. vulnificus.",
+      "D": "Yersinia enterocolitica is not associated with TCBS green colonies or marine exposure."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A fisherman cuts his leg in seawater and later develops rapidly progressive cellulitis with bullae and concern for necrotizing fasciitis. Which management is most consistent with the section",
+    "topic": "Vibrio vulnificus wound infection management",
+    "options": {
+      "A": "ICU-level supportive care, antibiotics, and possible surgical debridement or amputation",
+      "B": "No therapy because symptoms always self-resolve within 24 hours",
+      "C": "Only oral rehydration and dapsone",
+      "D": "Treat with iodoquinol followed by paramomycin"
+    },
+    "correct": "A",
+    "explanation": "Severe V. vulnificus infection can require ICU-level supportive care, antibiotics, and surgical debridement or amputation when necrotizing fasciitis develops.",
+    "optionExplanations": {
+      "A": "Correct. V. vulnificus wound infection can be life-threatening and may need aggressive supportive, antibiotic, and surgical management.",
+      "B": "This is more consistent with mild self-limited intoxications, not necrotizing fasciitis.",
+      "C": "Dapsone is unrelated to V. vulnificus management.",
+      "D": "Iodoquinol/paramomycin are luminal agents for amoebiasis, not Vibrio wound infection."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "An immunocompromised patient develops severe cholera-like watery diarrhea with abdominal cramps. The organism is a small coccidian parasite living on or just below small intestinal epithelial cells and can cause autoinfection through thin-walled oocysts. Which organism is most likely",
+    "topic": "Cryptosporidium parvum",
+    "options": {
+      "A": "Cyclospora cayetanensis",
+      "B": "Giardia lamblia",
+      "C": "Entamoeba histolytica",
+      "D": "Cryptosporidium parvum"
+    },
+    "correct": "D",
+    "explanation": "Cryptosporidium parvum is a small coccidian parasite of the small intestine. In immunocompromised patients, it can cause severe cholera-like diarrhea, and thin-walled oocysts can rupture in the intestine causing autoinfection.",
+    "optionExplanations": {
+      "A": "Cyclospora causes prolonged watery diarrhea associated with produce/water but is not the organism described as living on or just below epithelial cells with autoinfection emphasized here.",
+      "B": "Giardia is a flagellate with trophozoites attaching by a ventral sucking disk.",
+      "C": "E. histolytica causes invasive dysentery and flask-shaped ulcers.",
+      "D": "Correct. Severe cholera-like diarrhea with autoinfection in immunocompromised patients fits Cryptosporidium."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A patient develops watery diarrhea after swimming in a contaminated pool. Stool testing is planned for a parasite that is resistant to many water treatments and appears as small oocysts in fecal smears. Which diagnostic stain is most appropriate",
+    "topic": "Cryptosporidium diagnosis",
+    "options": {
+      "A": "Warthin-Starry silver stain",
+      "B": "Gram stain showing gram-positive cocci",
+      "C": "Modified acid-fast stain",
+      "D": "India ink stain"
+    },
+    "correct": "C",
+    "explanation": "Cryptosporidium oocysts can be detected in stool using modified acid-fast staining.",
+    "optionExplanations": {
+      "A": "Warthin-Starry silver stain is used for some bacteria such as H. pylori, not Cryptosporidium in this section.",
+      "B": "Cryptosporidium is a protozoal parasite, not gram-positive cocci.",
+      "C": "Correct. Modified acid-fast stain detects Cryptosporidium oocysts.",
+      "D": "India ink is used for encapsulated fungi such as Cryptococcus, not this GI parasite."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A patient with AIDS has profuse watery diarrhea attributed to Cryptosporidium. Which treatment approach is listed for immunocompromised patients in the section",
+    "topic": "Cryptosporidium treatment",
+    "options": {
+      "A": "Metronidazole only",
+      "B": "Paromomycin plus supportive oral rehydration",
+      "C": "Antitoxin against A, B, and E",
+      "D": "Trimethoprim-sulfamethoxazole only"
+    },
+    "correct": "B",
+    "explanation": "Cryptosporidiosis management is supportive with oral rehydration; paromomycin is listed for immunocompromised patients.",
+    "optionExplanations": {
+      "A": "Metronidazole is used for Giardia and symptomatic Entamoeba, not the listed Cryptosporidium therapy here.",
+      "B": "Correct. Supportive care with oral rehydration and paromomycin for immunocompromised patients is listed.",
+      "C": "Antitoxin is used for botulism.",
+      "D": "TMP-SMX is the listed therapy for Cyclospora, not Cryptosporidium."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "A hiker develops diarrhea, abdominal pain, bloating, nausea, and vomiting after drinking untreated stream water. Stool microscopy shows binucleate trophozoites with multiple flagella that attach to proximal small bowel mucosa using a ventral sucking disk. Which organism is most likely",
+    "topic": "Giardia lamblia",
+    "options": {
+      "A": "Giardia lamblia",
+      "B": "Entamoeba histolytica",
+      "C": "Cryptosporidium parvum",
+      "D": "Bacillus cereus"
+    },
+    "correct": "A",
+    "explanation": "Giardia lamblia is a flagellate protozoan acquired through contaminated water. Trophozoites in the proximal small bowel can attach via a ventral sucking disk and appear binucleate with multiple flagella.",
+    "optionExplanations": {
+      "A": "Correct. Untreated water plus bloating/diarrhea and binucleate flagellates indicates Giardia.",
+      "B": "E. histolytica causes invasive dysentery and liver abscesses.",
+      "C": "Cryptosporidium causes watery diarrhea with acid-fast oocysts.",
+      "D": "B. cereus is a bacterial food poisoning organism."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A patient is diagnosed with giardiasis after contaminated water exposure. Which treatment is most appropriate according to the section",
+    "topic": "Giardia treatment",
+    "options": {
+      "A": "Trivalent antitoxin",
+      "B": "Oral vancomycin",
+      "C": "Iodoquinol alone",
+      "D": "Metronidazole or tinidazole"
+    },
+    "correct": "D",
+    "explanation": "Giardia lamblia infection is treated with metronidazole or tinidazole.",
+    "optionExplanations": {
+      "A": "Antitoxin is used for botulism, not Giardia.",
+      "B": "Oral vancomycin is not the treatment listed for Giardia.",
+      "C": "Iodoquinol alone is used for asymptomatic Entamoeba infection, not Giardia.",
+      "D": "Correct. Metronidazole or tinidazole treats giardiasis."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A patient develops bloody, mucus-filled stools after travel to a region with poor sanitation. The organism releases digestive enzymes, invades intestinal mucosa, and forms flask-shaped ulcers. Which organism is most likely",
+    "topic": "Entamoeba histolytica intestinal disease",
+    "options": {
+      "A": "Giardia lamblia",
+      "B": "Entamoeba histolytica",
+      "C": "Cyclospora cayetanensis",
+      "D": "Cryptosporidium parvum"
+    },
+    "correct": "B",
+    "explanation": "Entamoeba histolytica trophozoites can invade intestinal mucosa, release proteolytic/digestive enzymes, and produce flask-shaped ulcers with dysentery.",
+    "optionExplanations": {
+      "A": "Giardia causes watery diarrhea, bloating, and malabsorption rather than invasive bloody dysentery.",
+      "B": "Correct. Flask-shaped ulcers and bloody mucus stools are classic for E. histolytica.",
+      "C": "Cyclospora causes watery diarrhea, often prolonged or relapsing, not flask-shaped ulcers.",
+      "D": "Cryptosporidium causes watery diarrhea with acid-fast oocysts, especially severe in immunocompromised patients."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A patient with invasive amebiasis develops fever, right upper quadrant pain, weight loss, leukocytosis, and elevated liver enzymes. Which route best explains this complication",
+    "topic": "Entamoeba liver abscess pathogenesis",
+    "options": {
+      "A": "Raw oyster ingestion causing primary septicemia",
+      "B": "Presynaptic toxin absorption in the stomach",
+      "C": "Erosion through intestinal mucosa with entry into circulation and colonization of the liver",
+      "D": "Attachment to small bowel by a ventral sucking disk without invasion"
+    },
+    "correct": "C",
+    "explanation": "E. histolytica can erode the intestinal mucosa, enter the circulation, and most commonly colonize the liver, producing hepatic abscesses with fever and right upper quadrant pain.",
+    "optionExplanations": {
+      "A": "This describes V. vulnificus exposure and sepsis.",
+      "B": "This is botulism pathogenesis.",
+      "C": "Correct. Amebae can enter circulation from the gut and form liver abscesses.",
+      "D": "This describes Giardia, which is noninvasive in the section."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "A stool specimen from a patient with diarrhea shows trophozoites. The section notes that cysts are found in formed stools and can survive days to weeks in the external environment, whereas trophozoites are found in diarrheal stools. Which disease does this apply to",
+    "topic": "Entamoeba histolytica life forms",
+    "options": {
+      "A": "Cryptosporidiosis",
+      "B": "Giardiasis",
+      "C": "Cyclospora infection",
+      "D": "Amoebiasis"
+    },
+    "correct": "D",
+    "explanation": "In Entamoeba histolytica infection, cysts are found in formed stools and survive in the environment, while trophozoites are found in diarrheal stools and can invade mucosa.",
+    "optionExplanations": {
+      "A": "Cryptosporidiosis is diagnosed by oocysts, not this cyst/trophozoite distinction as described.",
+      "B": "Giardia also has cysts and trophozoites, but the specific formed stool versus diarrheal stool description in this section is under E. histolytica.",
+      "C": "Cyclospora is described as passing oocysts in stool.",
+      "D": "Correct. The described life-form pattern is emphasized for amoebiasis."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A patient has asymptomatic intestinal infection with Entamoeba histolytica. Which treatment option is listed for asymptomatic infection",
+    "topic": "Asymptomatic amebiasis treatment",
+    "options": {
+      "A": "Iodoquinol or paramomycin",
+      "B": "Heptavalent antitoxin",
+      "C": "Octreotide",
+      "D": "Surgical debridement"
+    },
+    "correct": "A",
+    "explanation": "Asymptomatic E. histolytica infection is treated with a luminal agent such as iodoquinol or paramomycin.",
+    "optionExplanations": {
+      "A": "Correct. Iodoquinol or paramomycin is listed for asymptomatic amebiasis.",
+      "B": "Heptavalent antitoxin is used for botulism.",
+      "C": "Octreotide is not a treatment for asymptomatic amebiasis in this section.",
+      "D": "Surgical debridement is relevant for severe V. vulnificus necrotizing infection, not asymptomatic amebiasis."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A patient with symptomatic intestinal and extra-intestinal amebiasis is treated with metronidazole. What should follow this therapy according to the section",
+    "topic": "Symptomatic amebiasis treatment sequence",
+    "options": {
+      "A": "No further therapy because metronidazole eliminates luminal cysts reliably",
+      "B": "Iodoquinol or paramomycin",
+      "C": "Botulinum antitoxin",
+      "D": "Trimethoprim-sulfamethoxazole"
+    },
+    "correct": "B",
+    "explanation": "Symptomatic intestinal and extra-intestinal amoebiasis is treated with metronidazole or tinidazole followed by iodoquinol or paramomycin to clear luminal organisms.",
+    "optionExplanations": {
+      "A": "Metronidazole is followed by a luminal agent in the listed regimen.",
+      "B": "Correct. A luminal agent such as iodoquinol or paramomycin follows metronidazole/tinidazole.",
+      "C": "Botulinum antitoxin is unrelated to amebiasis.",
+      "D": "TMP-SMX is the listed therapy for Cyclospora."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "An outbreak of prolonged watery diarrhea is linked to fresh raspberries and contaminated water. Oocysts require sporulation in the environment, and symptoms may relapse for up to 2 months. Which organism is most likely",
+    "topic": "Cyclospora cayetanensis",
+    "options": {
+      "A": "Giardia lamblia",
+      "B": "Cryptosporidium parvum",
+      "C": "Staphylococcus aureus",
+      "D": "Cyclospora cayetanensis"
+    },
+    "correct": "D",
+    "explanation": "Cyclospora cayetanensis is associated with fresh produce and water, including outbreaks linked to Guatemalan raspberries. It causes watery diarrhea that can persist for weeks or relapse for up to 2 months.",
+    "optionExplanations": {
+      "A": "Giardia is associated with contaminated water and bloating but not the raspberry/prolonged relapsing pattern described.",
+      "B": "Cryptosporidium is waterborne and severe in immunocompromised patients, but the fresh raspberry and relapsing Cyclospora pattern is more specific here.",
+      "C": "S. aureus causes abrupt short-duration vomiting from preformed toxin.",
+      "D": "Correct. Fresh produce/water with prolonged relapsing watery diarrhea suggests Cyclospora."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A patient with suspected Cyclospora infection submits stool for testing. The organism is released intermittently. Which diagnostic strategy is most appropriate according to the section",
+    "topic": "Cyclospora diagnosis",
+    "options": {
+      "A": "Single blood culture on Mueller-Hinton agar",
+      "B": "Mannitol salt agar from vomitus only",
+      "C": "At least 3 stool specimens collected at 2-3 day intervals with microscopy/modified acid-fast stain",
+      "D": "Urea breath test"
+    },
+    "correct": "C",
+    "explanation": "Cyclospora diagnosis requires evidence of oocysts in stool; because release is intermittent, at least 3 specimens collected at 2-3 day intervals may be needed. Modified acid-fast stain can be used and oocysts are autofluorescent.",
+    "optionExplanations": {
+      "A": "Blood culture on Mueller-Hinton agar is listed for listeriosis, not Cyclospora.",
+      "B": "Mannitol salt agar is used for S. aureus, not Cyclospora.",
+      "C": "Correct. Multiple stool specimens with microscopy/modified acid-fast staining are appropriate.",
+      "D": "Urea breath testing is for H. pylori, not Cyclospora."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "A patient has cyclosporiasis with watery diarrhea, anorexia, nausea, abdominal pain, fatigue, and low-grade fever. Which treatment is listed in the section",
+    "topic": "Cyclospora treatment",
+    "options": {
+      "A": "Trimethoprim-sulfamethoxazole with fluid and electrolyte management",
+      "B": "Metronidazole followed by iodoquinol",
+      "C": "Bismuth subsalicylate only",
+      "D": "Heptavalent antitoxin"
+    },
+    "correct": "A",
+    "explanation": "Cyclospora infection is usually self-limited, but treatment listed is trimethoprim-sulfamethoxazole plus management of fluid and electrolyte balance.",
+    "optionExplanations": {
+      "A": "Correct. TMP-SMX is the listed therapy for Cyclospora.",
+      "B": "This regimen is for symptomatic Entamoeba histolytica infection.",
+      "C": "Bismuth may help nonspecific diarrhea but is not the listed treatment for Cyclospora.",
+      "D": "Heptavalent antitoxin is used for botulism."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A protozoal infection is described as being caused by oocysts passed in stool, with fresh produce and water as vehicles. Washing or cooking can kill the infectious form. Incubation is about 1 week, and symptoms can persist for several weeks. Which additional feature supports this diagnosis",
+    "topic": "Cyclospora clinical features",
+    "options": {
+      "A": "Descending symmetric paralysis with fixed dilated pupils",
+      "B": "Autofluorescent oocysts on stool examination",
+      "C": "Green colonies on TCBS agar",
+      "D": "Double-zone hemolysis on blood agar"
+    },
+    "correct": "B",
+    "explanation": "Cyclospora oocysts are autofluorescent and can be detected in stool with microscopy and modified acid-fast staining.",
+    "optionExplanations": {
+      "A": "Descending symmetric paralysis suggests botulism.",
+      "B": "Correct. Autofluorescent oocysts support Cyclospora.",
+      "C": "Green colonies on TCBS agar indicate V. vulnificus.",
+      "D": "Double-zone hemolysis is characteristic of C. perfringens."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "A patient develops severe abdominal pain, bloody diarrhea, vomiting, and shock after a pig feast. The illness is described as severe necrotizing disease of the small intestine due to Clostridium perfringens type C. What is the name of this syndrome",
+    "topic": "Enteritis necroticans Pigbel",
+    "options": {
+      "A": "Watermelon stomach",
+      "B": "Winter vomiting disease",
+      "C": "Delhi belly",
+      "D": "Enteritis necroticans Pigbel"
+    },
+    "correct": "D",
+    "explanation": "Enteritis necroticans, also called Pigbel, is caused by C. perfringens type C and produces severe necrotizing disease of the small intestine with abdominal pain, bloody diarrhea, vomiting, shock, and high mortality.",
+    "optionExplanations": {
+      "A": "Watermelon stomach refers to gastric antral vascular ectasia, not a foodborne necrotizing enteritis.",
+      "B": "Winter vomiting disease is associated with norovirus, not C. perfringens type C.",
+      "C": "Delhi belly is a traveler diarrhea nickname, not the C. perfringens type C syndrome.",
+      "D": "Correct. This syndrome is enteritis necroticans, or Pigbel."
+    }
+  }
+];
+let currentIndex = 0;
+const answers = {};
+function renderSegments() {
+  const el = document.getElementById('segments'); el.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const b = document.createElement('button');
+    b.className = 'segment' + (answers[q.id] !== undefined ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    b.title = q.topic || `Question ${idx + 1}`;
+    b.onclick = () => { currentIndex = idx; render(); };
+    el.appendChild(b);
+  });
+}
+function renderCounts() {
+  let right = 0, wrong = 0;
+  Object.entries(answers).forEach(([id, choice]) => {
+    const q = questions.find(x => x.id === Number(id));
+    if (q && choice === q.correct) right++; else if (q) wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+}
+function render() {
+  const q = questions[currentIndex]; const selected = answers[q.id] || null;
+  document.getElementById('progressText').textContent = `${currentIndex + 1} / ${questions.length}`;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+  const opts = document.getElementById('options'); opts.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    if (selected && letter === q.correct) btn.classList.add('correct');
+    else if (selected && letter === selected && letter !== q.correct) btn.classList.add('incorrect');
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => { answers[q.id] = letter; render(); };
+    opts.appendChild(btn);
+  });
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const isCorrect = selected === q.correct;
+    exp.style.display = 'block';
+    exp.innerHTML = `<p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p><p class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${isCorrect ? 'Nice job. ' : 'Good attempt. '}${q.explanation}</p><div class="option-explanations"><p><strong>Why each option is right or wrong:</strong></p>${Object.entries(q.optionExplanations).map(([l,t]) => `<p><strong>${l}.</strong> ${t}</p>`).join('')}</div>`;
+  } else { exp.style.display = 'none'; exp.innerHTML = ''; }
+  renderSegments(); renderCounts();
+}
+function goNext() { currentIndex = (currentIndex + 1) % questions.length; render(); }
+function goPrev() { currentIndex = (currentIndex - 1 + questions.length) % questions.length; render(); }
+render();
+</script>
+</body>
+</html>

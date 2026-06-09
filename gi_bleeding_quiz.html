@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GI Bleeding Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --border: #dbe3ef;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --gray-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .segments {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: #334155;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .pill.red { background: rgba(127, 29, 29, .7); color: #fee2e2; }
+    .pill.green { background: rgba(6, 78, 59, .7); color: #d1fae5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      padding: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .stem {
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--gray-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p {
+      margin: 8px 0;
+    }
+    .correct-text { color: var(--green-text); }
+    .incorrect-text { color: var(--red-text); }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .nav button, .reset {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f8fafc; }
+    .footer {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="segments" id="segments"></div>
+      <div class="status">
+        <span id="progressText">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionMeta">Question 1 of 30</span>
+        <span id="topicMeta">Topic: GI Pharmacology</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button id="prevBtn">Previous</button>
+        <button class="reset" id="resetBtn">Reset quiz</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">GI Pharmacology quiz • 30 questions</div>
+  </div>
+
+  <script>
+    const questions = [
+  {
+    "id": 1,
+    "stem": "A 2-year-old boy has painless lower GI bleeding. A scan suggests a true diverticulum in the ileum containing ectopic gastric mucosa. Which diagnosis is most likely",
+    "topic": "Meckel diverticulum",
+    "options": {
+      "A": "Meckel diverticulum",
+      "B": "Angiodysplasia",
+      "C": "Diverticulosis",
+      "D": "Gastric antral vascular ectasia"
+    },
+    "correct": "A",
+    "explanation": "Meckel diverticulum is the most common cause of painless GI bleeding in children. It is a true ileal diverticulum with ectopic gastric mucosa that secretes acid and causes ulceration.",
+    "optionExplanations": {
+      "A": "Correct. Painless pediatric bleeding with an ileal true diverticulum fits Meckel diverticulum.",
+      "B": "Angiodysplasia is more typical in older adults and affects the cecum/right colon.",
+      "C": "Diverticulosis is acquired false diverticula, usually in older adults.",
+      "D": "GAVE is a gastric vascular lesion classically in elderly women."
+    }
+  },
+  {
+    "id": 2,
+    "stem": "A 67-year-old man has fatigue and microcytic anemia without visible blood in stool. Workup reveals a proximal colon mass. Which mechanism best explains the anemia",
+    "topic": "Colon adenocarcinoma bleeding",
+    "options": {
+      "A": "Acute massive venous rupture from esophageal collaterals",
+      "B": "Post-vomiting superficial mucosal tear near the GE junction",
+      "C": "Occult bleeding from fragile tumor-associated new vessels",
+      "D": "Increased vitamin C intake inhibiting guaiac oxidation"
+    },
+    "correct": "C",
+    "explanation": "Colon adenocarcinoma can produce new fragile vessels that cause occult bleeding, leading to chronic iron-deficiency anemia, especially in proximal colon cancers.",
+    "optionExplanations": {
+      "A": "This describes variceal bleeding, not colon cancer anemia.",
+      "B": "This describes Mallory-Weiss tears.",
+      "C": "Correct. Fragile tumor vessels cause occult bleeding and chronic IDA.",
+      "D": "Vitamin C can cause a false-negative guaiac test but does not explain the anemia mechanism."
+    }
+  },
+  {
+    "id": 3,
+    "stem": "A 70-year-old patient has painless lower GI bleeding. Colonoscopy shows acquired mucosal outpouchings in the sigmoid colon that lack all layers of the bowel wall. Which bleeding mechanism best explains this disease",
+    "topic": "Diverticulosis bleeding",
+    "options": {
+      "A": "Mucosal inflammation with fissures exposing larger vessels",
+      "B": "False diverticula with stretched, unsupported vessels that rupture",
+      "C": "Ectopic gastric mucosa secreting acid in a true diverticulum",
+      "D": "Dilated vascular channels displaced downward in the anal canal"
+    },
+    "correct": "B",
+    "explanation": "Diverticulosis consists of acquired false diverticula, commonly in the sigmoid colon, with thin walls and stretched unsupported blood vessels that can undergo arterial rupture.",
+    "optionExplanations": {
+      "A": "This describes inflammatory bowel disease bleeding.",
+      "B": "Correct. Unsupported vessels in false diverticula can rupture.",
+      "C": "This describes Meckel diverticulum.",
+      "D": "This describes hemorrhoids."
+    }
+  },
+  {
+    "id": 4,
+    "stem": "A cirrhotic patient vomits a large volume of blood and becomes hypotensive. Endoscopy later reveals dilated veins in the distal esophagus and proximal stomach. Which mechanism produced this lesion",
+    "topic": "Esophageal varices pathogenesis",
+    "options": {
+      "A": "NSAID inhibition of prostaglandin synthesis",
+      "B": "Ectopic gastric acid secretion in the ileum",
+      "C": "Portal hypertension causing dilated submucosal veins",
+      "D": "Vertical superficial mucosal tearing after retching"
+    },
+    "correct": "C",
+    "explanation": "Gastroesophageal varices are dilated submucosal veins in the distal esophagus and proximal stomach caused by portal hypertension, most commonly cirrhosis.",
+    "optionExplanations": {
+      "A": "NSAID-mediated prostaglandin loss contributes to PUD, not varices.",
+      "B": "Ectopic gastric mucosa in ileum describes Meckel diverticulum bleeding.",
+      "C": "Correct. Portal hypertension produces portosystemic collaterals and varices.",
+      "D": "This describes Mallory-Weiss tears."
+    }
+  },
+  {
+    "id": 5,
+    "stem": "A patient has bright red blood per rectum without hematemesis. The source is suspected to be distal to the ligament of Treitz. Which term best describes this presentation",
+    "topic": "Lower GI bleed presentation",
+    "options": {
+      "A": "Melena",
+      "B": "Hematochezia",
+      "C": "Hematemesis",
+      "D": "Coffee-ground emesis"
+    },
+    "correct": "B",
+    "explanation": "Lower GI bleeding, defined as bleeding below the ligament of Treitz, classically produces hematochezia, or bright red blood per rectum.",
+    "optionExplanations": {
+      "A": "Melena is black tarry stool and is more typical of upper GI bleeding.",
+      "B": "Correct. Hematochezia means bright red blood per rectum.",
+      "C": "Hematemesis is vomiting blood and points to an upper GI source.",
+      "D": "Coffee-ground emesis is digested blood from an upper GI source."
+    }
+  },
+  {
+    "id": 6,
+    "stem": "A patient eats red meat before fecal occult blood testing and has a positive guaiac result despite no bleeding source. Which limitation explains this result",
+    "topic": "Guaiac false positives",
+    "options": {
+      "A": "Vitamin C inhibits oxidation of guaiac",
+      "B": "FIT is less sensitive for lower GI bleeding",
+      "C": "Human globin is degraded by colonic bacteria",
+      "D": "Animal heme can cause false-positive guaiac testing"
+    },
+    "correct": "D",
+    "explanation": "Guaiac FOBT has decreased specificity because red meat contains animal heme, which can cause false-positive results.",
+    "optionExplanations": {
+      "A": "Vitamin C causes false-negative guaiac results by inhibiting oxidation.",
+      "B": "FIT is less sensitive for upper GI bleeding because globin is degraded, not because of red meat false positivity.",
+      "C": "Human globin degradation explains FIT's lower sensitivity for upper GI bleeding, not red meat false positives.",
+      "D": "Correct. Animal heme from red meat can falsely turn guaiac positive."
+    }
+  },
+  {
+    "id": 7,
+    "stem": "A patient has bright red blood coating the stool after straining. Exam shows dilated anal vascular channels. Which statement best distinguishes the two common types",
+    "topic": "Hemorrhoids",
+    "options": {
+      "A": "External hemorrhoids are always painless and internal hemorrhoids are always thrombosed",
+      "B": "Internal hemorrhoids are painless, while external hemorrhoids are painful especially if thrombosed",
+      "C": "Both internal and external hemorrhoids are caused by ectopic gastric acid secretion",
+      "D": "Both types most commonly cause melena rather than bright red blood"
+    },
+    "correct": "B",
+    "explanation": "Hemorrhoids are dilated and downwardly displaced anal vascular channels; internal hemorrhoids cause painless bleeding, whereas external hemorrhoids are painful, especially when thrombosed.",
+    "optionExplanations": {
+      "A": "This reverses the typical pain pattern.",
+      "B": "Correct. Internal is typically painless; external can be painful when thrombosed.",
+      "C": "Ectopic gastric acid secretion describes Meckel-related bleeding, not hemorrhoids.",
+      "D": "Hemorrhoids usually cause bright red blood per rectum, not melena."
+    }
+  },
+  {
+    "id": 8,
+    "stem": "A hospitalized ICU patient with sepsis and shock develops melena. Which mechanism best explains stress-related ulcer formation in this setting",
+    "topic": "Stress-related ulcers",
+    "options": {
+      "A": "Gastrin-secreting neuroendocrine tumor causing parietal cell hyperplasia",
+      "B": "Autoimmune destruction of intrinsic factor-producing cells",
+      "C": "Portal hypertension producing portosystemic collaterals",
+      "D": "Blood shunting to vital organs causing gastric ischemic mucosal injury"
+    },
+    "correct": "D",
+    "explanation": "Stress-related ulcers occur in critical illness such as trauma, burns, sepsis, and shock due to blood shunting away from the stomach, causing gastric ischemia and mucosal injury.",
+    "optionExplanations": {
+      "A": "This describes Zollinger-Ellison syndrome, not stress-related mucosal damage.",
+      "B": "This is related to autoimmune gastritis/pernicious anemia, not ICU stress ulcers.",
+      "C": "Portal hypertension causes varices, not stress ulcers.",
+      "D": "Correct. Shock states reduce gastric perfusion, producing ischemic mucosal injury."
+    }
+  },
+  {
+    "id": 9,
+    "stem": "A man on chronic hemodialysis develops peptic ulcer bleeding. Which additional ESRD-related mechanism may increase gastric secretion and bleeding risk",
+    "topic": "ESRD and PUD",
+    "options": {
+      "A": "Reduced renal clearance causing increased gastrin levels",
+      "B": "Decreased portal venous pressure",
+      "C": "Loss of ectopic gastric mucosa in the ileum",
+      "D": "Reduced platelet factor from splenic pooling only"
+    },
+    "correct": "A",
+    "explanation": "In ESRD-associated bleeding, gastrin levels are increased due to reduced renal clearance, which increases gastric secretion and contributes to bleeding risk along with platelet dysfunction.",
+    "optionExplanations": {
+      "A": "Correct. Reduced renal clearance increases gastrin levels.",
+      "B": "Portal pressure is not decreased in this mechanism.",
+      "C": "Ectopic gastric mucosa in ileum is related to Meckel diverticulum, not ESRD.",
+      "D": "The section emphasizes uremic platelet dysfunction, not isolated splenic pooling."
+    }
+  },
+  {
+    "id": 10,
+    "stem": "A patient has suspected GI bleeding and a guaiac fecal occult blood test turns blue. What is the test detecting",
+    "topic": "Guaiac FOBT",
+    "options": {
+      "A": "Human globin only",
+      "B": "Bilirubin glucuronide",
+      "C": "Heme peroxidase activity causing guaiac oxidation",
+      "D": "Serum carcinoembryonic antigen"
+    },
+    "correct": "C",
+    "explanation": "Guaiac FOBT detects heme peroxidase activity, which oxidizes guaiac and turns the test blue.",
+    "optionExplanations": {
+      "A": "FIT detects human globin, not guaiac FOBT.",
+      "B": "Bilirubin glucuronide is not the target of FOBT.",
+      "C": "Correct. Guaiac turns blue when oxidized by heme peroxidase activity.",
+      "D": "CEA is used for colorectal cancer prognosis and surveillance, not fecal occult blood detection."
+    }
+  },
+  {
+    "id": 11,
+    "stem": "A patient develops multiple peptic ulcers and markedly thickened oxyntic mucosa in the fundus and body. Labs show very high gastrin. Which associated syndrome should be considered",
+    "topic": "Zollinger-Ellison syndrome",
+    "options": {
+      "A": "Peutz-Jeghers syndrome",
+      "B": "MEN-1",
+      "C": "Plummer-Vinson syndrome",
+      "D": "Lynch syndrome"
+    },
+    "correct": "B",
+    "explanation": "Zollinger-Ellison syndrome is caused by gastrin-secreting neuroendocrine tumors of the pancreatic islet cells or duodenum and about 25% are associated with MEN-1.",
+    "optionExplanations": {
+      "A": "Peutz-Jeghers is a hamartomatous polyposis syndrome, not the association emphasized for gastrinoma here.",
+      "B": "Correct. Gastrinomas can be associated with MEN-1.",
+      "C": "Plummer-Vinson is iron deficiency anemia with esophageal webs and SCC risk.",
+      "D": "Lynch syndrome is a mismatch repair disorder associated with colorectal and endometrial cancers."
+    }
+  },
+  {
+    "id": 12,
+    "stem": "A patient with GI bleeding is hypotensive while lying supine. According to the section's physical exam framework, this suggests approximately what degree of blood loss",
+    "topic": "Supine hypotension",
+    "options": {
+      "A": "Less than 5 percent",
+      "B": "About 15 percent",
+      "C": "About 40 percent",
+      "D": "No clinically meaningful blood loss"
+    },
+    "correct": "C",
+    "explanation": "Supine hypotension is a severe hemodynamic sign and the section associates it with approximately 40% blood loss.",
+    "optionExplanations": {
+      "A": "This underestimates the severity of supine hypotension.",
+      "B": "Orthostatic hypotension corresponds to about 15% blood loss.",
+      "C": "Correct. Supine hypotension suggests about 40% blood loss.",
+      "D": "Supine hypotension is clinically meaningful and concerning in GI bleeding."
+    }
+  },
+  {
+    "id": 13,
+    "stem": "A patient with chronic NSAID use develops epigastric pain followed by melena. Endoscopy shows an ulcer that has penetrated through the muscularis mucosa and exposed submucosal vessels. Which process is the most likely cause of bleeding",
+    "topic": "Peptic ulcer bleeding pathogenesis",
+    "options": {
+      "A": "False diverticular outpouching with unsupported vessels",
+      "B": "Dilated submucosal veins from portal hypertension",
+      "C": "Peptic ulcer disease with erosion into submucosal blood vessels",
+      "D": "Ectopic gastric mucosa inside a true ileal diverticulum"
+    },
+    "correct": "C",
+    "explanation": "Peptic ulcer disease causes bleeding when mucosal erosion progresses to an ulcer that penetrates the muscularis mucosa and exposes submucosal blood vessels.",
+    "optionExplanations": {
+      "A": "This describes diverticulosis, a lower GI bleeding source.",
+      "B": "This describes varices, typically due to portal hypertension.",
+      "C": "Correct. PUD bleeding comes from ulcer penetration exposing submucosal vessels.",
+      "D": "This describes Meckel diverticulum, classically painless bleeding in children."
+    }
+  },
+  {
+    "id": 14,
+    "stem": "An elderly woman undergoes endoscopy for chronic upper GI bleeding. The gastric antrum shows alternating strips of swollen red mucosa and less injured mucosa, creating a watermelon-like appearance. Which lesion is this",
+    "topic": "Gastric antral vascular ectasia",
+    "options": {
+      "A": "Dieulafoy lesion",
+      "B": "Gastric antral vascular ectasia",
+      "C": "Mallory-Weiss tear",
+      "D": "Gastroesophageal varices"
+    },
+    "correct": "B",
+    "explanation": "Gastric antral vascular ectasia classically affects elderly women and produces a 'watermelon stomach' appearance due to strips of swollen red mucosa alternating with less injured mucosa.",
+    "optionExplanations": {
+      "A": "Dieulafoy lesion is a single large submucosal arteriole near the GE junction.",
+      "B": "Correct. Watermelon stomach is gastric antral vascular ectasia.",
+      "C": "Mallory-Weiss tear is a vertical superficial mucosal tear near the GE junction.",
+      "D": "Varices are dilated submucosal veins from portal hypertension."
+    }
+  },
+  {
+    "id": 15,
+    "stem": "A patient develops hematemesis after severe prolonged retching. Endoscopy shows vertical superficial mucosal tears near the gastroesophageal junction. Which diagnosis best fits",
+    "topic": "Mallory-Weiss tears",
+    "options": {
+      "A": "Boerhaave syndrome",
+      "B": "Curling ulcer",
+      "C": "Mallory-Weiss tears",
+      "D": "Cushing ulcers"
+    },
+    "correct": "C",
+    "explanation": "Mallory-Weiss tears are vertical superficial mucosal tears near the GE junction caused by severe vomiting or retching and account for about 10% of upper GI bleeds.",
+    "optionExplanations": {
+      "A": "Boerhaave syndrome is a full-thickness esophageal rupture and surgical emergency.",
+      "B": "Curling ulcers are stress ulcers related to burns or trauma.",
+      "C": "Correct. Superficial mucosal tears after retching are Mallory-Weiss tears.",
+      "D": "Cushing ulcers occur with head trauma or brain surgery."
+    }
+  },
+  {
+    "id": 16,
+    "stem": "A patient with GI bleeding is tachycardic at rest but still normotensive. According to the section's physical exam framework, resting tachycardia suggests approximately what degree of blood loss",
+    "topic": "Hemodynamic clues in GI bleeding",
+    "options": {
+      "A": "About 40 percent blood loss",
+      "B": "Less than 15 percent blood loss",
+      "C": "No blood loss because tachycardia is unrelated",
+      "D": "Complete exsanguination"
+    },
+    "correct": "B",
+    "explanation": "The physical exam framework lists resting tachycardia as suggesting less than 15% blood loss, orthostatic hypotension as about 15%, and supine hypotension as about 40% blood loss.",
+    "optionExplanations": {
+      "A": "Supine hypotension, not isolated resting tachycardia, suggests about 40% blood loss.",
+      "B": "Correct. Resting tachycardia corresponds to less than 15% blood loss in the section.",
+      "C": "Tachycardia is an important hemodynamic clue in GI bleeding evaluation.",
+      "D": "This is far more severe than the finding described."
+    }
+  },
+  {
+    "id": 17,
+    "stem": "A patient with portal hypertension has an episode of massive upper GI hemorrhage. According to the section, what is the approximate mortality risk per variceal bleed",
+    "topic": "Variceal bleed mortality",
+    "options": {
+      "A": "1 to 2 percent",
+      "B": "5 percent",
+      "C": "50 to 60 percent",
+      "D": "15 to 20 percent"
+    },
+    "correct": "D",
+    "explanation": "The GI bleeding section lists the mortality risk of gastroesophageal variceal bleeding as approximately 15-20% per bleed.",
+    "optionExplanations": {
+      "A": "This is too low for variceal hemorrhage.",
+      "B": "This is closer to the frequency of PUD perforation, not mortality per variceal bleed.",
+      "C": "This is higher than the quoted mortality risk per bleed in the section.",
+      "D": "Correct. Variceal bleeding carries about 15-20% mortality per bleed."
+    }
+  },
+  {
+    "id": 18,
+    "stem": "A patient with ulcerative colitis develops hematochezia during a flare. Which mechanism is most directly responsible for bleeding in inflammatory bowel disease",
+    "topic": "IBD bleeding mechanism",
+    "options": {
+      "A": "Mucosal inflammation and epithelial disruption exposing surface vessels",
+      "B": "Abnormally high gastrin causing parietal cell hyperplasia",
+      "C": "Portal hypertension causing distal esophageal venous dilation",
+      "D": "Gastric ischemia from blood shunting during shock"
+    },
+    "correct": "A",
+    "explanation": "IBD causes bleeding through mucosal inflammation, epithelial disruption, mechanical stress, inflammatory weakening of vessel walls, impaired healing, and ulcers or fissures exposing vessels.",
+    "optionExplanations": {
+      "A": "Correct. Inflamed, disrupted mucosa and ulcers expose vessels.",
+      "B": "This describes Zollinger-Ellison physiology.",
+      "C": "This describes varices.",
+      "D": "This describes stress-related gastric damage."
+    }
+  },
+  {
+    "id": 19,
+    "stem": "During transfusion for GI bleeding, a patient receives one unit of packed RBCs. What hemoglobin change should be expected according to the blood product table",
+    "topic": "RBC transfusion effect",
+    "options": {
+      "A": "Increase hemoglobin by about 1 g/dL per unit",
+      "B": "Increase clotting factors by about 30 percent",
+      "C": "Increase platelet count by 30,000 to 60,000",
+      "D": "Decrease INR by direct factor Xa inhibition"
+    },
+    "correct": "A",
+    "explanation": "The blood product table states that RBCs are indicated for symptomatic anemia and increase hemoglobin by about 1 g/dL per unit.",
+    "optionExplanations": {
+      "A": "Correct. One unit of RBCs increases hemoglobin by about 1 g/dL.",
+      "B": "Fresh frozen plasma at 15 mL/kg increases clotting factors by about 30%.",
+      "C": "Platelet transfusion increases platelet count by about 30,000 to 60,000.",
+      "D": "RBC transfusion does not directly inhibit factor Xa."
+    }
+  },
+  {
+    "id": 20,
+    "stem": "A cirrhotic patient with alcohol use, portal hypertension signs, and coagulopathy presents with massive hematemesis. Which management sequence best matches the case integration from the section",
+    "topic": "Variceal bleeding management",
+    "options": {
+      "A": "Observation only because most hemorrhage stops spontaneously",
+      "B": "Colonoscopy first, followed by FIT testing",
+      "C": "Immediate aspirin and NSAID therapy",
+      "D": "Urgent endoscopy with band ligation, balloon tamponade, and possible TIPS"
+    },
+    "correct": "D",
+    "explanation": "The case integration emphasizes alcohol use plus portal hypertension signs and coagulopathy as esophageal varices; management includes urgent endoscopy, band ligation, balloon tamponade, and TIPS when needed.",
+    "optionExplanations": {
+      "A": "Observation alone is unsafe in massive variceal hemorrhage.",
+      "B": "This is an upper GI variceal bleed pattern, not a colonoscopy-first lower GI workup.",
+      "C": "NSAIDs worsen mucosal injury and bleeding risk and are not treatment.",
+      "D": "Correct. Variceal hemorrhage requires urgent endoscopic and portal-decompression strategies when indicated."
+    }
+  },
+  {
+    "id": 21,
+    "stem": "A fecal immunochemical test is selected instead of guaiac testing. Which advantage and limitation best match this test",
+    "topic": "FIT testing",
+    "options": {
+      "A": "Better specificity, but less sensitive for upper GI bleeding because globin is degraded",
+      "B": "Detects animal heme better than guaiac testing",
+      "C": "Turns blue through heme peroxidase activity",
+      "D": "Is falsely negative after all lower GI bleeds"
+    },
+    "correct": "A",
+    "explanation": "FIT detects human globin and has better specificity than guaiac testing, but it is less sensitive for upper GI bleeding because globin is degraded before reaching the stool.",
+    "optionExplanations": {
+      "A": "Correct. Human globin detection improves specificity but limits upper GI sensitivity.",
+      "B": "FIT detects human globin, not animal heme.",
+      "C": "Guaiac FOBT, not FIT, turns blue via heme peroxidase activity.",
+      "D": "FIT is used to detect lower GI bleeding and is not universally falsely negative."
+    }
+  },
+  {
+    "id": 22,
+    "stem": "A 64-year-old man presents with black, tarry, foul-smelling stool and coffee-ground emesis. The suspected bleeding source is proximal to the ligament of Treitz. Which classification best applies",
+    "topic": "Upper versus lower GI bleeding",
+    "options": {
+      "A": "Upper gastrointestinal bleeding",
+      "B": "Lower gastrointestinal bleeding",
+      "C": "Occult gastrointestinal bleeding only",
+      "D": "Bleeding distal to the ileocecal valve"
+    },
+    "correct": "A",
+    "explanation": "Bleeding above the ligament of Treitz is classified as an upper GI bleed and classically presents with hematemesis and/or melena.",
+    "optionExplanations": {
+      "A": "Correct. Hematemesis and melena point to bleeding above the ligament of Treitz.",
+      "B": "Lower GI bleeding is below the ligament of Treitz and more often presents with hematochezia.",
+      "C": "Occult bleeding is hidden and detected by stool testing or anemia, not obvious melena and hematemesis.",
+      "D": "Bleeding distal to the ileocecal valve is lower GI bleeding, not the pattern described."
+    }
+  },
+  {
+    "id": 23,
+    "stem": "An endoscopic biopsy from a bleeding gastric mass shows heaped-up borders with central ulceration. Which malignancy is the most common malignancy causing upper GI bleeding according to the section",
+    "topic": "Upper GI tumors",
+    "options": {
+      "A": "Esophageal squamous cell carcinoma",
+      "B": "GIST",
+      "C": "Gastric adenocarcinoma",
+      "D": "Small bowel lymphoma"
+    },
+    "correct": "C",
+    "explanation": "The GI bleeding section lists gastric adenocarcinoma as the most common malignancy causing upper GI bleeding, with heaped-up borders and central ulceration.",
+    "optionExplanations": {
+      "A": "Esophageal carcinoma can cause bleeding, but the section names gastric adenocarcinoma as the most common malignancy causing upper GI bleeding.",
+      "B": "GIST can bleed in 30-40% due to ulceration from mass effect but is not listed as the most common malignancy causing UGIB.",
+      "C": "Correct. Gastric adenocarcinoma is the key malignancy emphasized for upper GI bleeding.",
+      "D": "Small bowel lymphoma is not the classic upper GI bleeding malignancy emphasized here."
+    }
+  },
+  {
+    "id": 24,
+    "stem": "A patient with severe burns develops upper GI bleeding from proximal duodenal ulcers. Which eponym is associated with this setting",
+    "topic": "Curling ulcers",
+    "options": {
+      "A": "Curling ulcer",
+      "B": "Cushing ulcer",
+      "C": "Dieulafoy lesion",
+      "D": "Watermelon stomach"
+    },
+    "correct": "A",
+    "explanation": "Curling ulcers are stress-related ulcers associated with burns or trauma and commonly involve the proximal duodenum.",
+    "optionExplanations": {
+      "A": "Correct. Curling ulcers are linked to burns/trauma.",
+      "B": "Cushing ulcers are associated with head trauma or brain surgery due to increased vagal stimulation.",
+      "C": "Dieulafoy lesion is an abnormally large submucosal arteriole near the GE junction.",
+      "D": "Watermelon stomach refers to gastric antral vascular ectasia."
+    }
+  },
+  {
+    "id": 25,
+    "stem": "A man has intense vomiting followed by severe chest pain and concern for full-thickness esophageal rupture. Which management category best matches this condition",
+    "topic": "Boerhaave syndrome",
+    "options": {
+      "A": "Self-limited mucosal tear requiring only reassurance",
+      "B": "Surgical emergency due to esophageal perforation",
+      "C": "Chronic lower GI bleeding from venous malformations",
+      "D": "Portal hypertensive bleed treated only with beta blockade"
+    },
+    "correct": "B",
+    "explanation": "Boerhaave syndrome is full-thickness esophageal rupture during intense vomiting or straining and is a surgical emergency.",
+    "optionExplanations": {
+      "A": "This describes Mallory-Weiss tears, not Boerhaave syndrome.",
+      "B": "Correct. Full-thickness rupture is a surgical emergency.",
+      "C": "This points more toward angiodysplasia or other lower GI sources.",
+      "D": "Portal hypertensive bleeding from varices is a different process."
+    }
+  },
+  {
+    "id": 26,
+    "stem": "A stable hospitalized patient without cardiovascular disease has GI bleeding and symptomatic anemia. Which hemoglobin threshold range is listed for RBC transfusion in stable hospitalized patients",
+    "topic": "Transfusion threshold",
+    "options": {
+      "A": "Hemoglobin 12 to 13 g/dL",
+      "B": "Hemoglobin 10 to 11 g/dL",
+      "C": "Only when hemoglobin is below 4 g/dL",
+      "D": "Hemoglobin 7 to 8 g/dL"
+    },
+    "correct": "D",
+    "explanation": "The AABB transfusion guideline listed in the section uses hemoglobin 7-8 g/dL for stable hospitalized patients and hemoglobin at or below 8 g/dL for patients with cardiovascular disease.",
+    "optionExplanations": {
+      "A": "This is above the listed transfusion threshold for stable hospitalized patients.",
+      "B": "This is still above the section's threshold for stable hospitalized patients.",
+      "C": "This is too low and not the listed guideline.",
+      "D": "Correct. Stable hospitalized patients use a 7-8 g/dL threshold."
+    }
+  },
+  {
+    "id": 27,
+    "stem": "A dialysis patient develops GI bleeding. Uremia is suspected to be contributing. Which mechanism from the section explains the bleeding tendency",
+    "topic": "ESRD-associated bleeding",
+    "options": {
+      "A": "Loss of vitamin C causing false-negative fecal occult testing",
+      "B": "Uremic platelet dysfunction with decreased adhesion and aggregation",
+      "C": "Overproduction of intrinsic factor by parietal cells",
+      "D": "Excessive absorption of dietary heme iron"
+    },
+    "correct": "B",
+    "explanation": "End-stage renal disease contributes to bleeding through frequent anticoagulation during dialysis and uremic platelet dysfunction, which decreases platelet adhesion and aggregation.",
+    "optionExplanations": {
+      "A": "Vitamin C affects guaiac testing but does not cause the ESRD bleeding tendency in the section.",
+      "B": "Correct. Uremia impairs platelet adhesion and aggregation.",
+      "C": "Intrinsic factor is unrelated to ESRD-associated GI bleeding.",
+      "D": "Dietary heme can cause false-positive guaiac testing, not ESRD bleeding."
+    }
+  },
+  {
+    "id": 28,
+    "stem": "Which rule-of-2s detail correctly describes Meckel diverticulum according to the section",
+    "topic": "Meckel diverticulum rule of 2s",
+    "options": {
+      "A": "It is 2 centimeters from the pylorus",
+      "B": "It is 2 feet from the ileocecal valve",
+      "C": "It affects 20 percent of the population",
+      "D": "It is 2 times more common in females"
+    },
+    "correct": "B",
+    "explanation": "The Meckel rule of 2s includes 2% of the population, 2 feet from the ileocecal valve, 2 inches long, 2 times more common in males, and symptoms before age 2.",
+    "optionExplanations": {
+      "A": "Meckel diverticulum is ileal and described as 2 feet from the ileocecal valve, not 2 cm from the pylorus.",
+      "B": "Correct. It is classically 2 feet from the ileocecal valve.",
+      "C": "The rule is 2% of the population, not 20%.",
+      "D": "It is 2 times more common in males, not females."
+    }
+  },
+  {
+    "id": 29,
+    "stem": "A patient has recurrent upper GI bleeding. Endoscopy shows an abnormally large submucosal arteriole on the lesser curvature near the gastroesophageal junction that is exposed at the mucosal surface. Which diagnosis is most likely",
+    "topic": "Dieulafoy lesion",
+    "options": {
+      "A": "Dieulafoy lesion",
+      "B": "Gastric antral vascular ectasia",
+      "C": "Boerhaave syndrome",
+      "D": "Meckel diverticulum"
+    },
+    "correct": "A",
+    "explanation": "A Dieulafoy lesion is an abnormally large submucosal arteriole, classically on the lesser curvature near the GE junction, with risk of rupture at the mucosal surface.",
+    "optionExplanations": {
+      "A": "Correct. The large exposed submucosal arteriole near the GE junction is classic.",
+      "B": "GAVE is dilated mucosal vessels producing a watermelon stomach pattern.",
+      "C": "Boerhaave syndrome is full-thickness esophageal rupture after intense vomiting.",
+      "D": "Meckel diverticulum is an ileal true diverticulum in children with painless bleeding."
+    }
+  },
+  {
+    "id": 30,
+    "stem": "An older adult has recurrent painless lower GI bleeding. Colonoscopy shows localized nests of dilated thin-walled mucosal and submucosal vessels in the cecum and right colon. Which diagnosis is most likely",
+    "topic": "Angiodysplasia",
+    "options": {
+      "A": "Internal hemorrhoids",
+      "B": "Diverticulosis",
+      "C": "Meckel diverticulum",
+      "D": "Angiodysplasia"
+    },
+    "correct": "D",
+    "explanation": "Angiodysplasia consists of localized nests of dilated thin-walled mucosal and submucosal vessels, often in the cecum and right colon, and is responsible for about 20% of major lower GI bleeds in patients older than 60.",
+    "optionExplanations": {
+      "A": "Internal hemorrhoids cause painless bright red blood but are anal vascular channels, not cecal/right-colon vascular nests.",
+      "B": "Diverticulosis is most common in the sigmoid colon and involves false diverticula.",
+      "C": "Meckel diverticulum is an ileal true diverticulum, classically in children.",
+      "D": "Correct. Cecal/right-colon thin-walled vascular nests in an older adult fit angiodysplasia."
+    }
+  }
+];
+
+    let currentIndex = 0;
+    const answers = {};
+
+    const segmentsEl = document.getElementById("segments");
+    const progressText = document.getElementById("progressText");
+    const wrongCount = document.getElementById("wrongCount");
+    const rightCount = document.getElementById("rightCount");
+    const questionMeta = document.getElementById("questionMeta");
+    const topicMeta = document.getElementById("topicMeta");
+    const stemEl = document.getElementById("stem");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+
+    function renderSegments() {
+      segmentsEl.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "segment" + (answers[q.id] ? " answered" : "") + (idx === currentIndex ? " active" : "");
+        btn.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        btn.title = q.topic || `Question ${idx + 1}`;
+        btn.addEventListener("click", () => {
+          currentIndex = idx;
+          render();
+        });
+        segmentsEl.appendChild(btn);
+      });
+    }
+
+    function scoreCounts() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([id, choice]) => {
+        const q = questions.find(item => item.id === Number(id));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      rightCount.textContent = right;
+      wrongCount.textContent = wrong;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id] || null;
+      const showExplanation = selected !== null;
+
+      progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
+      questionMeta.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      topicMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+      stemEl.textContent = q.stem.endsWith("?") ? q.stem : q.stem + "?";
+
+      optionsEl.innerHTML = "";
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        if (showExplanation && letter === q.correct) btn.classList.add("correct");
+        if (showExplanation && letter === selected && letter !== q.correct) btn.classList.add("incorrect");
+        btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        btn.addEventListener("click", () => {
+          answers[q.id] = letter;
+          render();
+        });
+        optionsEl.appendChild(btn);
+      });
+
+      if (showExplanation) {
+        const isCorrect = selected === q.correct;
+        const optionExplanations = Object.entries(q.optionExplanations || {})
+          .map(([letter, text]) => `<p><strong>${letter}.</strong> ${text}</p>`)
+          .join("");
+        explanationEl.style.display = "block";
+        explanationEl.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "correct-text" : "incorrect-text"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div>
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionExplanations}
+          </div>
+        `;
+      } else {
+        explanationEl.style.display = "none";
+        explanationEl.innerHTML = "";
+      }
+    }
+
+    function render() {
+      renderSegments();
+      scoreCounts();
+      renderQuestion();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === 0 ? questions.length - 1 : currentIndex - 1;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = currentIndex === questions.length - 1 ? 0 : currentIndex + 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.keys(answers).forEach(key => delete answers[key]);
+      currentIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
