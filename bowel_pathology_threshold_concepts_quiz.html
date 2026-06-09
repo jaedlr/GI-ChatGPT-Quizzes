@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bowel Pathology Threshold Concepts Quiz</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .progress-wrap {
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress {
+      display: flex;
+      gap: 3px;
+    }
+    .segment {
+      height: 9px;
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      background: #334155;
+      cursor: pointer;
+      padding: 0;
+    }
+    .segment.answered { background: #6fa8dc; }
+    .segment.active { background: #cbd5e1; }
+    .score {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .wrong { background: #7f1d1d; }
+    .right { background: #065f46; }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .stem {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+    .choice {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .choice:hover { background: #f3f4f6; }
+    .choice.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .choice.incorrect {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      display: none;
+    }
+    .option-exp p { margin: 7px 0; }
+    .nav {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .nav button, .reset {
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f1f5f9; }
+    .footer {
+      margin-top: 12px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bowel Pathology Threshold Concepts Quiz</h1>
+    <div class="subtitle">30 board-style questions from section 5: Bowel Pathology Threshold Concepts.</div>
+
+    <div class="topbar">
+      <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+      <div class="score">
+        <span id="counter">1 / 30</span>
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+        <button class="reset" onclick="resetQuiz()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic"></span>
+      </div>
+      <div id="stem" class="stem"></div>
+      <div id="answers" class="answers"></div>
+      <div id="explanation" class="explanation"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+    <div class="footer">Answer choices are randomized. Explanations appear after selecting an answer.</div>
+  </div>
+
+<script>
+const questions = [{"id": 1, "stem": "A researcher describes the GI mucosa as a large interface that must absorb nutrients while limiting entry of harmful antigens and microorganisms. Which concept best summarizes this conflicting task", "topic": "GI barrier function", "options": {"A": "Complete impermeability to all luminal contents", "B": "Passive absorption without immune surveillance", "C": "A semipermeable barrier that permits absorption and immune sensing while restricting harmful transport", "D": "A sterile surface that excludes commensal organisms"}, "correct": "C", "explanation": "The section emphasizes that the GI mucosa functions as a semipermeable barrier: it allows nutrient absorption and immune sensing but limits transport of harmful antigens and microorganisms.", "optionExplanations": {"A": "Complete impermeability would prevent nutrient, water, and electrolyte absorption.", "B": "Immune sensing is part of the barrier's normal function.", "C": "Correct. This directly describes the intestinal barrier's balanced role.", "D": "The gut normally contains commensal microbiota; it is not sterile."}}, {"id": 2, "stem": "A patient develops increased intestinal permeability after epithelial injury, allowing harmful substances and pathogens to enter the bloodstream. Which general pathologic consequence is most directly described in the section", "topic": "Barrier disruption consequences", "options": {"A": "Translocation with inflammation and systemic effects", "B": "Permanent loss of all nutrient absorption only", "C": "Immediate conversion of commensals into viruses", "D": "Obligate reduction in immune cell activation"}, "correct": "A", "explanation": "Disruption of the intestinal barrier increases permeability, facilitating translocation of harmful substances and pathogens into the bloodstream and promoting inflammatory or systemic cascades.", "optionExplanations": {"A": "Correct. Barrier disruption allows translocation and can initiate or sustain inflammation.", "B": "Absorption may be affected, but the key section concept is permeability and translocation.", "C": "Commensal bacteria do not convert into viruses.", "D": "Barrier disruption tends to promote immune activation, not obligate suppression."}}, {"id": 3, "stem": "A histology lecture describes three primary layers that support the intestinal barrier. Which set correctly lists these layers", "topic": "Intestinal barrier layers", "options": {"A": "Serosa, muscularis propria, adventitia", "B": "Crypt layer, villus layer, Peyer patch layer", "C": "Acid layer, bile layer, pancreatic enzyme layer", "D": "Mucus layer, epithelial layer, and lamina propria"}, "correct": "D", "explanation": "The intestinal barrier is organized into the mucus layer, epithelial layer, and lamina propria. These layers work together to separate the luminal environment from the host milieu.", "optionExplanations": {"A": "These are structural wall layers, not the three barrier layers emphasized here.", "B": "Crypts, villi, and Peyer patches are important structures but are not the listed primary barrier layers.", "C": "Acid, bile, and pancreatic enzymes are digestive components rather than barrier layers.", "D": "Correct. These are the three primary barrier layers in the section."}}, {"id": 4, "stem": "A mutation destabilizes proteins that connect adjacent intestinal epithelial cells and normally regulate paracellular permeability. Which structure is most directly affected", "topic": "Tight junctions", "options": {"A": "Paneth cell granules", "B": "Tight junctions", "C": "Brush border lactase enzymes", "D": "Submucosal blood vessels"}, "correct": "B", "explanation": "Tight junction proteins connect epithelial cells and are the primary regulators of paracellular permeability. Disruption increases epithelial leakiness.", "optionExplanations": {"A": "Paneth cells produce antimicrobial products but are not the main paracellular permeability regulators.", "B": "Correct. Tight junctions regulate movement between epithelial cells.", "C": "Brush border lactase digests lactose; it does not connect epithelial cells.", "D": "Blood vessels are not the epithelial junctional structures described."}}, {"id": 5, "stem": "A specialized intestinal epithelial cell samples luminal microbes and delivers antigens for mucosal immune surveillance. Which cell type performs this role", "topic": "M cells", "options": {"A": "Parietal cell", "B": "Goblet cell", "C": "M cell", "D": "Chief cell"}, "correct": "C", "explanation": "M cells are specialized intestinal epithelial cells that sample luminal microbes and help initiate mucosal immune surveillance.", "optionExplanations": {"A": "Parietal cells secrete gastric acid and intrinsic factor, not luminal antigen sampling in the intestine.", "B": "Goblet cells contribute mucus to the barrier but are not the main antigen-sampling cells here.", "C": "Correct. M cells sample luminal microbes for mucosal immune surveillance.", "D": "Chief cells secrete pepsinogen in the stomach, not intestinal immune sampling."}}, {"id": 6, "stem": "A researcher studies a four-carbon short-chain fatty acid produced by microbial fermentation of dietary fiber. It enhances intestinal barrier function. Which molecule is being described", "topic": "Butyrate and barrier integrity", "options": {"A": "Gliadin", "B": "LPS", "C": "Carrageenan", "D": "Butyrate"}, "correct": "D", "explanation": "Butyrate is a four-carbon short-chain fatty acid produced by microbial fermentation of dietary fiber and is described as beneficial for intestinal barrier function.", "optionExplanations": {"A": "Gliadin is listed as a detrimental dietary factor, especially in gluten-related disease contexts.", "B": "LPS is a Gram-negative bacterial wall component linked to inflammation when it translocates.", "C": "Carrageenan is listed as an emulsifier that can negatively affect the barrier/microbiota.", "D": "Correct. Butyrate supports barrier integrity."}}, {"id": 7, "stem": "A lecture slide lists cells that produce bacteriocin, which is beneficial for the intestinal barrier. Which specialized epithelial cell is responsible", "topic": "Paneth cells", "options": {"A": "Paneth cell", "B": "M cell", "C": "Enteroendocrine cell", "D": "Parietal cell"}, "correct": "A", "explanation": "Paneth cells are listed as specialized cells that produce bacteriocin, supporting intestinal barrier function.", "optionExplanations": {"A": "Correct. Paneth cells contribute antimicrobial products such as bacteriocin.", "B": "M cells sample luminal antigens; they are not identified as the bacteriocin-producing cells here.", "C": "Enteroendocrine cells release hormones, not the bacteriocin emphasized in the section.", "D": "Parietal cells are gastric acid-secreting cells."}}, {"id": 8, "stem": "A patient consumes a diet high in processed food additives such as lecithin, polysorbates, carrageenan, and canola oil. According to the section, what is the main concern with these emulsifiers", "topic": "Emulsifiers and barrier dysfunction", "options": {"A": "They directly increase pancreatic bicarbonate secretion", "B": "They sterilize the colon and eliminate all anaerobes", "C": "They alter microbiota composition and can promote colitis or metabolic syndrome", "D": "They repair tight junctions and prevent translocation"}, "correct": "C", "explanation": "The section lists emulsifiers such as lecithin, polysorbates, carrageenan, and canola oil as factors that alter intestinal microbiota composition and negatively affect the lining, promoting colitis and metabolic syndrome.", "optionExplanations": {"A": "Pancreatic bicarbonate secretion is not the mechanism described.", "B": "They are not described as sterilizing the colon.", "C": "Correct. Emulsifiers may disrupt microbiota and barrier integrity.", "D": "The section lists emulsifiers as detrimental rather than protective."}}, {"id": 9, "stem": "A gram-negative bacterial wall component translocates across a dysfunctional intestinal barrier and contributes to low-grade inflammatory states, insulin resistance, and type 2 diabetes. Which component is this", "topic": "LPS and metabolic inflammation", "options": {"A": "Peptidoglycan from gram-positive rods", "B": "Lipopolysaccharide", "C": "Secretory IgA", "D": "Butyrate"}, "correct": "B", "explanation": "LPS from gram-negative bacteria is normally restricted by a healthy epithelial barrier. If it translocates, it can trigger low-grade inflammation and is linked in the section to insulin resistance and type 2 diabetes.", "optionExplanations": {"A": "The section specifically highlights LPS from gram-negative bacteria, not gram-positive peptidoglycan.", "B": "Correct. LPS translocation is linked to low-grade inflammatory metabolic effects.", "C": "Secretory IgA participates in mucosal defense, not endotoxin-driven inflammation.", "D": "Butyrate is listed as beneficial for barrier integrity."}}, {"id": 10, "stem": "A pathogen disrupts host tight junction proteins. Which downstream sequence best matches the section's infection pathogenesis model", "topic": "Pathogen targeting of tight junctions", "options": {"A": "Decreased epithelial permeability → reduced invasion → commensal tolerance only", "B": "Increased mucus secretion only → no epithelial changes", "C": "Increased villus height → decreased microbial access", "D": "Increased epithelial permeability → increased invasion, translocation, and colonization"}, "correct": "D", "explanation": "The section describes pathogens that target tight junction complexes, increasing epithelial permeability and thereby promoting invasion, translocation, and colonization.", "optionExplanations": {"A": "Tight junction disruption increases, not decreases, permeability.", "B": "The central mechanism here is tight junction disruption, not mucus secretion alone.", "C": "The section does not describe protective villus height increases as the outcome.", "D": "Correct. Tight junction disruption allows increased invasion and translocation."}}, {"id": 11, "stem": "A genetic variant disrupts C1orf106 function in intestinal epithelial cells. Based on the section, which pathway best describes the effect on barrier function", "topic": "C1orf106 and IBD susceptibility", "options": {"A": "Increased cytohesin-1 → increased ARF6 → destabilized adherens junctions → decreased barrier function", "B": "Decreased cytohesin-1 → decreased ARF6 → stabilized tight junctions → stronger barrier", "C": "Increased butyrate production → improved tight junction repair", "D": "Loss of all cytokine signaling → complete tolerance to pathogens"}, "correct": "A", "explanation": "The section states that C1orf106 normally decreases cytohesin-1 and ARF6 to stabilize junctions. Disrupted C1orf106 increases cytohesin-1 and ARF6, destabilizing adherens junctions and decreasing barrier function.", "optionExplanations": {"A": "Correct. This is the listed pathway linking C1orf106 disruption to impaired barrier function.", "B": "This describes the protective direction rather than the disrupted gene effect.", "C": "Butyrate is beneficial, but it is not the C1orf106 pathway described.", "D": "Cytokine signaling is not lost; inflammation susceptibility increases."}}, {"id": 12, "stem": "A patient with active inflammatory bowel disease has overt ulceration and a leaky epithelial barrier. Which broad mechanism does the section list as central to IBD tissue injury", "topic": "IBD barrier defect", "options": {"A": "A purely mechanical obstruction without immune activation", "B": "Failure of gastric acid secretion only", "C": "Excessive immune and inflammatory process in the gut wall with barrier defect", "D": "Loss of all gut microbiota with no inflammation"}, "correct": "C", "explanation": "IBD is described as intestinal tissue injury caused by an excessive immune/inflammatory process in the gut wall. Active disease can show overt ulceration and a leaky epithelial barrier.", "optionExplanations": {"A": "IBD is inflammatory rather than purely obstructive.", "B": "Gastric acid secretion is not the central mechanism of IBD barrier injury.", "C": "Correct. Excessive gut-wall inflammation and barrier defect are central.", "D": "Dysbiosis may contribute, but total microbiota loss without inflammation is not the model."}}, {"id": 13, "stem": "A patient with Crohn disease has cytokine-driven intestinal injury. Which cytokine profile is specifically listed in this section for Crohn disease", "topic": "Crohn disease cytokines", "options": {"A": "IL-13 and IL-5 only", "B": "IL-4 only with no TNF involvement", "C": "Complete absence of IFN-gamma", "D": "Elevated IFN-gamma, TNF, IL-6, IL-22, and IL-17"}, "correct": "D", "explanation": "Crohn disease is listed as associated with elevated IFN-gamma, TNF, IL-6, IL-22, and IL-17, reflecting cytokine imbalance.", "optionExplanations": {"A": "IL-13 and IL-5 are emphasized more with ulcerative colitis in this section.", "B": "TNF is specifically included in Crohn disease.", "C": "IFN-gamma is elevated, not absent.", "D": "Correct. This matches the listed Crohn disease cytokine pattern."}}, {"id": 14, "stem": "A biopsy from ulcerative colitis shows mucosal inflammatory signaling. Which cytokines are listed in this section as increased in UC", "topic": "Ulcerative colitis cytokines", "options": {"A": "Butyrate, acetate, and propionate", "B": "IL-13, IL-5, and IFN-gamma", "C": "Only IL-22 and IL-17", "D": "Urease, adhesin, and CagA"}, "correct": "B", "explanation": "Ulcerative colitis is listed as associated with increased mucosal release of IL-13, IL-5, and IFN-gamma.", "optionExplanations": {"A": "These are short-chain fatty acids rather than UC cytokines listed here.", "B": "Correct. UC is associated with increased mucosal IL-13, IL-5, and IFN-gamma in this section.", "C": "IL-22 and IL-17 are included with the Crohn disease pattern, not as the UC-only pattern.", "D": "These are H. pylori-related virulence concepts, not UC cytokines."}}, {"id": 15, "stem": "A patient with NASH has increased intestinal permeability, disrupted tight junctions, and elevated blood endotoxin levels. What does the section state this barrier disruption correlates with in NAFLD/NASH", "topic": "NAFLD and gut barrier", "options": {"A": "Liver disease severity and progression with inflammation, fibrosis, and cirrhosis", "B": "Permanent protection from hepatic inflammation", "C": "Complete prevention of triglyceride accumulation", "D": "Resolution of endotoxemia because LPS cannot cross"}, "correct": "A", "explanation": "For NAFLD, increased intestinal permeability correlates with liver disease severity. NASH progression is linked to tight junction disruption and higher blood endotoxin levels, with hepatic inflammation, cell death, fibrosis, and cirrhosis.", "optionExplanations": {"A": "Correct. Barrier leakiness is linked to worse liver disease and NASH progression.", "B": "The section links permeability with progression, not protection.", "C": "Steatosis is triglyceride accumulation and is part of NAFLD pathology.", "D": "Disruption allows more, not less, endotoxin translocation."}}, {"id": 16, "stem": "A diabetic patient has hyperglycemia-associated barrier disruption. Which mechanism is listed in the section", "topic": "Hyperglycemia and barrier dysfunction", "options": {"A": "Direct conversion of glucose into IgA", "B": "GLUT2-dependent transcriptional reprogramming that disrupts tight junctions and creates a leaky barrier", "C": "Selective destruction of Paneth cells by gastric acid", "D": "Inhibition of all microbial product entry by LPS"}, "correct": "B", "explanation": "The section states that hyperglycemia can disrupt the intestinal barrier through GLUT2-dependent transcriptional reprogramming, disrupting tight junctions and causing a leaky barrier with low-grade inflammation.", "optionExplanations": {"A": "IgA production is not described as direct glucose conversion.", "B": "Correct. This is the listed hyperglycemia-related mechanism.", "C": "Paneth cell destruction by gastric acid is not the section's mechanism.", "D": "LPS is a microbial product that can enter when the barrier is leaky."}}, {"id": 17, "stem": "A patient with obesity and metabolic syndrome has low-grade systemic inflammation. Which gut-derived factor is specifically listed as contributing to insulin resistance and type 2 diabetes when barrier function is impaired", "topic": "Metabolic endotoxemia", "options": {"A": "Secretin", "B": "LPS from gram-negative bacteria", "C": "Intrinsic factor", "D": "Bile salts only"}, "correct": "B", "explanation": "Gut microbiota-derived LPS can trigger low-grade inflammatory states and is linked in the section to insulin resistance and type 2 diabetes when the intestinal barrier is impaired.", "optionExplanations": {"A": "Secretin is a GI hormone, not the listed endotoxin factor.", "B": "Correct. Gram-negative LPS is the section's key inflammatory microbial product.", "C": "Intrinsic factor is relevant to vitamin B12 absorption, not metabolic endotoxemia.", "D": "Bile salts are not the specific factor listed for insulin resistance in this context."}}, {"id": 18, "stem": "A disease model shows a gut pathobiont translocating to the liver in genetically predisposed hosts and triggering autoimmune responses. Which organism is listed in this context", "topic": "Autoimmunity and gut translocation", "options": {"A": "Bacteroides fragilis", "B": "Helicobacter pylori", "C": "Candida albicans", "D": "Enterococcus gallinarum"}, "correct": "D", "explanation": "The section specifically names Enterococcus gallinarum as a gut pathobiont that can translocate to the liver in genetically predisposed hosts and trigger autoimmune responses.", "optionExplanations": {"A": "Bacteroides fragilis is not the named autoimmune translocation example here.", "B": "H. pylori is discussed in other GI sections, but not as this liver-translocating autoimmune example.", "C": "Candida is not the listed pathobiont in this mechanism.", "D": "Correct. Enterococcus gallinarum is the named organism."}}, {"id": 19, "stem": "A patient with depression is noted to have increased serum IgM and IgA toward LPS from gram-negative bacteria. Which barrier abnormality is this associated with in the section", "topic": "Depression and intestinal permeability", "options": {"A": "Increased intestinal permeability", "B": "Complete absence of microbial products", "C": "Decreased serum antibody response to LPS", "D": "Obligate obstruction of the small bowel"}, "correct": "A", "explanation": "The section links depression with increased serum IgM and IgA toward LPS from gram-negative bacteria and increased intestinal permeability.", "optionExplanations": {"A": "Correct. Increased intestinal permeability is the associated abnormality.", "B": "The finding implies exposure to microbial products, not their absence.", "C": "The section specifically says increased IgM and IgA toward LPS.", "D": "Obstruction is not the barrier abnormality discussed."}}, {"id": 20, "stem": "A board question asks which condition has clearly established increased intestinal permeability with a major role in pathophysiology, according to the conclusion of the section", "topic": "Established barrier role", "options": {"A": "Type 1 achalasia", "B": "Celiac disease and food allergy", "C": "Uncomplicated appendectomy only", "D": "Tylosis without GI symptoms"}, "correct": "B", "explanation": "The conclusion states that increased intestinal permeability is clearly established and has a major role in the pathophysiology of celiac disease and food allergy.", "optionExplanations": {"A": "Achalasia is an esophageal motility disorder and is not the example given here.", "B": "Correct. Celiac disease and food allergy are specifically named.", "C": "Appendectomy is not the barrier-permeability example in this section.", "D": "Tylosis relates to esophageal cancer risk in other material, not this conclusion."}}, {"id": 21, "stem": "A scientist describes epithelial cell-cell junctions as having three broad purposes across body surfaces and cavities. Which set matches the section's conclusion", "topic": "Cell-cell junction functions", "options": {"A": "Acid secretion, pepsin activation, and gastric emptying", "B": "Hemostasis, platelet aggregation, and clot breakdown", "C": "Hormone secretion, bile storage, and peristalsis", "D": "Adhesion, barrier control, and signaling"}, "correct": "D", "explanation": "The conclusion states that epithelial cell-cell junctions serve adhesion to maintain tissue integrity, barrier control of passage across epithelial layers, and signaling to transmit cues affecting cell behavior and tissue function.", "optionExplanations": {"A": "These are gastric functions, not the three junctional purposes listed.", "B": "These are hemostatic processes, not epithelial junction functions.", "C": "These are GI organ functions, not the section's cell-cell junction functions.", "D": "Correct. Adhesion, barrier function, and signaling are the three purposes."}}, {"id": 22, "stem": "A patient with active IBD is treated with immune suppression, antibodies, and receptor inhibitors to promote repair. Which disease category and therapeutic target concept is this describing", "topic": "Crohn disease therapy concept", "options": {"A": "Food poisoning; neutralization of preformed toxin only", "B": "Crohn disease; cytokine imbalance and immune-driven barrier injury", "C": "Viral gastroenteritis; capsid assembly only", "D": "Gastric volvulus; mechanical detorsion only"}, "correct": "B", "explanation": "The section lists Crohn disease as a cytokine-imbalance condition and notes therapy focusing on immune suppression, antibodies, and receptor inhibitors to promote repair.", "optionExplanations": {"A": "Food poisoning toxin neutralization is unrelated to the IBD treatment concept here.", "B": "Correct. This describes Crohn disease immune/cytokine-directed therapy.", "C": "Capsid assembly is not the treatment focus described.", "D": "Gastric volvulus is a mechanical stomach disorder, not the IBD barrier topic."}}, {"id": 23, "stem": "A patient develops infection after a bacterial pathogen directly adheres to and invades the intestinal epithelial barrier. Another pathogen causes disease by secreting toxins that disrupt the barrier. What common outcome can both mechanisms share", "topic": "Infectious barrier injury mechanisms", "options": {"A": "Tight-junction protection with reduced permeability", "B": "Permanent elimination of inflammation", "C": "Barrier disruption with increased permeability and pathogen translocation", "D": "Conversion of epithelial cells into lymphocytes"}, "correct": "C", "explanation": "The section explains that pathogens can adhere/invade or secrete toxins that disrupt the barrier, often by targeting tight junction proteins, increasing permeability and promoting translocation.", "optionExplanations": {"A": "Infectious mechanisms tend to disrupt, not protect, tight junctions.", "B": "Barrier disruption can promote inflammation rather than eliminate it.", "C": "Correct. Both mechanisms can impair the barrier and increase translocation.", "D": "Epithelial cells do not convert into lymphocytes in this model."}}, {"id": 24, "stem": "A nutrition intervention is proposed to strengthen tight junctions and reduce risk of translocation during infectious diarrhea. Which intervention is specifically mentioned as a defense strategy in the section", "topic": "Defense strategies for tight junctions", "options": {"A": "Probiotics that strengthen tight junctions", "B": "Routine emulsifier supplementation", "C": "High-dose NSAIDs", "D": "Gliadin enrichment"}, "correct": "A", "explanation": "The section lists drugs and nutrition to maintain tight junctions and epithelium, and specifically notes that probiotics can strengthen tight junctions and that some may prevent traveler's diarrhea.", "optionExplanations": {"A": "Correct. Probiotics are specifically listed as strengthening tight junctions.", "B": "Emulsifiers are listed as detrimental factors.", "C": "NSAIDs are listed as medications that can harm barrier integrity.", "D": "Gliadin is listed as a detrimental dietary factor."}}, {"id": 25, "stem": "A lecture asks why the gut microbiota can be considered an essential organ. Which role is included in this section", "topic": "Gut microbiota roles", "options": {"A": "It replaces all epithelial tight junction proteins", "B": "It prevents all autoimmune and neoplastic disease", "C": "It stores bile and secretes pancreatic enzymes", "D": "It directs immune cell development, regulates metabolism/homeostasis, and influences epithelial turnover"}, "correct": "D", "explanation": "The section describes the gut microbiota as an essential organ with roles in immune cell development, metabolic regulation, intestinal homeostasis, and epithelial turnover/differentiation.", "optionExplanations": {"A": "Microbiota influence barrier function but do not replace tight junction proteins.", "B": "Dysbiosis is linked to autoimmune and neoplastic diseases; microbiota do not prevent all disease.", "C": "Bile storage and pancreatic enzyme secretion are organ functions outside the microbiota role.", "D": "Correct. These are the listed biological roles of gut microbiota."}}, {"id": 26, "stem": "A patient takes chronic NSAIDs and PPIs. In a barrier-integrity framework, how are these medications categorized in the section", "topic": "Medication effects on barrier integrity", "options": {"A": "Beneficial factors that enhance butyrate production directly", "B": "Detrimental factors that can impair barrier integrity", "C": "Normal structural components of the lamina propria", "D": "Mandatory treatments for every case of IBD"}, "correct": "B", "explanation": "The section lists NSAIDs and proton pump inhibitors among detrimental medication factors that can negatively influence intestinal barrier integrity.", "optionExplanations": {"A": "Butyrate is a beneficial microbial fermentation product; NSAIDs and PPIs are not described this way.", "B": "Correct. NSAIDs and PPIs are listed under detrimental factors.", "C": "Medications are not structural components of the lamina propria.", "D": "They are not mandatory IBD treatments in this section."}}, {"id": 27, "stem": "A disease association list includes inflammatory bowel disease, irritable bowel syndrome, obesity, celiac disease, non-celiac gluten sensitivity, and food allergies. What shared concept links these conditions in the section", "topic": "Diseases associated with dysfunctional intestinal barrier", "options": {"A": "They are all caused exclusively by achlorhydria", "B": "They all require bacterial bloodstream infection for diagnosis", "C": "They are associated with a dysfunctional intestinal barrier and increased permeability", "D": "They are all prevented by emulsifiers"}, "correct": "C", "explanation": "The section lists these conditions as diseases or disorders associated with dysfunctional intestinal barrier function and increased permeability.", "optionExplanations": {"A": "Achlorhydria is not the shared mechanism here.", "B": "Bloodstream infection is not required for these diagnoses.", "C": "Correct. They are linked by altered barrier function/permeability.", "D": "Emulsifiers are listed as potentially harmful, not preventive."}}, {"id": 28, "stem": "A patient with autism spectrum disorder is discussed in a gut-barrier lecture. Which enzyme or mediator is specifically linked with increased intestinal permeability in the section", "topic": "ASD and leaky gut association", "options": {"A": "Urease", "B": "Pepsin", "C": "Lactase", "D": "Zonulin"}, "correct": "D", "explanation": "The section lists autism spectrum disorder with zonulin and increased intestinal permeability, described as 'leaky gut.'", "optionExplanations": {"A": "Urease is an H. pylori enzyme, not the ASD-associated barrier mediator listed.", "B": "Pepsin is a gastric digestive enzyme and is not the listed mediator.", "C": "Lactase digests lactose and is unrelated to the listed ASD association.", "D": "Correct. Zonulin is the mediator named in this association."}}, {"id": 29, "stem": "An intestinal barrier diagram highlights an outer physical barrier produced by cells that secrete mucus. Which cell type contributes to this mucus layer", "topic": "Mucus layer and goblet cells", "options": {"A": "Goblet cells", "B": "Osteoclasts", "C": "Parietal cells", "D": "Hepatocytes"}, "correct": "A", "explanation": "The mucus layer is the outermost physical barrier, and goblet cells contribute to the mucus layer that helps protect the intestinal epithelium.", "optionExplanations": {"A": "Correct. Goblet cells produce mucus for the barrier.", "B": "Osteoclasts resorb bone and are unrelated to intestinal mucus.", "C": "Parietal cells secrete acid and intrinsic factor in the stomach.", "D": "Hepatocytes perform liver functions, not intestinal mucus production."}}, {"id": 30, "stem": "A conclusion slide states that even slight perturbation of epithelial barriers can produce serious pathologic effects. Which pair of consequences is emphasized", "topic": "Consequences of epithelial barrier perturbation", "options": {"A": "Hair loss and hypercalcemia", "B": "Infection and inflammation", "C": "Vision loss and cataracts", "D": "Hyperthyroidism and tremor"}, "correct": "B", "explanation": "The conclusion emphasizes that breaking or even slightly perturbing epithelial barriers can lead to serious pathologic consequences, including infection and inflammation.", "optionExplanations": {"A": "These are not the emphasized consequences of epithelial barrier perturbation.", "B": "Correct. Infection and inflammation are specifically emphasized.", "C": "These are ophthalmologic issues, not the section's barrier consequences.", "D": "These are endocrine findings, not the listed consequences."}}];
+
+let currentIndex = 0;
+let answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'segment' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; render(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, selected]) => {
+    const q = questions.find(item => item.id === Number(id));
+    if (!q) return;
+    if (selected === q.correct) right++;
+    else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+}
+
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    if (selected) {
+      if (letter === q.correct) btn.classList.add('correct');
+      else if (letter === selected) btn.classList.add('incorrect');
+    }
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => {
+      answers[q.id] = letter;
+      render();
+    };
+    answersDiv.appendChild(btn);
+  });
+
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const correctness = selected === q.correct ? 'Nice job.' : 'Good attempt.';
+    const optionRows = Object.entries(q.optionExplanations).map(([letter, text]) =>
+      `<p><strong>${letter}.</strong> ${text}</p>`
+    ).join('');
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p>${correctness} ${q.explanation}</p>
+      <div class="option-exp">
+        <p><strong>Why each option is right or wrong:</strong></p>
+        ${optionRows}
+      </div>
+    `;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+
+  renderProgress();
+  renderScore();
+}
+
+function goNext() {
+  currentIndex = (currentIndex + 1) % questions.length;
+  render();
+}
+
+function goPrev() {
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  render();
+}
+
+function resetQuiz() {
+  answers = {};
+  currentIndex = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

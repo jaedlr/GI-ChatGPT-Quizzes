@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Esophageal Pathology Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #ffffff;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --slate: #334155;
+      --blue: #6fa8dc;
+      --green-bg: #dcfce7;
+      --green-border: #22c55e;
+      --green-text: #166534;
+      --red-bg: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #991b1b;
+      --light: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #0f172a;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .quiz-wrapper {
+      max-width: 950px;
+      margin: 0 auto;
+    }
+    .header {
+      color: white;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+    }
+    .header p {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .progress {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .segment {
+      height: 10px;
+      border-radius: 999px;
+      background: #334155;
+      border: none;
+      cursor: pointer;
+      flex: 1;
+      min-width: 4px;
+      padding: 0;
+      transition: background 0.15s ease;
+    }
+    .segment.answered { background: var(--blue); }
+    .segment.active { background: #e2e8f0; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .pill.red { background: rgba(127, 29, 29, 0.65); color: #fee2e2; }
+    .pill.green { background: rgba(20, 83, 45, 0.65); color: #dcfce7; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .stem {
+      font-weight: 700;
+      font-size: 17px;
+      line-height: 1.45;
+      margin: 0 0 16px;
+    }
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--light);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      line-height: 1.35;
+      transition: background 0.15s ease, border 0.15s ease;
+    }
+    .option:hover { background: #f1f5f9; }
+    .option.correct {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .option.incorrect {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .explanation {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 0 0 10px; }
+    .explanation p:last-child { margin-bottom: 0; }
+    .result-correct { color: var(--green-text); font-weight: 600; }
+    .result-incorrect { color: var(--red-text); font-weight: 600; }
+    .option-exp {
+      margin-top: 10px;
+      display: grid;
+      gap: 7px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+      gap: 10px;
+    }
+    .nav button, .reset-btn {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset-btn:hover { background: #f8fafc; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+    @media (max-width: 700px) {
+      body { padding: 14px; }
+      .topbar { align-items: stretch; flex-direction: column; }
+      .status { justify-content: space-between; }
+      .meta { flex-direction: column; }
+      .header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-wrapper">
+    <div class="header">
+      <h1>Esophageal Pathology Quiz</h1>
+      <p>30 board-style questions from section 1: Esophageal Pathology</p>
+    </div>
+
+    <div class="topbar">
+      <div class="progress" id="progress"></div>
+      <div class="status">
+        <span id="counter">1 / 30</span>
+        <span class="pill red">× <span id="wrongCount">0</span></span>
+        <span class="pill green">✓ <span id="rightCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic">Topic:</span>
+      </div>
+      <p class="stem" id="stem"></p>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Correct-answer distribution verified: A=7, B=6, C=8, D=9. D appears ≥6; all letters appear 5–10 times.</span>
+      <button class="reset-btn" onclick="resetQuiz()">Reset quiz</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+    {
+        "id": 1,
+        "topic": "HSV esophagitis histology",
+        "stem": "A patient with advanced immunosuppression develops odynophagia. Endoscopy shows multiple small, well-circumscribed, overlapping ulcers in the distal esophagus. A biopsy is most likely to show which finding?",
+        "options": {
+            "A": "Basophilic owl-eye inclusions in endothelial and stromal cells at the ulcer base",
+            "B": "Multinucleated squamous cells with eosinophilic Cowdry type A nuclear inclusions at the ulcer edge",
+            "C": "Pseudohyphae embedded in necrotic debris and fibrin forming an adherent plaque",
+            "D": "Gland-forming malignant cells producing mucin and invading surrounding stroma"
+        },
+        "correct": "B",
+        "explanation": "This is HSV esophagitis. The board-level pairing is small, well-circumscribed, overlapping ulcers with multinucleated squamous cells and eosinophilic Cowdry type A intranuclear inclusions. HSV infects squamous cells at the ulcer edges.",
+        "optionExplanations": {
+            "A": "CMV, not HSV, produces owl-eye inclusions and infects cells at the ulcer base.",
+            "B": "Correct. HSV esophagitis classically shows multinucleated squamous cells with Cowdry type A inclusions at ulcer edges.",
+            "C": "Candida forms pseudomembranes composed of pseudohyphae, inflammatory cells, necrotic debris, and fibrin.",
+            "D": "This describes invasive esophageal adenocarcinoma rather than viral esophagitis."
+        }
+    },
+    {
+        "id": 2,
+        "topic": "CMV esophagitis location of infected cells",
+        "stem": "An immunosuppressed patient has painful swallowing. Endoscopy reveals large, linear longitudinal esophageal ulcers. Histology shows enlarged cells with basophilic intranuclear inclusions and cytoplasmic inclusions. Which biopsy location is most likely to contain the infected diagnostic cells?",
+        "options": {
+            "A": "Squamous cells at the ulcer edge",
+            "B": "Goblet cells within red velvety mucosa above the GE junction",
+            "C": "Keratin pearls in the middle third of the esophagus",
+            "D": "Endothelial and stromal cells at the ulcer base"
+        },
+        "correct": "D",
+        "explanation": "This is CMV esophagitis. CMV produces large linear or longitudinal ulcers and infects endothelial and stromal cells at the ulcer base, where enlarged cells with owl-eye intranuclear inclusions and cytoplasmic inclusions are found.",
+        "optionExplanations": {
+            "A": "HSV infects squamous cells at ulcer edges.",
+            "B": "Goblet cells in distal esophageal mucosa indicate Barrett esophagus.",
+            "C": "Keratin pearls are associated with well-differentiated squamous cell carcinoma.",
+            "D": "Correct. CMV diagnostic cells are typically at the ulcer base in endothelial and stromal cells."
+        }
+    },
+    {
+        "id": 3,
+        "topic": "Candida esophagitis morphology",
+        "stem": "A transplant recipient develops odynophagia. Upper endoscopy shows white adherent plaques coating the esophageal mucosa. PAS stain of the plaque demonstrates fungal forms. Which additional material is expected within the lesion?",
+        "options": {
+            "A": "Inflammatory cells, necrotic debris, and fibrin surrounding pseudohyphae",
+            "B": "Back-to-back glands invading through desmoplastic stroma",
+            "C": "Multinucleated squamous cells with eosinophilic nuclear inclusions",
+            "D": "Owl-eye inclusions in stromal cells at the ulcer base"
+        },
+        "correct": "A",
+        "explanation": "Candida esophagitis produces white adherent plaques or pseudomembranes. The pseudomembranes are composed of Candida pseudohyphae plus inflammatory cells, necrotic debris, and fibrin.",
+        "optionExplanations": {
+            "A": "Correct. Candida pseudomembranes contain pseudohyphae with inflammatory cells, necrotic debris, and fibrin.",
+            "B": "This describes invasive adenocarcinoma, not Candida.",
+            "C": "This is HSV esophagitis.",
+            "D": "This is CMV esophagitis."
+        }
+    },
+    {
+        "id": 4,
+        "topic": "GERD pathogenesis",
+        "stem": "A 52-year-old man has chronic heartburn and regurgitation. Biopsy from the distal esophagus shows intraepithelial eosinophils, basal zone hyperplasia, and elongation of lamina propria papillae. Which factor most directly predisposes to this condition?",
+        "options": {
+            "A": "Loss of SOX2 copy number in squamous mucosa",
+            "B": "High-risk HPV infection of the middle esophagus",
+            "C": "Decreased lower esophageal sphincter tone from hiatal hernia, alcohol, or tobacco",
+            "D": "Inactivation of APC with unchecked beta-catenin signaling"
+        },
+        "correct": "C",
+        "explanation": "The findings describe reflux esophagitis from reflux of gastric contents into the lower esophagus. Predisposing factors include decreased LES tone due to gastric distention, hiatal hernia, alcohol, tobacco, or CNS depressants, and increased intra-abdominal pressure.",
+        "optionExplanations": {
+            "A": "SOX2 amplification, not loss, is associated with squamous cell carcinoma.",
+            "B": "HPV can be a risk factor for squamous cell carcinoma in high-risk areas, not typical reflux esophagitis.",
+            "C": "Correct. Reduced LES tone allows gastric contents to reflux and injure distal esophageal mucosa.",
+            "D": "APC/beta-catenin signaling is not the key mechanism described in reflux esophagitis."
+        }
+    },
+    {
+        "id": 5,
+        "topic": "Barrett esophagus diagnosis",
+        "stem": "A 58-year-old White man with long-standing GERD undergoes endoscopy. A red, velvety patch extends 2 cm above the gastroesophageal junction. Which histologic finding is required for the definitive diagnosis in the United States?",
+        "options": {
+            "A": "Residual squamous epithelium adjacent to keratin pearls",
+            "B": "Nonciliated columnar epithelium with goblet cells",
+            "C": "Basal zone hyperplasia with elongated lamina propria papillae",
+            "D": "Cribriform glands invading into the surrounding stroma"
+        },
+        "correct": "B",
+        "explanation": "Barrett esophagus is intestinal metaplasia of the distal esophagus due to chronic GERD. In the United States, goblet cells are required for the diagnosis. The mucosa often appears red and velvety and may form tongues or patches extending upward from the GE junction.",
+        "optionExplanations": {
+            "A": "Keratin pearls suggest squamous cell carcinoma, not Barrett esophagus.",
+            "B": "Correct. Goblet cells within columnar epithelium are required for Barrett diagnosis in the US.",
+            "C": "These are histologic features of reflux esophagitis, not the defining feature of Barrett.",
+            "D": "Cribriform glands with invasion indicate adenocarcinoma."
+        }
+    },
+    {
+        "id": 6,
+        "topic": "Barrett segment length",
+        "stem": "Two patients have Barrett esophagus. Patient 1 has a 4-cm segment of intestinal metaplasia. Patient 2 has a 1-cm segment and no dysplasia. Which statement best compares their malignant risk?",
+        "options": {
+            "A": "Patient 2 has higher risk because short-segment Barrett is more likely to contain dysplasia",
+            "B": "Both patients have no increased cancer risk unless Candida coinfection is present",
+            "C": "Patient 1 has lower risk because long-segment Barrett is usually asymptomatic",
+            "D": "Patient 1 has higher risk because long-segment Barrett is associated with increased dysplasia and carcinoma risk"
+        },
+        "correct": "D",
+        "explanation": "Long-segment Barrett esophagus is defined as 3 cm or greater and has increased risk of dysplasia and carcinoma. Short-segment Barrett is less than 3 cm, may be asymptomatic, and has lower malignancy risk.",
+        "optionExplanations": {
+            "A": "Short-segment Barrett has lower malignancy risk than long-segment Barrett.",
+            "B": "Candida is not required for Barrett-associated malignant risk.",
+            "C": "Long-segment Barrett has higher, not lower, dysplasia and carcinoma risk.",
+            "D": "Correct. Longer Barrett segments correlate with increased dysplasia and carcinoma risk."
+        }
+    },
+    {
+        "id": 7,
+        "topic": "Esophageal adenocarcinoma precursor",
+        "stem": "A 62-year-old man with obesity and chronic reflux develops progressive dysphagia and weight loss. A distal esophageal mass is biopsied and shows malignant glands with mucin production. Which precursor lesion most likely gave rise to this tumor?",
+        "options": {
+            "A": "Squamous dysplasia from alcohol and tobacco exposure",
+            "B": "Plummer-Vinson-associated proximal esophageal web",
+            "C": "Barrett esophagus with intestinal metaplasia and dysplasia",
+            "D": "White pseudomembranes caused by Candida pseudohyphae"
+        },
+        "correct": "C",
+        "explanation": "Esophageal adenocarcinoma typically arises in the distal third of the esophagus through a stepwise sequence: Barrett esophagus to dysplasia to adenocarcinoma. Histology commonly shows glands with mucin production.",
+        "optionExplanations": {
+            "A": "Squamous dysplasia is the precursor for squamous cell carcinoma, usually in the middle third.",
+            "B": "Plummer-Vinson syndrome is associated with squamous cell carcinoma risk, not adenocarcinoma.",
+            "C": "Correct. Barrett esophagus is the key precursor to distal esophageal adenocarcinoma.",
+            "D": "Candida causes infectious esophagitis, not gland-forming adenocarcinoma."
+        }
+    },
+    {
+        "id": 8,
+        "topic": "Esophageal squamous cell carcinoma risk",
+        "stem": "A 60-year-old man develops progressive dysphagia from solids to liquids. Biopsy of a middle-third esophageal mass shows malignant squamous cells with keratin pearls. Which exposure combination is most classically synergistic for this malignancy?",
+        "options": {
+            "A": "Chronic GERD and decreased H pylori rates",
+            "B": "Obesity and Barrett esophagus",
+            "C": "Pregnancy and increased intra-abdominal pressure",
+            "D": "Alcohol and tobacco use"
+        },
+        "correct": "D",
+        "explanation": "Esophageal squamous cell carcinoma classically arises in the middle third and is associated with alcohol and tobacco use, which act synergistically. Histology may show keratin pearls in well-differentiated tumors.",
+        "optionExplanations": {
+            "A": "These are more relevant to adenocarcinoma trends and reflux disease.",
+            "B": "Obesity and Barrett esophagus are risk factors for adenocarcinoma.",
+            "C": "Pregnancy can worsen reflux but is not the classic synergistic SCC risk factor.",
+            "D": "Correct. Alcohol plus tobacco is a classic synergistic risk combination for esophageal SCC."
+        }
+    },
+    {
+        "id": 9,
+        "topic": "Adenocarcinoma molecular progression",
+        "stem": "A biopsy from Barrett mucosa shows dysplasia. Molecular testing reveals early events that promote progression toward adenocarcinoma. Which pair of tumor suppressor abnormalities is most associated with this stepwise sequence?",
+        "options": {
+            "A": "SOX2 amplification and cyclin D1 overexpression",
+            "B": "TP53 and CDKN2A inactivation",
+            "C": "NOTCH1 activation and MYC amplification",
+            "D": "RB activation and APC overexpression"
+        },
+        "correct": "B",
+        "explanation": "Esophageal adenocarcinoma follows stepwise progression from Barrett esophagus to dysplasia to adenocarcinoma. Early molecular events include inactivation of TP53 and CDKN2A. CDKN2A encodes p16INK4a and p14ARF, both involved in cell-cycle regulation and p53 stability.",
+        "optionExplanations": {
+            "A": "SOX2 amplification and cyclin D1 overexpression are listed with squamous cell carcinoma molecular abnormalities.",
+            "B": "Correct. TP53 and CDKN2A inactivation are early events in Barrett-associated adenocarcinoma.",
+            "C": "NOTCH1 loss, not activation, is associated with squamous cell carcinoma in the provided material.",
+            "D": "This pairing is not described for esophageal adenocarcinoma in the section."
+        }
+    },
+    {
+        "id": 10,
+        "topic": "Squamous cell carcinoma molecular abnormalities",
+        "stem": "A tumor from the middle third of the esophagus shows moderately differentiated squamous carcinoma. Which molecular abnormality pattern best fits this tumor type?",
+        "options": {
+            "A": "TP53, CDKN2A, and NOTCH1 loss with SOX2 amplification or cyclin D1 overexpression",
+            "B": "CDH1 loss with diffuse signet-ring cell infiltration",
+            "C": "APC loss followed by beta-catenin nuclear accumulation",
+            "D": "BCR-ABL fusion with constitutive tyrosine kinase activity"
+        },
+        "correct": "A",
+        "explanation": "Esophageal squamous cell carcinoma is associated with SOX2 amplification, cyclin D1 overexpression, and loss of TP53, CDKN2A, and NOTCH1.",
+        "optionExplanations": {
+            "A": "Correct. These are the molecular abnormalities listed for esophageal squamous cell carcinoma.",
+            "B": "This pattern describes diffuse gastric adenocarcinoma, outside this section.",
+            "C": "This is a WNT-pathway colorectal/gastric-type mechanism, not the esophageal SCC pattern here.",
+            "D": "BCR-ABL is associated with chronic myeloid leukemia, not esophageal SCC."
+        }
+    },
+    {
+        "id": 11,
+        "topic": "GERD histology",
+        "stem": "A biopsy from a patient with long-standing reflux shows chronic esophageal injury. Which microscopic finding best supports reflux esophagitis rather than Barrett esophagus?",
+        "options": {
+            "A": "Columnar epithelium with goblet cells",
+            "B": "Cribriform glands with invasion into stroma",
+            "C": "Basal zone hyperplasia with elongated lamina propria papillae",
+            "D": "Pseudohyphae within an adherent pseudomembrane"
+        },
+        "correct": "C",
+        "explanation": "Reflux esophagitis can show early intraepithelial eosinophils followed by neutrophils; chronic changes include basal zone hyperplasia and elongated lamina propria papillae.",
+        "optionExplanations": {
+            "A": "Goblet cells in columnar epithelium define Barrett esophagus.",
+            "B": "Cribriforming with invasion indicates adenocarcinoma.",
+            "C": "Correct. Basal zone hyperplasia and elongated lamina propria papillae are chronic reflux esophagitis findings.",
+            "D": "Pseudohyphae indicate Candida esophagitis."
+        }
+    },
+    {
+        "id": 12,
+        "topic": "High-grade dysplasia versus adenocarcinoma",
+        "stem": "A Barrett esophagus biopsy shows marked nuclear enlargement, hyperchromasia, architectural distortion, and back-to-back cribriform glands. No stromal invasion is seen. What is the best diagnosis?",
+        "options": {
+            "A": "Low-grade dysplasia",
+            "B": "Invasive adenocarcinoma",
+            "C": "Moderately differentiated squamous cell carcinoma",
+            "D": "High-grade dysplasia"
+        },
+        "correct": "D",
+        "explanation": "High-grade dysplasia in Barrett esophagus shows marked nuclear enlargement, hyperchromasia, architectural distortion, and back-to-back glands or cribriforming. Cribriforming without invasion is high-grade dysplasia; cribriforming with invasion is adenocarcinoma.",
+        "optionExplanations": {
+            "A": "Low-grade dysplasia shows nuclear stratification and hyperchromasia but less severe architectural distortion.",
+            "B": "Invasive adenocarcinoma requires invasion into surrounding stroma.",
+            "C": "Squamous cell carcinoma would show malignant squamous differentiation, often with keratin pearls if well differentiated.",
+            "D": "Correct. Cribriforming without stromal invasion is high-grade dysplasia."
+        }
+    },
+    {
+        "id": 13,
+        "topic": "Low-grade dysplasia in Barrett",
+        "stem": "A patient with Barrett esophagus has a biopsy showing failure of epithelial maturation from base to surface, nuclear stratification, and hyperchromasia without marked architectural distortion. Which diagnosis is most appropriate?",
+        "options": {
+            "A": "Low-grade dysplasia",
+            "B": "High-grade dysplasia",
+            "C": "Candida pseudomembrane",
+            "D": "Well-differentiated squamous cell carcinoma"
+        },
+        "correct": "A",
+        "explanation": "Dysplasia in Barrett esophagus reflects failure of epithelial maturation from base to surface. Low-grade dysplasia is characterized by nuclear stratification and hyperchromasia.",
+        "optionExplanations": {
+            "A": "Correct. Nuclear stratification and hyperchromasia without severe architecture change best fits low-grade dysplasia.",
+            "B": "High-grade dysplasia has marked nuclear enlargement, hyperchromasia, and architectural distortion such as back-to-back glands or cribriforming.",
+            "C": "Candida shows pseudohyphae in pseudomembranes, not epithelial dysplasia.",
+            "D": "Well-differentiated SCC shows squamous malignant cells and keratin pearls."
+        }
+    },
+    {
+        "id": 14,
+        "topic": "Adenocarcinoma location and histology",
+        "stem": "An esophageal cancer in the distal third shows ulceration and invasion into the gastric cardia. Histology demonstrates hyperchromatic neoplastic cells forming small glands that contain mucin and invade stroma. Which risk factor is most directly linked to the precursor of this cancer?",
+        "options": {
+            "A": "Caustic injury",
+            "B": "Achalasia",
+            "C": "Alcohol plus tobacco",
+            "D": "Chronic GERD"
+        },
+        "correct": "D",
+        "explanation": "Distal esophageal adenocarcinoma commonly arises from Barrett esophagus, which is a complication of chronic GERD. Histology often shows malignant glands with mucin production and stromal invasion.",
+        "optionExplanations": {
+            "A": "Caustic injury is a risk factor for squamous cell carcinoma.",
+            "B": "Achalasia predisposes to squamous cell carcinoma.",
+            "C": "Alcohol plus tobacco synergistically increase squamous cell carcinoma risk.",
+            "D": "Correct. Chronic GERD predisposes to Barrett esophagus, the precursor to esophageal adenocarcinoma."
+        }
+    },
+    {
+        "id": 15,
+        "topic": "Squamous cell carcinoma location",
+        "stem": "A 59-year-old man with a long history of alcohol and tobacco use develops cachexia and progressive dysphagia. Endoscopy shows an ulcerative lesion with stricture formation in the esophagus. Which location is most typical for this tumor type?",
+        "options": {
+            "A": "Distal third arising from Barrett mucosa",
+            "B": "Middle third of the esophagus",
+            "C": "Gastroesophageal junction only",
+            "D": "Gastric cardia with upward extension"
+        },
+        "correct": "B",
+        "explanation": "Esophageal squamous cell carcinoma most often involves the middle third of the esophagus. It presents with progressive dysphagia, odynophagia, obstruction, poor nutrient intake, and cachexia.",
+        "optionExplanations": {
+            "A": "Distal third arising from Barrett mucosa is typical of adenocarcinoma.",
+            "B": "Correct. The middle third is the classic location for esophageal SCC.",
+            "C": "The GE junction is more relevant to reflux/Barrett-associated adenocarcinoma.",
+            "D": "Gastric cardia extension is described with distal adenocarcinoma."
+        }
+    },
+    {
+        "id": 16,
+        "topic": "Adenocarcinoma versus SCC comparison",
+        "stem": "A pathologist is comparing two esophageal cancers. Tumor X is distal, arose from Barrett esophagus, and forms mucin-producing glands. Tumor Y is middle esophageal and has keratin pearls. Which additional comparison is correct?",
+        "options": {
+            "A": "Tumor X arises from squamous dysplasia, whereas tumor Y arises from intestinal metaplasia",
+            "B": "Tumor X is most common in African Americans, whereas tumor Y is most common in Caucasian men",
+            "C": "Tumor X is linked to GERD and obesity, whereas tumor Y is linked to alcohol and tobacco",
+            "D": "Tumor X is decreasing in the United States, whereas tumor Y is increasing"
+        },
+        "correct": "C",
+        "explanation": "Adenocarcinoma is typically distal, associated with Barrett esophagus, GERD, obesity, and tobacco. Squamous cell carcinoma is typically middle-third, associated with squamous dysplasia, alcohol, tobacco, caustic injury, achalasia, and radiation.",
+        "optionExplanations": {
+            "A": "This reverses the precursor lesions.",
+            "B": "The epidemiologic pattern is reversed or oversimplified; SCC is increased in African Americans, while adenocarcinoma is common in Caucasian men.",
+            "C": "Correct. GERD/obesity point toward adenocarcinoma; alcohol/tobacco point toward SCC.",
+            "D": "The section lists adenocarcinoma as increasing in the US and SCC as decreasing."
+        }
+    },
+    {
+        "id": 17,
+        "topic": "Nitrosamines and SCC pathogenesis",
+        "stem": "A patient from a rural area with low fruit and vegetable intake develops esophageal squamous cell carcinoma. The tumor is linked to mutagenic chemical injury from nitrosamines. Which sequence best describes nitrosamine formation from dietary preservatives?",
+        "options": {
+            "A": "Nitrates are converted to nitrites by bacteria, nitrites become nitrous acids in stomach acid, then react with secondary amines to form carcinogenic nitrosamines",
+            "B": "Acetaldehyde polymerizes into keratin pearls after exposure to alcohol",
+            "C": "Goblet cells directly convert bile acids into nitrosamines in Barrett mucosa",
+            "D": "Fungal pseudohyphae metabolize fibrin into nitrosamines within esophageal plaques"
+        },
+        "correct": "A",
+        "explanation": "The section describes nitrosamine formation as follows: nitrates and nitrites are found in preservatives; nitrates are converted to nitrites by bacteria; nitrites become nitrous acids in stomach acid; nitrous acid reacts with secondary amines in proteins and peptides to form carcinogenic nitrosamines.",
+        "optionExplanations": {
+            "A": "Correct. This is the listed biochemical sequence for carcinogenic nitrosamine formation.",
+            "B": "Acetaldehyde is a mutagenic chemical injury factor but does not form keratin pearls by polymerization.",
+            "C": "Goblet cells are part of Barrett esophagus, not the nitrosamine pathway described for SCC.",
+            "D": "Candida pseudohyphae are not involved in nitrosamine formation."
+        }
+    },
+    {
+        "id": 18,
+        "topic": "Reflux esophagitis complications",
+        "stem": "A patient with reflux-mediated esophageal injury asks about possible complications. Which complication is specifically listed as a consequence of reflux esophagitis?",
+        "options": {
+            "A": "Middle-third squamous cell carcinoma without precursor change",
+            "B": "Portal hypertension causing submucosal venous dilation",
+            "C": "Gastrinoma causing multiple distal duodenal ulcers",
+            "D": "Ulceration causing hematemesis and strictures causing dysphagia"
+        },
+        "correct": "D",
+        "explanation": "Complications of reflux esophagitis include ulceration, which can cause hematemesis, strictures, which can cause dysphagia, and Barrett esophagus.",
+        "optionExplanations": {
+            "A": "SCC has separate risk factors and a squamous dysplasia precursor; it is not listed as a direct GERD complication here.",
+            "B": "This describes varices, not reflux esophagitis.",
+            "C": "This describes Zollinger-Ellison physiology, not reflux esophagitis.",
+            "D": "Correct. GERD can cause ulcers with hematemesis and strictures with dysphagia."
+        }
+    },
+    {
+        "id": 19,
+        "topic": "Barrett gross appearance",
+        "stem": "Endoscopy in a patient with chronic reflux shows that normally smooth gray esophageal mucosa is replaced by red, velvety mucosa forming tongues and patches that extend upward from the GE junction, which appears obliterated. What cellular transition underlies this finding?",
+        "options": {
+            "A": "Columnar epithelium to keratinizing squamous epithelium",
+            "B": "Squamous epithelium to neuroendocrine epithelium",
+            "C": "Nonkeratinized stratified squamous epithelium to nonciliated columnar epithelium with goblet cells",
+            "D": "Endothelial cells to enlarged stromal cells with owl-eye inclusions"
+        },
+        "correct": "C",
+        "explanation": "Barrett esophagus is intestinal metaplasia in which nonkeratinized stratified squamous epithelium of the esophagus is replaced by nonciliated columnar epithelium with goblet cells.",
+        "optionExplanations": {
+            "A": "This reverses the direction and adds keratinization, which is not Barrett esophagus.",
+            "B": "Neuroendocrine metaplasia is not described in this section.",
+            "C": "Correct. Barrett esophagus is squamous-to-columnar intestinal metaplasia with goblet cells.",
+            "D": "This describes CMV cytopathic changes rather than metaplasia."
+        }
+    },
+    {
+        "id": 20,
+        "topic": "Infectious esophagitis overview",
+        "stem": "A clinician is evaluating infectious esophagitis in several patients. Most cases occur in which type of patient, and which organisms are the principal opportunistic agents?",
+        "options": {
+            "A": "Patients with portal hypertension; Streptococcus, Actinomyces, and Giardia",
+            "B": "Immunosuppressed patients; HSV, CMV, and Candida",
+            "C": "Patients with chronic GERD; H pylori, EBV, and Aspergillus",
+            "D": "Pregnant patients; HPV, VZV, and Entamoeba"
+        },
+        "correct": "B",
+        "explanation": "Most infectious esophagitis occurs in immunosuppressed individuals. The principal opportunistic agents listed are HSV, CMV, and Candida. General morphology may include inflammation, ulceration, and necrosis, varying by organism.",
+        "optionExplanations": {
+            "A": "Portal hypertension is relevant to varices, not the main infectious esophagitis risk group.",
+            "B": "Correct. Immunosuppression predisposes to HSV, CMV, and Candida esophagitis.",
+            "C": "GERD predisposes to reflux esophagitis and Barrett, not the principal opportunistic infectious trio.",
+            "D": "These are not the listed principal agents for infectious esophagitis."
+        }
+    },
+    {
+        "id": 21,
+        "topic": "Clinical symptoms of esophageal cancer",
+        "stem": "A patient has progressive dysphagia that began with solid foods and later progressed to liquids, along with odynophagia, obstruction, and severe weight loss. What best explains the cachexia described in this setting?",
+        "options": {
+            "A": "Only decreased oral intake from obstruction; tumors have no independent metabolic effects",
+            "B": "Only malabsorption from intestinal villous atrophy",
+            "C": "Poor nutrient intake from obstruction plus metabolic effects from the tumor",
+            "D": "Loss of intrinsic factor due to autoimmune gastritis"
+        },
+        "correct": "C",
+        "explanation": "Both major esophageal cancers can cause progressive dysphagia from solids to liquids, odynophagia, obstruction, poor nutrient intake, and cachexia. The section notes cachexia can also result from metabolic effects of the tumor itself.",
+        "optionExplanations": {
+            "A": "Obstruction contributes, but the section also notes tumor metabolic effects.",
+            "B": "Villous atrophy is not the mechanism of esophageal cancer cachexia here.",
+            "C": "Correct. Cachexia can reflect both poor intake from obstruction and tumor-driven metabolic effects.",
+            "D": "Intrinsic factor loss is gastric, not esophageal, pathology."
+        }
+    },
+    {
+        "id": 22,
+        "topic": "Differentiated SCC histology",
+        "stem": "A biopsy of an esophageal mass shows malignant cells that partially recapitulate the architecture of squamous epithelium but lack definite keratin formation. Which interpretation is best?",
+        "options": {
+            "A": "This is high-grade dysplasia in Barrett esophagus",
+            "B": "This is Candida esophagitis with intact underlying squamous epithelium",
+            "C": "This rules out squamous carcinoma because all SCC must form keratin pearls",
+            "D": "This is moderately differentiated squamous cell carcinoma"
+        },
+        "correct": "D",
+        "explanation": "Moderately differentiated squamous cell carcinoma may partially recapitulate squamous epithelial architecture without definite keratin formation. Keratin pearls are a hallmark of well-differentiated SCC, though moderate tumors may or may not have them.",
+        "optionExplanations": {
+            "A": "Barrett dysplasia is glandular/columnar, not squamous architecture.",
+            "B": "Candida shows pseudohyphae in pseudomembranes, not malignant squamous cells.",
+            "C": "Keratin pearls are classic for well-differentiated SCC but are not required in all SCC.",
+            "D": "Correct. Partial squamous architecture without definite keratin fits moderately differentiated SCC."
+        }
+    },
+    {
+        "id": 23,
+        "topic": "Adenocarcinoma epidemiology",
+        "stem": "A US-based lecture notes that one esophageal cancer now accounts for more than half of esophageal cancers in the United States, is more common in Caucasians, has a male predominance of about 7:1, and has a 5-year survival below 25%. Which cancer is being described?",
+        "options": {
+            "A": "Esophageal adenocarcinoma",
+            "B": "Esophageal squamous cell carcinoma",
+            "C": "CMV esophagitis",
+            "D": "Barrett esophagus without dysplasia"
+        },
+        "correct": "A",
+        "explanation": "The section describes esophageal adenocarcinoma as more than 50% of esophageal cancers in the US, more common in Caucasians, with M:F around 7:1 and 5-year survival below 25%.",
+        "optionExplanations": {
+            "A": "Correct. This epidemiology matches esophageal adenocarcinoma in the provided material.",
+            "B": "SCC is associated with adults over 45, M:F about 4:1, increased African American prevalence, rural areas, and poor prognosis.",
+            "C": "CMV esophagitis is infectious, not a cancer epidemiology pattern.",
+            "D": "Barrett is premalignant metaplasia rather than invasive cancer."
+        }
+    },
+    {
+        "id": 24,
+        "topic": "SCC epidemiology",
+        "stem": "A 56-year-old adult from a rural area develops an esophageal tumor. The section notes this tumor is more common in African Americans, has a male predominance of about 4:1, commonly metastasizes to lymph nodes, and has a 5-year survival below 20%. Which histology is most likely?",
+        "options": {
+            "A": "Mucin-producing glands in the distal third",
+            "B": "Goblet cells in columnar epithelium",
+            "C": "Multinucleated squamous cells with Cowdry A inclusions",
+            "D": "Squamous carcinoma, often moderately to well differentiated"
+        },
+        "correct": "D",
+        "explanation": "This epidemiology and prognosis fit esophageal squamous cell carcinoma. Most SCCs are moderately to well differentiated, and well-differentiated tumors can show keratin pearls.",
+        "optionExplanations": {
+            "A": "Mucin-producing glands in the distal third describe adenocarcinoma.",
+            "B": "Goblet cells describe Barrett esophagus.",
+            "C": "Cowdry A inclusions describe HSV esophagitis.",
+            "D": "Correct. The listed epidemiology matches squamous cell carcinoma."
+        }
+    },
+    {
+        "id": 25,
+        "topic": "Decreased H pylori and adenocarcinoma",
+        "stem": "A professor lists risk factors for esophageal adenocarcinoma and includes Barrett esophagus, obesity, tobacco use, radiation, low fruit and vegetable intake, and decreased H pylori rates. Which explanation best links these factors to tumor type?",
+        "options": {
+            "A": "They favor chronic reflux and Barrett-associated distal gland-forming malignancy rather than mid-esophageal squamous malignancy",
+            "B": "They primarily cause direct acetaldehyde injury to squamous mucosa",
+            "C": "They cause Candida pseudomembrane formation and later malignant transformation",
+            "D": "They prevent intestinal metaplasia and therefore lower adenocarcinoma risk"
+        },
+        "correct": "A",
+        "explanation": "The risk factor cluster listed belongs to esophageal adenocarcinoma, which is associated with Barrett esophagus and typically occurs in the distal third. Adenocarcinoma forms glands with mucin production.",
+        "optionExplanations": {
+            "A": "Correct. These factors point toward reflux/Barrett-associated distal adenocarcinoma.",
+            "B": "Acetaldehyde injury is listed under squamous cell carcinoma pathogenesis.",
+            "C": "Candida pseudomembranes are infectious, not the adenocarcinoma risk pathway.",
+            "D": "Barrett intestinal metaplasia increases, not lowers, adenocarcinoma risk."
+        }
+    },
+    {
+        "id": 26,
+        "topic": "p16 and p14ARF functions",
+        "stem": "During Barrett-to-adenocarcinoma progression, CDKN2A is inactivated. Which paired functions are normally encoded by products of this locus as described in the section?",
+        "options": {
+            "A": "SOX2 and cyclin D1 amplification to preserve squamous differentiation",
+            "B": "p16INK4a inhibition of CDKs and p14ARF prevention of p53 degradation",
+            "C": "Urease buffering of acid and adhesin-mediated epithelial attachment",
+            "D": "NO and VIP release to relax the lower esophageal sphincter"
+        },
+        "correct": "B",
+        "explanation": "CDKN2A encodes p16INK4a, which inhibits CDKs and prevents cell-cycle progression, and p14ARF, which prevents p53 degradation via proteasomes. Inactivation of CDKN2A is an early event in esophageal adenocarcinoma progression.",
+        "optionExplanations": {
+            "A": "SOX2 amplification and cyclin D1 overexpression are associated with SCC, not CDKN2A product function.",
+            "B": "Correct. p16INK4a and p14ARF regulate CDKs and p53 stability, respectively.",
+            "C": "These are H pylori virulence concepts, not this esophageal pathology section.",
+            "D": "NO and VIP relate to LES relaxation physiology, not CDKN2A."
+        }
+    },
+    {
+        "id": 27,
+        "topic": "Gross comparison of HSV, CMV, Candida",
+        "stem": "Three immunosuppressed patients undergo endoscopy. Patient X has small overlapping distal ulcers; patient Y has large linear longitudinal ulcers; patient Z has white adherent plaques. Which matching is correct?",
+        "options": {
+            "A": "X = Candida, Y = HSV, Z = CMV",
+            "B": "X = CMV, Y = Candida, Z = HSV",
+            "C": "X = HSV, Y = CMV, Z = Candida",
+            "D": "X = Barrett esophagus, Y = adenocarcinoma, Z = SCC"
+        },
+        "correct": "C",
+        "explanation": "HSV causes multiple small, well-circumscribed, overlapping ulcers often in the distal esophagus. CMV causes large linear or longitudinal ulcers. Candida causes white adherent plaques or pseudomembranes.",
+        "optionExplanations": {
+            "A": "This mismatches all three classic endoscopic patterns.",
+            "B": "This also mismatches the classic gross findings.",
+            "C": "Correct. HSV = small overlapping ulcers; CMV = large linear ulcers; Candida = white plaques.",
+            "D": "These are neoplastic/metaplastic conditions, not the infectious morphology patterns given."
+        }
+    },
+    {
+        "id": 28,
+        "topic": "GERD symptoms and Barrett complication",
+        "stem": "A patient has heartburn and regurgitation for years and now has progressive dysphagia from a stricture. Which sequence best captures the major pathologic progression this patient is at risk for?",
+        "options": {
+            "A": "Candida pseudomembrane to CMV owl-eye inclusion to HSV multinucleation",
+            "B": "Squamous dysplasia to keratin pearl to mid-esophageal SCC",
+            "C": "Reflux esophagitis to Barrett esophagus to dysplasia to adenocarcinoma",
+            "D": "Caustic injury to proximal web to Plummer-Vinson syndrome"
+        },
+        "correct": "C",
+        "explanation": "Chronic GERD causes reflux esophagitis and can lead to Barrett esophagus. Barrett esophagus is a premalignant intestinal metaplasia that can progress through dysplasia to esophageal adenocarcinoma.",
+        "optionExplanations": {
+            "A": "This lists infectious esophagitis findings, not GERD progression.",
+            "B": "This is the SCC pathway, not the classic GERD/Barrett pathway.",
+            "C": "Correct. GERD can progress to Barrett, dysplasia, and adenocarcinoma.",
+            "D": "Plummer-Vinson and caustic injury are SCC-related risk concepts, not the GERD sequence here."
+        }
+    },
+    {
+        "id": 29,
+        "topic": "Adenocarcinoma versus high-grade dysplasia invasion",
+        "stem": "A Barrett biopsy contains back-to-back cribriform glands. On deeper sections, the glands are seen invading the surrounding stroma. Which diagnosis is most appropriate?",
+        "options": {
+            "A": "Esophageal adenocarcinoma",
+            "B": "High-grade dysplasia only",
+            "C": "Low-grade dysplasia only",
+            "D": "Reflux esophagitis"
+        },
+        "correct": "A",
+        "explanation": "The section emphasizes that cribriforming without invasion is high-grade dysplasia, whereas cribriforming with invasion into surrounding stroma is adenocarcinoma.",
+        "optionExplanations": {
+            "A": "Correct. Invasion of cribriform glands into surrounding stroma indicates adenocarcinoma.",
+            "B": "High-grade dysplasia can have cribriforming, but not stromal invasion.",
+            "C": "Low-grade dysplasia is limited to nuclear stratification and hyperchromasia without this degree of architecture/invasion.",
+            "D": "Reflux esophagitis shows eosinophils, basal zone hyperplasia, and papillary elongation, not invasive glands."
+        }
+    },
+    {
+        "id": 30,
+        "topic": "Final board pearls synthesis",
+        "stem": "A student is making a final comparison table for esophageal pathology. Which row is accurate?",
+        "options": {
+            "A": "Adenocarcinoma: middle third, squamous dysplasia, keratin pearls, alcohol/tobacco",
+            "B": "Squamous cell carcinoma: distal third, Barrett precursor, glands with mucin, GERD/obesity",
+            "C": "Barrett esophagus: proximal esophagus, pseudohyphae required for diagnosis, no cancer risk",
+            "D": "Adenocarcinoma: distal third, Barrett precursor, glands with mucin, increasing US trend"
+        },
+        "correct": "D",
+        "explanation": "The high-yield comparison lists adenocarcinoma as distal third, precursor Barrett esophagus, histology of glands plus mucin, and increasing US trend. SCC is middle third, precursor squamous dysplasia, risk factors alcohol/tobacco, and histology of keratin pearls.",
+        "optionExplanations": {
+            "A": "This row describes SCC features but labels them as adenocarcinoma.",
+            "B": "This row describes adenocarcinoma features but labels them as SCC.",
+            "C": "Barrett is distal, requires goblet cells for diagnosis in the US, and increases adenocarcinoma risk.",
+            "D": "Correct. This is the accurate adenocarcinoma row."
+        }
+    }
+];
+
+    let currentIndex = 0;
+    let answers = {};
+
+    function renderProgress() {
+      const progress = document.getElementById("progress");
+      progress.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const button = document.createElement("button");
+        button.className = "segment";
+        if (answers[q.id] !== undefined) button.classList.add("answered");
+        if (idx === currentIndex) button.classList.add("active");
+        button.title = q.topic || `Question ${idx + 1}`;
+        button.setAttribute("aria-label", `Go to question ${idx + 1}`);
+        button.onclick = () => {
+          currentIndex = idx;
+          renderQuiz();
+        };
+        progress.appendChild(button);
+      });
+    }
+
+    function renderQuiz() {
+      const q = questions[currentIndex];
+      const selected = answers[q.id];
+
+      document.getElementById("counter").textContent = `${currentIndex + 1} / ${questions.length}`;
+      document.getElementById("questionNumber").textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      document.getElementById("topic").textContent = q.topic ? `Topic: ${q.topic}` : "";
+      document.getElementById("stem").textContent = q.stem;
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      Object.entries(q.options).forEach(([letter, text]) => {
+        const button = document.createElement("button");
+        button.className = "option";
+        if (selected !== undefined && letter === q.correct) {
+          button.classList.add("correct");
+        } else if (selected !== undefined && letter === selected && letter !== q.correct) {
+          button.classList.add("incorrect");
+        }
+        button.innerHTML = `<strong>${letter}.</strong> ${text}`;
+        button.onclick = () => {
+          answers[q.id] = letter;
+          renderQuiz();
+        };
+        optionsDiv.appendChild(button);
+      });
+
+      const explanationDiv = document.getElementById("explanation");
+      if (selected !== undefined) {
+        const isCorrect = selected === q.correct;
+        const optionLines = Object.entries(q.optionExplanations).map(([letter, text]) =>
+          `<p><strong>${letter}.</strong> ${text}</p>`
+        ).join("");
+        explanationDiv.style.display = "block";
+        explanationDiv.innerHTML = `
+          <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+          <p class="${isCorrect ? "result-correct" : "result-incorrect"}">${isCorrect ? "Nice job. " : "Good attempt. "}${q.explanation}</p>
+          <div class="option-exp">
+            <p><strong>Why each option is right or wrong:</strong></p>
+            ${optionLines}
+          </div>
+        `;
+      } else {
+        explanationDiv.style.display = "none";
+        explanationDiv.innerHTML = "";
+      }
+
+      updateScore();
+      renderProgress();
+    }
+
+    function updateScore() {
+      let right = 0;
+      let wrong = 0;
+      Object.entries(answers).forEach(([qid, choice]) => {
+        const q = questions.find(item => item.id === Number(qid));
+        if (!q) return;
+        if (choice === q.correct) right++;
+        else wrong++;
+      });
+      document.getElementById("rightCount").textContent = right;
+      document.getElementById("wrongCount").textContent = wrong;
+    }
+
+    function goNext() {
+      currentIndex = (currentIndex + 1) % questions.length;
+      renderQuiz();
+    }
+
+    function goPrev() {
+      currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+      renderQuiz();
+    }
+
+    function resetQuiz() {
+      answers = {};
+      currentIndex = 0;
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>

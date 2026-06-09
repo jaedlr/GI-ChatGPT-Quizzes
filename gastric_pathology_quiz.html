@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gastric Pathology Quiz</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .progress-wrap {
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress {
+      display: flex;
+      gap: 3px;
+    }
+    .segment {
+      height: 9px;
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      background: #334155;
+      cursor: pointer;
+      padding: 0;
+    }
+    .segment.answered { background: #6fa8dc; }
+    .segment.active { background: #cbd5e1; }
+    .score {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .wrong { background: #7f1d1d; }
+    .right { background: #065f46; }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .stem {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+    .choice {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .choice:hover { background: #f3f4f6; }
+    .choice.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .choice.incorrect {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 0 0 9px; }
+    .option-exp {
+      margin-top: 8px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 10px;
+    }
+    .nav button, .reset {
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f3f4f6; }
+    .footer {
+      margin-top: 14px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gastric Pathology Quiz</h1>
+    <div class="subtitle">30 board-style questions from section “2. Esophageal Disorders.” Select an answer to reveal the explanation.</div>
+
+    <div class="topbar">
+      <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+      <div class="score">
+        <span id="counter" class="pill" style="background:#334155;">1 / 30</span>
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+        <button class="reset" onclick="resetQuiz()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic">Topic</span>
+      </div>
+      <div id="stem" class="stem"></div>
+      <div id="answers" class="answers"></div>
+      <div id="explanation" class="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">Answer distribution verified before export: A=7, B=7, C=7, D=9.</div>
+  </div>
+
+<script>
+const questions = [{"id": 1, "stem": "A 67-year-old immigrant from a rural region has chronic epigastric discomfort. Gastric biopsy shows curved organisms concentrated in the mucus layer over surface and neck epithelial cells. Which virulence factor most directly allows this organism to buffer the acidic gastric environment", "topic": "H. pylori virulence factors", "options": {"A": "Adhesins that attach to epithelial cells", "B": "Flagella that permit motility through mucus", "C": "Urease that generates ammonia", "D": "CagA toxin that increases adenocarcinoma risk"}, "correct": "C", "explanation": "H. pylori produces urease, which converts urea to ammonia and buffers gastric acid, allowing survival in the gastric mucus layer.", "optionExplanations": {"A": "Adhesins help H. pylori attach to epithelium but do not buffer acid.", "B": "Flagella provide motility through mucus but are not the acid-buffering mechanism.", "C": "Correct. Urease produces ammonia, raising local pH and helping H. pylori survive.", "D": "CagA-positive strains increase adenocarcinoma risk but this is not the direct acid-buffering factor."}}, {"id": 2, "stem": "A gastric biopsy from a patient with H. pylori gastritis shows neutrophils within the epithelium. What is the significance of this finding", "topic": "Active H. pylori gastritis histology", "options": {"A": "It indicates active infection", "B": "It is normal gastric MALT", "C": "It confirms diffuse-type gastric adenocarcinoma", "D": "It proves a healed ulcer scar"}, "correct": "A", "explanation": "Intraepithelial neutrophils are the key histologic clue for active H. pylori infection.", "optionExplanations": {"A": "Correct. Intraepithelial neutrophils indicate active H. pylori gastritis.", "B": "Lymphoid aggregates with germinal centers represent acquired MALT; MALT is not normally present in the stomach.", "C": "Diffuse-type adenocarcinoma is characterized by discohesive signet-ring cells, not intraepithelial neutrophils.", "D": "A healed scar is not defined by intraepithelial neutrophils."}}, {"id": 3, "stem": "A patient with chronic antral-predominant H. pylori gastritis has normal to increased acid production. Which complication is most directly promoted by this initial pattern", "topic": "H. pylori antral-predominant gastritis", "options": {"A": "Achlorhydria without ulcer risk", "B": "Immediate linitis plastica", "C": "Pancreatic gastrinoma formation", "D": "Duodenal and gastric ulcer formation"}, "correct": "D", "explanation": "Initial H. pylori infection often produces antral-predominant gastritis with normal or increased acid production, increasing the risk of duodenal and gastric ulcers.", "optionExplanations": {"A": "Achlorhydria occurs later when multifocal atrophic gastritis reduces parietal cell mass.", "B": "Linitis plastica is the gross pattern of diffuse-type gastric adenocarcinoma, not the immediate result of antral-predominant gastritis.", "C": "Gastrinomas cause Zollinger-Ellison syndrome, which is not described in this section as an H. pylori complication.", "D": "Correct. Antral-predominant gastritis with normal or increased acid increases ulcer risk."}}, {"id": 4, "stem": "Over years, a patient with H. pylori infection develops multifocal atrophic gastritis involving the body and fundus. Which sequence best explains the increased risk of intestinal-type gastric adenocarcinoma", "topic": "H. pylori progression to cancer", "options": {"A": "Increased parietal cell mass → increased acid → squamous metaplasia", "B": "Decreased parietal cell mass → decreased acid secretion → intestinal metaplasia", "C": "Preserved antral mucosa → increased intrinsic factor → signet-ring cells", "D": "Acute neutrophilic erosion → immediate MALT lymphoma transformation"}, "correct": "B", "explanation": "Progression from antral gastritis to body/fundus involvement can cause multifocal atrophic gastritis, decreased parietal cell mass, decreased acid secretion, intestinal metaplasia, and increased gastric adenocarcinoma risk.", "optionExplanations": {"A": "The described progression decreases parietal cell mass rather than increasing it.", "B": "Correct. Atrophy of parietal cells reduces acid and promotes intestinal metaplasia, increasing adenocarcinoma risk.", "C": "Diffuse-type cancer has signet-ring cells and CDH1 loss; it is not explained by increased intrinsic factor.", "D": "H. pylori can lead to MALT lymphoma, but this sequence describes atrophic gastritis and intestinal metaplasia leading to adenocarcinoma."}}, {"id": 5, "stem": "A stomach biopsy shows plasma cells, lymphocytes, macrophages, and lymphoid aggregates with germinal centers in the lamina propria. Why is the presence of these lymphoid aggregates notable", "topic": "H. pylori and MALT formation", "options": {"A": "They are a normal feature of healthy gastric mucosa", "B": "They exclude chronic H. pylori gastritis", "C": "They represent acquired MALT, which is not normally present in the stomach", "D": "They are diagnostic of diffuse-type gastric adenocarcinoma"}, "correct": "C", "explanation": "H. pylori-related chronic inflammation can produce lymphoid aggregates with germinal centers, forming MALT, which is not a normal feature of the stomach.", "optionExplanations": {"A": "MALT is not normally present in the stomach.", "B": "Lymphoid aggregates support chronic H. pylori-associated inflammation rather than excluding it.", "C": "Correct. H. pylori can induce gastric MALT formation.", "D": "Diffuse-type adenocarcinoma is characterized by signet-ring cells and infiltrative growth."}}, {"id": 6, "stem": "A clinician wants a noninvasive test for active H. pylori infection. The patient ingests labeled urea, and exhaled carbon dioxide is measured. Which bacterial enzyme is being detected", "topic": "H. pylori diagnosis", "options": {"A": "Catalase", "B": "Coagulase", "C": "Beta-lactamase", "D": "Urease"}, "correct": "D", "explanation": "The urea breath test detects H. pylori urease activity, which converts urea to ammonia and carbon dioxide; increased labeled CO2 after ingestion is positive.", "optionExplanations": {"A": "Catalase is not the enzyme measured by the urea breath test.", "B": "Coagulase is a staphylococcal enzyme and is unrelated to H. pylori breath testing.", "C": "Beta-lactamase confers antibiotic resistance in some bacteria but is not the diagnostic target here.", "D": "Correct. Urease splits urea and generates labeled CO2 detected in breath."}}, {"id": 7, "stem": "A patient is diagnosed with peptic ulcer disease. Which two sites are listed as the most common locations for these chronic ulcers", "topic": "Peptic ulcer disease location", "options": {"A": "Proximal duodenum and gastric antrum", "B": "Distal ileum and cecum", "C": "Esophageal mid-third and cardia", "D": "Rectum and sigmoid colon"}, "correct": "A", "explanation": "Peptic ulcer disease most commonly involves the proximal duodenum or the gastric antrum, especially near the body-antrum junction/lesser curvature for gastric ulcers.", "optionExplanations": {"A": "Correct. The proximal duodenum and gastric antrum are the classic PUD sites in this section.", "B": "These are lower intestinal locations, not typical PUD sites.", "C": "Esophageal disease is not the usual location for chronic gastric/duodenal peptic ulcers.", "D": "Rectosigmoid disease is unrelated to the usual PUD distribution."}}, {"id": 8, "stem": "A gastric ulcer is described grossly as solitary, round-to-oval, and sharply punched out with margins level with the surrounding mucosa. Which interpretation best fits this morphology", "topic": "Peptic ulcer gross morphology", "options": {"A": "Typical malignant ulcer with heaped-up margins", "B": "Diffuse-type gastric carcinoma with leather-bottle stomach", "C": "Benign peptic ulcer morphology", "D": "MALT lymphoma with lymphoepithelial lesions"}, "correct": "C", "explanation": "Benign peptic ulcers are usually solitary, round-to-oval, sharply punched-out lesions with margins level with the surrounding mucosa; malignant ulcers often have heaped-up margins.", "optionExplanations": {"A": "Malignant ulcers classically have heaped-up margins, unlike the level margins described.", "B": "Linitis plastica describes diffuse-type gastric adenocarcinoma, not a sharply punched-out ulcer.", "C": "Correct. This gross description is classic for benign peptic ulcer disease.", "D": "MALT lymphoma is defined histologically by lymphoid infiltration and lymphoepithelial lesions, not this ulcer morphology."}}, {"id": 9, "stem": "Histologic examination of a peptic ulcer bed shows four layers. Which arrangement is most consistent with the section's description", "topic": "Peptic ulcer histology", "options": {"A": "Goblet cells → squamous epithelium → keratin pearls → lymphoid follicles", "B": "Fibrinous exudate → necrotic tissue → granulation tissue → fibrous scar tissue", "C": "Signet-ring cells → desmoplasia → villous blunting → crypt abscesses", "D": "Pseudohyphae → neutrophils → owl-eye inclusions → Cowdry inclusions"}, "correct": "B", "explanation": "Peptic ulcer beds classically show superficial fibrinous exudate, necrotic tissue, granulation tissue, and deeper fibrous scar tissue.", "optionExplanations": {"A": "This mixes esophageal and neoplastic findings rather than PUD ulcer-bed layers.", "B": "Correct. These are the listed histologic layers of a peptic ulcer bed.", "C": "Signet-ring cells and desmoplasia relate to carcinoma, not the standard ulcer-bed layering.", "D": "These are infectious esophagitis findings, not gastric PUD histology."}}, {"id": 10, "stem": "A patient with peptic ulcer disease develops sudden severe abdominal pain from perforation. How common is perforation listed compared with bleeding", "topic": "Peptic ulcer complications", "options": {"A": "Perforation is the most common complication and occurs in most ulcers", "B": "Perforation and obstruction are both impossible in chronic ulcers", "C": "Perforation occurs in up to 20%, while bleeding occurs in up to 5%", "D": "Perforation occurs in up to 5%, while bleeding is the most common complication and occurs in up to 20%"}, "correct": "D", "explanation": "Bleeding is the most common peptic ulcer complication and occurs in up to 20%; perforation occurs in up to 5% and causes sudden severe pain.", "optionExplanations": {"A": "Bleeding, not perforation, is the most common complication.", "B": "Both perforation and obstruction are listed complications of PUD.", "C": "This reverses the listed frequencies.", "D": "Correct. Bleeding is most common; perforation is less common but serious."}}, {"id": 11, "stem": "A 66-year-old man develops gastric outlet obstruction after years of peptic ulcer disease. Which mechanism is listed for this complication", "topic": "Peptic ulcer obstruction", "options": {"A": "Chronic scarring", "B": "Loss of E-cadherin expression", "C": "Constitutive NF-kB activation in B cells", "D": "CagA-mediated urease production"}, "correct": "A", "explanation": "Chronic peptic ulcers can heal with fibrosis and scarring, producing gastric outlet obstruction.", "optionExplanations": {"A": "Correct. Chronic scarring is the mechanism of gastric outlet obstruction in PUD.", "B": "Loss of E-cadherin is associated with diffuse-type gastric adenocarcinoma.", "C": "Constitutive NF-kB activation is important in MALT lymphoma translocations.", "D": "CagA and urease are H. pylori virulence concepts but do not explain scarring obstruction."}}, {"id": 12, "stem": "A gastric cancer biopsy shows hyperchromatic columnar cells forming glands that infiltrate through desmoplastic stroma. Which Lauren subtype does this most likely represent", "topic": "Intestinal-type gastric adenocarcinoma", "options": {"A": "Diffuse-type adenocarcinoma", "B": "Intestinal-type adenocarcinoma", "C": "Gastric MALT lymphoma", "D": "Benign peptic ulcer disease"}, "correct": "B", "explanation": "Intestinal-type gastric adenocarcinoma is gland-forming and often appears as an exophytic or ulcerated mass; diffuse-type cancer is composed of discohesive signet-ring cells.", "optionExplanations": {"A": "Diffuse-type adenocarcinoma does not form glands; it infiltrates as small clusters or individual signet-ring cells.", "B": "Correct. Gland-forming tumor cells in desmoplastic stroma fit intestinal-type gastric adenocarcinoma.", "C": "MALT lymphoma shows lymphoid infiltration and lymphoepithelial lesions, not malignant glands.", "D": "Benign PUD lacks infiltrative malignant glands."}}, {"id": 13, "stem": "A patient has a thickened gastric wall with partial loss of rugal folds, creating a leather-bottle appearance. Microscopy shows large mucin vacuoles displacing nuclei to the periphery. Which gene abnormality is classically associated with this process", "topic": "Diffuse-type gastric adenocarcinoma genetics", "options": {"A": "APC gain-of-function mutation", "B": "ERBB2 overexpression only", "C": "CDH1 loss-of-function or promoter hypermethylation", "D": "BCR-ABL fusion"}, "correct": "C", "explanation": "Diffuse-type gastric adenocarcinoma is linked to CDH1 loss, causing loss of E-cadherin cell adhesion and discohesive signet-ring cells; grossly it can cause linitis plastica.", "optionExplanations": {"A": "APC loss-of-function, not gain-of-function, is part of the WNT pathway in intestinal-type cancers.", "B": "ERBB2 amplification is listed among intestinal-type molecular changes, not the classic diffuse-type driver.", "C": "Correct. CDH1 encodes E-cadherin; its loss produces discohesive signet-ring cells and linitis plastica.", "D": "BCR-ABL is unrelated to gastric adenocarcinoma in this section."}}, {"id": 14, "stem": "Which feature favors intestinal-type gastric adenocarcinoma over diffuse-type gastric adenocarcinoma", "topic": "Gastric adenocarcinoma subtype comparison", "options": {"A": "Uniform geographic distribution and 1:1 sex ratio", "B": "Signet-ring cells with no precursor lesion", "C": "Worse prognosis with linitis plastica", "D": "Metaplasia-to-dysplasia precursor sequence and gland formation"}, "correct": "D", "explanation": "Intestinal-type gastric adenocarcinoma follows a metaplasia-to-dysplasia precursor sequence, is gland-forming, and has a slightly better prognosis than diffuse-type disease.", "optionExplanations": {"A": "Uniform geography and 1:1 sex ratio describe diffuse-type disease.", "B": "Signet-ring cells and no precursor lesion describe diffuse-type disease.", "C": "Linitis plastica and worse prognosis favor diffuse-type disease.", "D": "Correct. Intestinal-type disease has a metaplasia-to-dysplasia precursor sequence and forms glands."}}, {"id": 15, "stem": "A tumor suppressor protein normally forms a destruction complex with beta-catenin when cells are not exposed to WNT. Loss of this protein allows beta-catenin to accumulate and activate cell-cycle genes. Which protein is lost", "topic": "WNT pathway and intestinal-type gastric cancer", "options": {"A": "E-cadherin", "B": "APC", "C": "CagA", "D": "BCL2"}, "correct": "B", "explanation": "APC is part of the beta-catenin destruction complex. APC loss prevents beta-catenin degradation, allowing nuclear translocation and upregulation of genes involved in cell-cycle progression.", "optionExplanations": {"A": "E-cadherin loss is linked to diffuse-type gastric cancer, not the beta-catenin destruction complex described here.", "B": "Correct. APC loss causes constitutive WNT pathway signaling via beta-catenin accumulation.", "C": "CagA is an H. pylori virulence factor associated with increased adenocarcinoma risk.", "D": "BCL2 is an anti-apoptotic protein and is not the WNT destruction-complex component here."}}, {"id": 16, "stem": "A molecular study of an intestinal-type gastric adenocarcinoma shows HER2 amplification. Which pathway category in the section includes HER2/ERBB2, EGFR, MET, and KRAS abnormalities", "topic": "Intestinal-type gastric adenocarcinoma molecular genetics", "options": {"A": "RTK-RAS pathway", "B": "Mismatch repair pathway only", "C": "NF-kB pathway only", "D": "E-cadherin adhesion pathway"}, "correct": "A", "explanation": "Intestinal-type gastric adenocarcinoma may have RTK-RAS pathway abnormalities including ERBB2/HER2 amplification, EGFR amplification, MET amplification, and KRAS gain-of-function mutations.", "optionExplanations": {"A": "Correct. HER2/ERBB2, EGFR, MET, and KRAS are listed under the RTK-RAS pathway.", "B": "Mismatch repair defects are not the pathway grouping described in this section.", "C": "NF-kB activation is central to MALT lymphoma pathogenesis/translocations, not this gene set.", "D": "E-cadherin/CDH1 is the classic diffuse-type pathway, not the HER2/EGFR/MET/KRAS group."}}, {"id": 17, "stem": "A gastric mass is diagnosed as diffuse-type adenocarcinoma. Which microscopic description is most expected", "topic": "Signet-ring cell morphology", "options": {"A": "Well-formed glands with mucin in an exophytic mass", "B": "Lymphocytes infiltrating gastric glands as lymphoepithelial lesions", "C": "Discohesive cells with large mucin vacuoles and peripheral crescent-shaped nuclei", "D": "Punched-out ulcer with level margins and fibrous scar base"}, "correct": "C", "explanation": "Diffuse-type gastric adenocarcinoma shows discohesive infiltrative cells, often signet-ring cells with large mucin vacuoles and peripherally displaced crescent nuclei.", "optionExplanations": {"A": "Gland formation and exophytic/ulcerated mass favor intestinal-type adenocarcinoma.", "B": "Lymphoepithelial lesions are characteristic of gastric MALT lymphoma.", "C": "Correct. This is the classic signet-ring morphology of diffuse-type gastric adenocarcinoma.", "D": "This describes benign peptic ulcer morphology."}}, {"id": 18, "stem": "A pathologist notes that a gastric malignancy consists of individual infiltrating cells that do not form glands. Which mechanism best explains this growth pattern", "topic": "CDH1 and loss of adhesion", "options": {"A": "APC-mediated beta-catenin destruction", "B": "Urease-mediated acid buffering", "C": "Neutrophil migration into surface epithelium", "D": "Loss of E-cadherin cell adhesion function"}, "correct": "D", "explanation": "Diffuse-type gastric cancer is driven by CDH1/E-cadherin loss, which impairs cell adhesion and produces discohesive infiltrative cells rather than gland formation.", "optionExplanations": {"A": "Loss of APC promotes WNT signaling in intestinal-type cancer, but it does not explain discohesive non-gland-forming cells.", "B": "Urease helps H. pylori survive acid but does not directly produce this carcinoma architecture.", "C": "Intraepithelial neutrophils indicate active H. pylori infection.", "D": "Correct. E-cadherin loss causes discohesive cells and diffuse infiltration."}}, {"id": 19, "stem": "A gastric carcinoma subtype has 50-60% of cases, male predominance of about 2:1, high-risk geographic distribution, and a slightly better prognosis than the other main subtype. Which subtype is this", "topic": "Intestinal-type gastric adenocarcinoma epidemiology", "options": {"A": "Intestinal-type adenocarcinoma", "B": "Diffuse-type adenocarcinoma", "C": "Gastric MALT lymphoma", "D": "Peptic ulcer disease"}, "correct": "A", "explanation": "Intestinal-type gastric adenocarcinoma accounts for about 50-60% of cases, has M:F ratio of about 2:1, is more common in high-risk areas, and has a slightly better prognosis than diffuse-type disease.", "optionExplanations": {"A": "Correct. These features match intestinal-type gastric adenocarcinoma.", "B": "Diffuse-type disease is 30-40% of cases, has a 1:1 sex ratio, uniform geographic distribution, and worse prognosis.", "C": "MALT lymphoma is a B-cell lymphoma associated with H. pylori, not a Lauren adenocarcinoma subtype.", "D": "PUD is ulceration, not a carcinoma subtype."}}, {"id": 20, "stem": "A stomach biopsy shows neoplastic lymphocytes infiltrating and destroying gastric glands. Immunophenotyping shows CD19+, CD20+ monoclonal B cells with clonal IgH rearrangement. Which diagnosis best fits", "topic": "Gastric MALT lymphoma histology", "options": {"A": "Intestinal-type gastric adenocarcinoma", "B": "Gastric MALT lymphoma", "C": "Diffuse-type gastric adenocarcinoma", "D": "Benign peptic ulcer disease"}, "correct": "B", "explanation": "Gastric MALT lymphoma is an indolent extranodal marginal zone B-cell lymphoma with diffuse mucosal infiltration, lymphoepithelial lesions, CD19/CD20 positivity, monoclonal light chains, and clonal IgH rearrangements.", "optionExplanations": {"A": "Intestinal-type adenocarcinoma forms glands and is epithelial, not monoclonal CD19/CD20 B-cell disease.", "B": "Correct. Lymphoepithelial lesions and monoclonal B-cell markers fit gastric MALT lymphoma.", "C": "Diffuse-type adenocarcinoma shows signet-ring cells and CDH1-related discohesion.", "D": "PUD does not produce monoclonal B-cell infiltrates or lymphoepithelial lesions."}}, {"id": 21, "stem": "A patient with gastric MALT lymphoma is treated for H. pylori and achieves remission. Which pathogenesis sequence best explains why eradication therapy can work in many cases", "topic": "H. pylori and gastric MALT lymphoma pathogenesis", "options": {"A": "H. pylori → parietal cell hyperplasia → squamous dysplasia", "B": "H. pylori → acute perforation → fibrous scar only", "C": "H. pylori → CagA-only epithelial gland mutation → signet-ring cells", "D": "H. pylori → chronic inflammation → NF-kB activation → MALT formation → MALT lymphoma"}, "correct": "D", "explanation": "H. pylori drives chronic inflammation, NF-kB activation, acquired MALT formation, and MALT lymphoma; eradication of H. pylori produces remission in most cases without resistant translocations.", "optionExplanations": {"A": "This does not describe the MALT lymphoma pathway.", "B": "Perforation/scarring is a PUD complication, not the lymphoma mechanism.", "C": "Signet-ring cells are diffuse-type adenocarcinoma, not MALT lymphoma.", "D": "Correct. This is the listed pathogenesis sequence for H. pylori-associated MALToma."}}, {"id": 22, "stem": "A gastric MALT lymphoma contains one of the classic translocations that causes constitutive NF-kB activation. How does this affect response to H. pylori eradication", "topic": "MALT lymphoma translocations", "options": {"A": "It guarantees cure with antibiotics alone", "B": "It converts the lesion into benign PUD", "C": "It predicts no response to H. pylori eradication", "D": "It requires urease breath testing every day"}, "correct": "C", "explanation": "The section lists classic MALT lymphoma translocations that produce constitutive NF-kB activation and are associated with no response to H. pylori eradication.", "optionExplanations": {"A": "Translocation-positive MALT lymphoma may not respond to eradication therapy alone.", "B": "A lymphoma translocation does not convert the disease into benign ulcer disease.", "C": "Correct. Constitutive NF-kB translocations predict lack of response to H. pylori eradication.", "D": "Breath testing can diagnose H. pylori, but daily testing is not the concept described."}}, {"id": 23, "stem": "A gastric MALT lymphoma later becomes more aggressive. Which transformation is specifically noted as a possible progression", "topic": "MALT lymphoma progression", "options": {"A": "Diffuse large B-cell lymphoma", "B": "Acute promyelocytic leukemia", "C": "Squamous cell carcinoma", "D": "Cholangiocarcinoma"}, "correct": "A", "explanation": "Gastric MALT lymphoma may transform into diffuse large B-cell lymphoma, especially with additional abnormalities such as TP53 or CDKN2A loss.", "optionExplanations": {"A": "Correct. Transformation into diffuse large B-cell lymphoma is specifically noted.", "B": "Acute promyelocytic leukemia is unrelated to gastric MALT lymphoma in this section.", "C": "Squamous cell carcinoma is an esophageal epithelial malignancy, not a B-cell lymphoma transformation.", "D": "Cholangiocarcinoma is a biliary malignancy and is not the listed progression."}}, {"id": 24, "stem": "Which finding is most characteristic of intestinal-type gastric adenocarcinoma rather than diffuse-type adenocarcinoma", "topic": "Gastric cancer gross pathology", "options": {"A": "Thickened gastric wall with partial loss of rugal folds", "B": "Discohesive cells infiltrating as individual cells", "C": "Large mucin vacuoles pushing nuclei to the cell periphery", "D": "Elevated mass with central ulceration and heaped-up borders"}, "correct": "D", "explanation": "Intestinal-type gastric adenocarcinoma often forms an elevated/exophytic or ulcerated mass, while diffuse-type disease causes linitis plastica with signet-ring cells.", "optionExplanations": {"A": "This describes linitis plastica, a diffuse-type pattern.", "B": "Discohesive individual cells favor diffuse-type adenocarcinoma.", "C": "This describes signet-ring morphology of diffuse-type cancer.", "D": "Correct. An elevated mass with central ulceration is characteristic of intestinal-type adenocarcinoma."}}, {"id": 25, "stem": "A researcher compares gastric cancer risk between immigrants and their children. Which epidemiologic pattern is listed for gastric adenocarcinoma", "topic": "Gastric adenocarcinoma epidemiology", "options": {"A": "Both first- and second-generation immigrants retain identical original-country risk", "B": "First-generation immigrants retain original risk, while the second generation adopts the new country risk", "C": "Migration has no relationship to gastric cancer risk", "D": "Only diffuse-type cancer shows geographic variation"}, "correct": "B", "explanation": "Gastric adenocarcinoma shows geographic variation; first-generation immigrants retain their original risk, while second-generation immigrants adopt the risk of the new country.", "optionExplanations": {"A": "The section specifically states that second-generation immigrants adopt the new country risk.", "B": "Correct. This is the listed migration effect for gastric adenocarcinoma risk.", "C": "Migration patterns are explicitly discussed as evidence of environmental/geographic influence.", "D": "Intestinal-type disease is especially associated with high-risk geographic areas."}}, {"id": 26, "stem": "A patient with gastric adenocarcinoma asks what best predicts prognosis. Which factor is listed as the best predictor", "topic": "Gastric adenocarcinoma prognosis", "options": {"A": "Presence of urease activity alone", "B": "Patient ABO blood type alone", "C": "Tumor stage", "D": "Whether the ulcer is sharply punched out"}, "correct": "C", "explanation": "For gastric adenocarcinoma, tumor stage is listed as the best predictor of prognosis; 5-year survival in the U.S. is under 30%.", "optionExplanations": {"A": "Urease activity indicates H. pylori but is not the best prognostic predictor for established cancer.", "B": "Blood type is not listed as the key prognostic factor in this section.", "C": "Correct. Tumor stage is the best predictor of prognosis.", "D": "Sharply punched-out ulcer morphology favors benign PUD, not cancer prognosis."}}, {"id": 27, "stem": "A stomach malignancy is an extranodal marginal zone B-cell lymphoma. Which statement about its frequency and site is correct", "topic": "Gastric MALT lymphoma overview", "options": {"A": "It is the most common gastric malignancy and accounts for over 90% of cases", "B": "It is primarily a pancreatic lymphoma rather than a gastric lesion", "C": "It is unrelated to chronic inflammation", "D": "It accounts for about 5% of gastric malignancies, and the stomach is the most common GI site for extranodal lymphomas"}, "correct": "D", "explanation": "Gastric MALT lymphoma accounts for about 5% of gastric malignancies; extranodal lymphomas are most common in the GI tract, and the stomach is the most common site.", "optionExplanations": {"A": "Gastric adenocarcinoma accounts for over 90% of gastric cancers, not MALT lymphoma.", "B": "The stomach is the classic site discussed for MALT lymphoma.", "C": "H. pylori-driven chronic inflammation is central to MALT formation and MALT lymphoma.", "D": "Correct. This matches the frequency and site statements in the section."}}, {"id": 28, "stem": "Which host genetic modifier pattern is listed as increasing gastric cancer risk in the setting of H. pylori infection", "topic": "H. pylori host genetic modifiers", "options": {"A": "Decreased TNF with increased IL-10 expression", "B": "Increased TNF or IL-1 beta, or decreased IL-10 expression", "C": "Loss of all neutrophil recruitment to the epithelium", "D": "Increased E-cadherin expression"}, "correct": "B", "explanation": "Host genetic modifiers that increase TNF or IL-1 beta expression, or decrease IL-10 expression, are listed as increasing gastric cancer risk.", "optionExplanations": {"A": "This is the opposite of the risk-associated inflammatory pattern listed.", "B": "Correct. Increased proinflammatory cytokines or decreased anti-inflammatory IL-10 increase risk.", "C": "Intraepithelial neutrophils indicate active H. pylori infection; complete loss of recruitment is not the listed cancer-risk modifier.", "D": "Loss, not increase, of E-cadherin is linked to diffuse-type gastric cancer."}}, {"id": 29, "stem": "A gastric tumor subtype shows TP53 loss-of-function, WNT pathway abnormalities, and RTK-RAS pathway activation. Which subtype is most consistent with this molecular profile", "topic": "Intestinal-type molecular abnormalities", "options": {"A": "Diffuse-type adenocarcinoma", "B": "Gastric MALT lymphoma", "C": "Intestinal-type adenocarcinoma", "D": "Benign peptic ulcer"}, "correct": "C", "explanation": "Intestinal-type gastric adenocarcinoma is associated with TP53 loss, WNT pathway abnormalities such as APC loss or beta-catenin gain, and RTK-RAS pathway abnormalities.", "optionExplanations": {"A": "Diffuse-type adenocarcinoma is classically linked to CDH1/E-cadherin loss.", "B": "MALT lymphoma involves B-cell markers, lymphoepithelial lesions, and NF-kB-related mechanisms.", "C": "Correct. This molecular profile matches intestinal-type gastric adenocarcinoma.", "D": "Benign PUD is not defined by these cancer-driving molecular abnormalities."}}, {"id": 30, "stem": "A WNT ligand binds its receptor on a gastric epithelial cell. In the normal stimulated pathway, what happens next to beta-catenin", "topic": "Normal WNT signaling", "options": {"A": "It accumulates, translocates to the nucleus, binds TCF, and upregulates cell-cycle progression genes", "B": "It is immediately destroyed by active APC complex with no proliferation", "C": "It becomes urease and buffers gastric acid", "D": "It binds CD20 and creates monoclonal light chains"}, "correct": "A", "explanation": "When cells are stimulated by WNT, the destruction complex is deactivated; beta-catenin accumulates, enters the nucleus, binds TCF, and upregulates genes involved in cell-cycle progression.", "optionExplanations": {"A": "Correct. This is the normal stimulated WNT signaling sequence.", "B": "This describes the resting state without WNT exposure.", "C": "Urease is an H. pylori enzyme, not beta-catenin function.", "D": "CD20 and monoclonal light chains relate to B-cell lymphoma, not WNT signaling."}}];
+
+let currentIndex = 0;
+let answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'segment' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; render(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, selected]) => {
+    const q = questions.find(item => item.id === Number(id));
+    if (!q) return;
+    if (selected === q.correct) right++;
+    else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+}
+
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    if (selected) {
+      if (letter === q.correct) btn.classList.add('correct');
+      else if (letter === selected) btn.classList.add('incorrect');
+    }
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => {
+      answers[q.id] = letter;
+      render();
+    };
+    answersDiv.appendChild(btn);
+  });
+
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const correctness = selected === q.correct ? 'Nice job.' : 'Good attempt.';
+    const optionRows = Object.entries(q.optionExplanations).map(([letter, text]) =>
+      `<p><strong>${letter}.</strong> ${text}</p>`
+    ).join('');
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p>${correctness} ${q.explanation}</p>
+      <div class="option-exp">
+        <p><strong>Why each option is right or wrong:</strong></p>
+        ${optionRows}
+      </div>
+    `;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+
+  renderProgress();
+  renderScore();
+}
+
+function goNext() {
+  currentIndex = (currentIndex + 1) % questions.length;
+  render();
+}
+
+function goPrev() {
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  render();
+}
+
+function resetQuiz() {
+  answers = {};
+  currentIndex = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Esophageal Disorders Quiz</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .progress-wrap {
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress {
+      display: flex;
+      gap: 3px;
+    }
+    .segment {
+      height: 9px;
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      background: #334155;
+      cursor: pointer;
+      padding: 0;
+    }
+    .segment.answered { background: #6fa8dc; }
+    .segment.active { background: #cbd5e1; }
+    .score {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .wrong { background: #7f1d1d; }
+    .right { background: #065f46; }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .stem {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+    .choice {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .choice:hover { background: #f3f4f6; }
+    .choice.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .choice.incorrect {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .explanation {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .explanation p { margin: 0 0 9px; }
+    .option-exp {
+      margin-top: 8px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 10px;
+    }
+    .nav button, .reset {
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav button:hover, .reset:hover { background: #f3f4f6; }
+    .footer {
+      margin-top: 14px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Esophageal Disorders Quiz</h1>
+    <div class="subtitle">30 board-style questions from section “2. Esophageal Disorders.” Select an answer to reveal the explanation.</div>
+
+    <div class="topbar">
+      <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+      <div class="score">
+        <span id="counter" class="pill" style="background:#334155;">1 / 30</span>
+        <span class="pill wrong">× <span id="wrongCount">0</span></span>
+        <span class="pill right">✓ <span id="rightCount">0</span></span>
+        <button class="reset" onclick="resetQuiz()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 30</span>
+        <span id="topic">Topic</span>
+      </div>
+      <div id="stem" class="stem"></div>
+      <div id="answers" class="answers"></div>
+      <div id="explanation" class="explanation" style="display:none;"></div>
+      <div class="nav">
+        <button onclick="goPrev()">Previous</button>
+        <button onclick="goNext()">Next</button>
+      </div>
+    </div>
+
+    <div class="footer">Answer distribution verified before export: A=7, B=7, C=7, D=9.</div>
+  </div>
+
+<script>
+const questions = [{"id": 1, "stem": "A 47-year-old man has progressive dysphagia to both solids and liquids from the onset. He regurgitates non-acidic food several hours after eating and has difficulty burping. Which pathophysiologic abnormality best explains his symptoms", "topic": "Achalasia pathophysiology", "options": {"A": "Transient mucosal tear at the gastroesophageal junction", "B": "Fixed distal ring causing intermittent solid-food obstruction", "C": "Loss of inhibitory NO and VIP neurons with failure of LES relaxation", "D": "Inflammation-limited mucosal injury from chronic reflux"}, "correct": "C", "explanation": "Achalasia is caused by loss of inhibitory neurons in the LES, producing hypertonic LES, impaired LES relaxation, and absent peristalsis.", "optionExplanations": {"A": "This describes Mallory-Weiss syndrome, which causes hematemesis after retching rather than dysphagia to solids and liquids from onset.", "B": "This describes a Schatzki ring, which causes intermittent nonprogressive dysphagia to solids.", "C": "Correct. Achalasia is due to loss of inhibitory neurons, especially NO and VIP, causing failure of LES relaxation and absent peristalsis.", "D": "Reflux injury can cause odynophagia or strictures, but it does not classically cause simultaneous solid and liquid dysphagia from onset."}}, {"id": 2, "stem": "A patient with suspected achalasia undergoes confirmatory testing. Which manometric pattern is expected", "topic": "Achalasia diagnosis", "options": {"A": "Low LES pressure with normal peristalsis", "B": "Normal LES relaxation with high-amplitude sequential contractions", "C": "Isolated upper esophageal sphincter spasm with preserved distal function", "D": "Hypertonic LES with failure of relaxation and absent peristalsis"}, "correct": "D", "explanation": "Esophageal manometry confirms achalasia by showing hypertonic LES, failure of LES relaxation, and absent peristalsis.", "optionExplanations": {"A": "Low LES tone is associated with reflux rather than achalasia.", "B": "This is more consistent with nutcracker esophagus.", "C": "Achalasia is primarily a lower esophageal sphincter/peristalsis disorder.", "D": "Correct. This is the classic confirmatory manometric pattern in achalasia."}}, {"id": 3, "stem": "A 52-year-old woman has progressive dysphagia and weight loss. Barium swallow shows tapering of the distal esophagus into a bird's beak. What is the main treatment goal", "topic": "Achalasia management", "options": {"A": "Open or reduce pressure at the LES", "B": "Increase gastric acid suppression", "C": "Strengthen the LES to prevent reflux", "D": "Resect a proximal pharyngeal pouch"}, "correct": "A", "explanation": "Achalasia treatment is directed at opening the LES; pneumatic dilation is listed as best treatment, with myotomy for refractory disease and botulinum toxin as temporary therapy.", "optionExplanations": {"A": "Correct. Achalasia management aims to open the LES, commonly with pneumatic balloon dilation.", "B": "Acid suppression treats GERD/PUD but does not correct failed LES relaxation.", "C": "Achalasia already has a hypertonic LES; strengthening it would worsen obstruction.", "D": "This is the approach for symptomatic Zenker diverticulum, not achalasia."}}, {"id": 4, "stem": "A 60-year-old man with achalasia wants the most effective nonsurgical therapy. Which option is listed as the best treatment with about 85% effectiveness but a 3-5% perforation risk", "topic": "Achalasia treatment", "options": {"A": "Sublingual nitrates alone", "B": "Pneumatic balloon dilation", "C": "Botulinum toxin injection", "D": "Long-term proton pump inhibitor therapy"}, "correct": "B", "explanation": "Pneumatic balloon dilation is listed as the best treatment for achalasia, though perforation occurs in about 3-5%.", "optionExplanations": {"A": "Nitrates can reduce LES pressure but are the least effective drug option.", "B": "Correct. This is the listed best treatment for achalasia and directly opens the LES.", "C": "Botulinum toxin is temporary and about 50% relapse by 6-9 months.", "D": "PPIs treat acid-mediated disease, not the LES obstruction of achalasia."}}, {"id": 5, "stem": "A 43-year-old woman has intermittent angina-like chest pain and dysphagia to both solids and liquids, especially after drinking cold liquids. Barium swallow shows a corkscrew esophagus. Which diagnosis is most likely", "topic": "Diffuse esophageal spasm", "options": {"A": "Achalasia", "B": "Schatzki ring", "C": "Zenker diverticulum", "D": "Diffuse esophageal spasm"}, "correct": "D", "explanation": "Diffuse esophageal spasm causes intermittent chest pain and dysphagia, can be triggered by cold liquids, and may show corkscrew esophagus on barium swallow.", "optionExplanations": {"A": "Achalasia causes progressive dysphagia to solids and liquids with bird's beak, not corkscrew.", "B": "Schatzki ring causes intermittent solid-food dysphagia, especially steakhouse syndrome.", "C": "Zenker causes regurgitation of old undigested food, halitosis, and food on the pillow.", "D": "Correct. Cold-liquid triggered chest pain/dysphagia with corkscrew esophagus points to diffuse esophageal spasm."}}, {"id": 6, "stem": "A patient has angina-like chest pain and dysphagia. Manometry shows contractions occurring in a normal sequence but with very high amplitude. Which disorder does this pattern describe", "topic": "Nutcracker esophagus", "options": {"A": "Achalasia", "B": "Boerhaave syndrome", "C": "Nutcracker esophagus", "D": "Plummer-Vinson syndrome"}, "correct": "C", "explanation": "Nutcracker esophagus differs from diffuse esophageal spasm mainly by manometry: contractions remain in normal sequence but have very high amplitude.", "optionExplanations": {"A": "Achalasia shows absent peristalsis and failed LES relaxation.", "B": "Boerhaave is a full-thickness rupture after forceful vomiting, not a motility manometry diagnosis.", "C": "Correct. Nutcracker esophagus has normal sequence contractions with very high amplitude.", "D": "Plummer-Vinson is webs, dysphagia, iron-deficiency anemia, and SCC association."}}, {"id": 7, "stem": "A 35-year-old man develops mild painless hematemesis after repeated retching during heavy alcohol use. Endoscopy shows a 2-cm linear mucosal tear at the gastroesophageal junction. Which layer is primarily involved", "topic": "Mallory-Weiss syndrome", "options": {"A": "Mucosa only, without transmural rupture", "B": "Full-thickness esophageal wall with mediastinal contamination", "C": "Submucosal varices from portal hypertension", "D": "Proximal mucosal web associated with iron deficiency"}, "correct": "A", "explanation": "Mallory-Weiss syndrome is a non-transmural partial-thickness mucosal tear at the gastroesophageal junction, often after retching/vomiting and associated with alcoholism.", "optionExplanations": {"A": "Correct. Mallory-Weiss tears are partial-thickness mucosal tears and usually cause mild painless hematemesis.", "B": "This describes Boerhaave syndrome.", "C": "This describes esophageal varices, which can cause massive upper GI hemorrhage.", "D": "This describes Plummer-Vinson syndrome."}}, {"id": 8, "stem": "A 49-year-old man presents after forceful vomiting with severe chest pain, fever, leukocytosis, and palpable crepitus in the neck. Which diagnosis is most likely", "topic": "Boerhaave syndrome", "options": {"A": "Mallory-Weiss syndrome", "B": "Diffuse esophageal spasm", "C": "Schatzki ring", "D": "Boerhaave syndrome"}, "correct": "D", "explanation": "Boerhaave syndrome is a transmural esophageal rupture after forceful vomiting, classically causing vomiting, chest pain, and subcutaneous emphysema, with risk of mediastinitis and sepsis.", "optionExplanations": {"A": "Mallory-Weiss causes a mucosal tear with hematemesis but not mediastinal contamination or subcutaneous emphysema.", "B": "Spasm can mimic angina but should not cause fever, leukocytosis, or crepitus.", "C": "Schatzki ring causes intermittent solid-food dysphagia, not acute sepsis after vomiting.", "D": "Correct. Severe chest pain, systemic illness, and subcutaneous emphysema after vomiting indicate full-thickness rupture."}}, {"id": 9, "stem": "A patient with suspected Boerhaave syndrome is being evaluated. Which imaging test is listed as a diagnostic study using water-soluble contrast", "topic": "Boerhaave diagnosis", "options": {"A": "Hydrogen breath test", "B": "Gastrografin swallow", "C": "Serum gastrin level", "D": "Timed lactose challenge"}, "correct": "B", "explanation": "Boerhaave syndrome can be diagnosed with a Gastrografin swallow, and upright CXR/CT may show pneumomediastinum, pneumothorax, or pleural effusion.", "optionExplanations": {"A": "This is used for lactose intolerance, not esophageal rupture.", "B": "Correct. Water-soluble Gastrografin swallow is listed for suspected esophageal perforation.", "C": "This is used for Zollinger-Ellison syndrome, not Boerhaave syndrome.", "D": "This is unrelated to esophageal perforation."}}, {"id": 10, "stem": "A 30-year-old man has intermittent, nonprogressive dysphagia when eating large pieces of meat or soft bread. Endoscopy shows a thin, smooth circumferential ring in the distal esophagus. Which condition is this", "topic": "Schatzki ring", "options": {"A": "Zenker diverticulum", "B": "Esophageal web", "C": "Schatzki ring", "D": "Achalasia"}, "correct": "C", "explanation": "Schatzki rings are thin, smooth circumferential rings in the distal esophagus causing intermittent nonprogressive dysphagia to solids, classically steakhouse syndrome.", "optionExplanations": {"A": "Zenker is a posterior pharyngeal outpouching causing old-food regurgitation and halitosis.", "B": "Webs are usually proximal mucosal membranes and can be part of Plummer-Vinson syndrome.", "C": "Correct. A distal circumferential ring with intermittent solid-food dysphagia is a Schatzki ring.", "D": "Achalasia causes progressive dysphagia to solids and liquids from onset."}}, {"id": 11, "stem": "A middle-aged woman has dysphagia, iron-deficiency anemia, and a beefy red tongue. Imaging reveals proximal esophageal webs. Which malignancy is she at increased risk for", "topic": "Plummer-Vinson syndrome", "options": {"A": "Esophageal adenocarcinoma arising from Barrett metaplasia", "B": "Gastric MALT lymphoma", "C": "Pancreatic neuroendocrine tumor", "D": "Esophageal squamous cell carcinoma"}, "correct": "D", "explanation": "Plummer-Vinson syndrome consists of esophageal webs, dysphagia, and iron-deficiency anemia, and is associated with squamous cell carcinoma.", "optionExplanations": {"A": "This is linked to chronic GERD and Barrett esophagus, not Plummer-Vinson webs.", "B": "This is associated with chronic H. pylori infection.", "C": "This is not the malignancy association emphasized for esophageal webs.", "D": "Correct. Plummer-Vinson syndrome is associated with increased risk of esophageal SCC."}}, {"id": 12, "stem": "A 57-year-old man has progressive halitosis, dysphagia after the first bite, regurgitation of old undigested food, and undigested food on his pillow in the morning. Which test is most appropriate for diagnosis", "topic": "Zenker diverticulum", "options": {"A": "Barium esophagram", "B": "Serum anti-tissue transglutaminase IgA", "C": "Esophageal pH monitoring", "D": "Secretin stimulation test"}, "correct": "A", "explanation": "Zenker diverticulum is a posterior outpouching of pharyngeal constrictors in patients over 50, with food retention. Barium esophagram is used for diagnosis.", "optionExplanations": {"A": "Correct. Zenker diverticulum is diagnosed by barium esophagram.", "B": "This screens for celiac disease, not Zenker diverticulum.", "C": "This evaluates reflux, not an outpouching with old-food regurgitation.", "D": "This evaluates suspected Zollinger-Ellison syndrome."}}, {"id": 13, "stem": "A hospitalized patient develops an esophageal perforation shortly after an endoscopic procedure. Which etiology is listed as the most common cause of esophageal perforation", "topic": "Instrumental perforation", "options": {"A": "Achalasia", "B": "Instrumental perforation", "C": "Food allergy", "D": "Chronic GERD"}, "correct": "B", "explanation": "Instrumental perforation is listed as the most common esophageal perforation and requires prompt surgical repair.", "optionExplanations": {"A": "Achalasia is a motility disorder, not the most common cause of perforation.", "B": "Correct. Iatrogenic/instrumental injury is listed as the most common esophageal perforation.", "C": "Food allergy is not listed as a common cause of esophageal perforation.", "D": "GERD can cause esophagitis and strictures but is not the most common cause of perforation."}}, {"id": 14, "stem": "A 58-year-old man with cirrhosis presents with massive hematemesis, hypotension, and shock. Endoscopy after stabilization shows dilated submucosal esophageal veins. Which mechanism produced these lesions", "topic": "Esophageal varices pathogenesis", "options": {"A": "Autoimmune destruction of myenteric inhibitory neurons", "B": "Repeated retching causing partial-thickness mucosal tears", "C": "Acid-mediated liquefactive necrosis of the esophageal wall", "D": "Portal hypertension causing portosystemic collaterals and venous dilation"}, "correct": "D", "explanation": "Esophageal varices result from portal hypertension, most commonly cirrhosis, causing portosystemic collaterals, venous dilation, wall thinning, and high-pressure rupture.", "optionExplanations": {"A": "This would resemble achalasia physiology, not varices.", "B": "This describes Mallory-Weiss syndrome.", "C": "Liquefactive necrosis is associated with alkali caustic injury, not varices.", "D": "Correct. Portal HTN diverts blood into collateral vessels in the esophagus, forming varices that can rupture."}}, {"id": 15, "stem": "A patient with actively bleeding esophageal varices is stabilized and undergoes endoscopic therapy. Which medication decreases splanchnic and portal pressures as part of acute management", "topic": "Esophageal varices treatment", "options": {"A": "Chlorpromazine", "B": "Botulinum toxin", "C": "Octreotide", "D": "Metoclopramide"}, "correct": "C", "explanation": "Octreotide is a somatostatin analog used in variceal bleeding because it decreases splanchnic and portal pressures.", "optionExplanations": {"A": "Chlorpromazine is the board drug association for persistent hiccups.", "B": "Botulinum toxin can temporarily treat achalasia by reducing LES tone.", "C": "Correct. Octreotide decreases splanchnic and portal pressures in variceal bleeding.", "D": "Metoclopramide is a prokinetic/antiemetic, not acute variceal bleed therapy."}}, {"id": 16, "stem": "Which endoscopic finding is listed as a risk factor for increased bleeding from esophageal varices", "topic": "Variceal bleeding risk", "options": {"A": "Red color signs such as wale markings or hematocystic spots", "B": "Multiple small distal overlapping ulcers", "C": "White adherent pseudomembranes", "D": "Proximal esophageal webs"}, "correct": "A", "explanation": "Risk factors for variceal bleeding include varix size, severity of liver disease, active alcohol use, and red color signs such as wale markings, hematocystic spots, or red spots.", "optionExplanations": {"A": "Correct. These are listed endoscopic risk signs for variceal bleeding.", "B": "This describes HSV esophagitis from the pathology section, not variceal bleeding risk.", "C": "This describes Candida esophagitis.", "D": "This suggests Plummer-Vinson syndrome."}}, {"id": 17, "stem": "A 22-year-old accidentally ingests an alkali cleaning product and develops immediate chest pain, drooling, and dysphagia. Why does alkali ingestion have higher perforation risk than acid ingestion", "topic": "Caustic esophageal injury", "options": {"A": "Alkali causes coagulation necrosis that limits penetration", "B": "Alkali selectively relaxes the lower esophageal sphincter", "C": "Alkali forms pseudomembranes made of fibrin and pseudohyphae", "D": "Alkali causes liquefactive necrosis with continuous erosion"}, "correct": "D", "explanation": "Caustic injury from alkali is more likely to perforate because alkali causes liquefactive necrosis and continuous erosion; acid causes coagulation necrosis.", "optionExplanations": {"A": "Coagulation necrosis is associated with acid injury and tends to limit deeper spread.", "B": "LES relaxation is not the mechanism of caustic perforation.", "C": "Pseudohyphae are a Candida finding, not caustic alkali injury.", "D": "Correct. This explains why alkali injury has greater perforation risk."}}, {"id": 18, "stem": "A patient presents to the emergency department with dysphagia after choking on food. Before obtaining history or imaging, what is the first priority", "topic": "Dysphagia emergency approach", "options": {"A": "Order esophageal manometry", "B": "Assess the airway", "C": "Administer glucagon", "D": "Schedule elective endoscopy"}, "correct": "B", "explanation": "In the ER dysphagia framework, the first priority is always airway assessment before history or imaging.", "optionExplanations": {"A": "Manometry is used for suspected motility disorders after obstruction is excluded.", "B": "Correct. Airway assessment comes first in acute dysphagia/foreign body presentations.", "C": "Glucagon may relax the LES for food impaction, but airway safety comes first.", "D": "Urgency depends on stability and object type; airway assessment is first."}}, {"id": 19, "stem": "A toddler swallows a disc battery that is lodged in the esophagus. Which management is appropriate", "topic": "Esophageal foreign body", "options": {"A": "Observation for 48 hours without imaging", "B": "Meat tenderizer to dissolve the obstruction", "C": "Immediate removal", "D": "Serial x-rays only if the battery has passed into the stomach and the child is asymptomatic"}, "correct": "C", "explanation": "Disc/button batteries lodged in the esophagus require immediate removal because lithium batteries can cause rapid burns with perforation in under 6 hours.", "optionExplanations": {"A": "Observation may be acceptable only in select asymptomatic batteries that have passed beyond the esophagus.", "B": "Meat tenderizers should be avoided.", "C": "Correct. Esophageal button batteries require immediate removal because of rapid burn/perforation risk.", "D": "This can be used for asymptomatic batteries that have already passed the esophagus, not for a lodged esophageal battery."}}, {"id": 20, "stem": "On chest radiograph, a swallowed coin is seen oriented transversely on the AP view. Where is the coin most likely located", "topic": "Foreign body radiology", "options": {"A": "Esophagus", "B": "Trachea", "C": "Right main bronchus", "D": "Stomach cardia"}, "correct": "A", "explanation": "For coin radiographs, the section states AP coin suggests trachea, while transverse orientation suggests esophagus.", "optionExplanations": {"A": "Correct. A transverse coin orientation is listed as suggesting an esophageal location.", "B": "The AP coin pearl points to the trachea, not transverse orientation.", "C": "The section emphasizes trachea versus esophagus orientation, not bronchial localization.", "D": "Coin orientation in the esophagus/trachea is the relevant board distinction."}}, {"id": 21, "stem": "A patient with persistent hiccups has no dangerous underlying cause identified. Which medication is the board drug association for singultus", "topic": "Hiccups", "options": {"A": "Octreotide", "B": "Nifedipine", "C": "Sucralfate", "D": "Chlorpromazine"}, "correct": "D", "explanation": "Hiccups are reflex diaphragmatic spasms; chlorpromazine is listed as the board drug association.", "optionExplanations": {"A": "Octreotide decreases splanchnic/portal pressures in variceal bleeding.", "B": "Nifedipine may be used for esophageal food impaction or spasm physiology, but it is not the hiccup board drug.", "C": "Sucralfate coats gastric mucosa and is not the board association for hiccups.", "D": "Correct. Chlorpromazine is the classic board drug association for hiccups."}}, {"id": 22, "stem": "A 65-year-old has dysphagia, weight loss, anemia, heme-positive stools, and symptoms for more than 6 months. Which diagnostic modality is emphasized to rule out malignancy or obstruction in patients with alarm symptoms", "topic": "Diagnostic modalities", "options": {"A": "Barium swallow only", "B": "Endoscopy", "C": "Esophageal manometry", "D": "Hydrogen breath testing"}, "correct": "B", "explanation": "Endoscopy is used to rule out malignancy or obstruction, especially with alarm symptoms such as age over 60, anemia, heme-positive stools, weight loss, or prolonged symptoms.", "optionExplanations": {"A": "Barium swallow helps assess structural abnormalities but does not replace endoscopy for alarm symptoms.", "B": "Correct. Endoscopy is emphasized for alarm symptoms to rule out malignancy or obstruction.", "C": "Manometry is used when endoscopy or imaging shows no obstruction and motility disease is suspected.", "D": "This evaluates carbohydrate malabsorption, not esophageal alarm symptoms."}}, {"id": 23, "stem": "A patient has suspected esophageal motility disorder, but endoscopy and imaging show no mechanical obstruction. Which diagnostic test is most appropriate next", "topic": "Esophageal manometry", "options": {"A": "Rapid urease testing", "B": "Colonoscopy with terminal ileum biopsy", "C": "Esophageal manometry", "D": "Fecal calprotectin"}, "correct": "C", "explanation": "Esophageal manometry uses a pressure-sensitive NG tube during repeated swallows and is used when endoscopy or imaging shows no obstruction; it diagnoses achalasia, diffuse spasm, nutcracker esophagus, and related motility disorders.", "optionExplanations": {"A": "This tests for H. pylori in gastric disease.", "B": "This evaluates lower GI diseases such as IBD, not esophageal motility.", "C": "Correct. Manometry is the appropriate test after obstruction is excluded when motility disorder is suspected.", "D": "This helps distinguish IBD from IBS, not esophageal motility."}}, {"id": 24, "stem": "What is the physiologic role of the lower esophageal sphincter after a swallowed bolus enters the stomach", "topic": "LES physiology", "options": {"A": "Opens to prevent aspiration into the trachea", "B": "Contracts only during vomiting to create a mucosal tear", "C": "Samples luminal antigens for mucosal immunity", "D": "Closes to prevent reflux into the esophageal body"}, "correct": "D", "explanation": "The LES opens at initiation of swallowing and remains open until the bolus enters the stomach, then closes to prevent reflux into the esophageal body.", "optionExplanations": {"A": "That function is associated with the upper esophageal sphincter closing rapidly after bolus entry.", "B": "Mucosal tears are pathologic, not normal LES function.", "C": "M cells perform antigen sampling in GALT, not the LES.", "D": "Correct. After bolus entry into the stomach, LES closure prevents reflux."}}, {"id": 25, "stem": "A 72-year-old reports coughing at night, foul breath, and regurgitation of food eaten the prior day. Which mechanism best explains his condition", "topic": "Zenker diverticulum pathophysiology", "options": {"A": "Food retention in a posterior pharyngeal outpouching", "B": "Failure of LES relaxation from loss of NO and VIP", "C": "Portal hypertension with submucosal venous dilation", "D": "Distal circumferential narrowing from a smooth ring"}, "correct": "A", "explanation": "Zenker diverticulum is a posterior outpouching of the pharyngeal constrictors causing food retention, halitosis, regurgitation of old food, and undigested food on the pillow.", "optionExplanations": {"A": "Correct. This is the mechanism of Zenker diverticulum.", "B": "This explains achalasia.", "C": "This explains esophageal varices.", "D": "This explains Schatzki ring."}}, {"id": 26, "stem": "A patient with Boerhaave syndrome receives definitive treatment within 10 hours of rupture. Why is timing emphasized", "topic": "Boerhaave prognosis", "options": {"A": "Early treatment increases risk of cancer surveillance failure", "B": "Delayed treatment markedly increases mortality", "C": "Treatment delay causes isolated iron deficiency without infection", "D": "Immediate treatment prevents transformation into Barrett esophagus"}, "correct": "B", "explanation": "Boerhaave syndrome requires emergent surgery within 12 hours; mortality increases substantially if treatment is delayed beyond 24 or 48 hours.", "optionExplanations": {"A": "Cancer surveillance is a concern in Plummer-Vinson/webs, not Boerhaave timing.", "B": "Correct. Boerhaave is a surgical emergency; delayed treatment greatly worsens mortality.", "C": "Delayed Boerhaave causes mediastinitis, sepsis, shock, and death—not isolated iron deficiency.", "D": "Barrett transformation is unrelated to acute transmural rupture."}}, {"id": 27, "stem": "Which pairing of esophageal lesion and typical location is correct", "topic": "Esophageal rings and webs", "options": {"A": "Schatzki ring: proximal esophagus; esophageal web: distal esophagus", "B": "Achalasia: proximal pharynx; Zenker diverticulum: distal LES", "C": "Schatzki ring: distal esophagus; esophageal web: proximal esophagus", "D": "Varices: cricopharyngeus only; foreign bodies: portal collaterals"}, "correct": "C", "explanation": "Schatzki rings are distal thin circumferential rings, whereas esophageal webs are proximal thin mucosal membranes.", "optionExplanations": {"A": "This reverses the typical locations.", "B": "Achalasia involves LES relaxation/peristalsis; Zenker is a posterior pharyngeal outpouching.", "C": "Correct. This is the correct location pairing.", "D": "This mixes unrelated locations and mechanisms."}}, {"id": 28, "stem": "A patient with acute variceal hemorrhage fails endoscopic band ligation and pharmacologic therapy. Which intervention is listed as controlling acute hemorrhage in about 90% of patients", "topic": "Variceal bleeding escalation", "options": {"A": "Botulinum toxin injection", "B": "Balloon dilation of the LES", "C": "Surgical resection of a pharyngeal pouch", "D": "Transvenous intrahepatic portosystemic shunt"}, "correct": "D", "explanation": "TIPS is listed as an option to control acute hemorrhage in esophageal varices, with control in about 90% of patients.", "optionExplanations": {"A": "This is a temporary achalasia treatment.", "B": "This treats achalasia, not portal hypertensive bleeding.", "C": "This treats Zenker diverticulum, not variceal hemorrhage.", "D": "Correct. TIPS decompresses portal pressure and can control acute variceal hemorrhage."}}, {"id": 29, "stem": "Which set of narrow anatomic points is listed as common sites where esophageal foreign bodies lodge", "topic": "Foreign body lodging sites", "options": {"A": "Cricopharyngeus, aortic arch, tracheal bifurcation, and GE junction", "B": "Pylorus, ileocecal valve, appendix, and sigmoid colon", "C": "Duodenal bulb, ampulla of Vater, ligament of Treitz, and terminal ileum", "D": "Cardia, fundus, gastric body, and antrum only"}, "correct": "A", "explanation": "Foreign bodies lodge at esophageal narrow points: cricopharyngeus (C6), aortic arch (T4), tracheal bifurcation (T6), and GE junction (T11).", "optionExplanations": {"A": "Correct. These are the listed esophageal narrowing sites for foreign body lodgment.", "B": "These are not the esophageal narrow points listed.", "C": "These are small bowel/anatomic landmarks, not the esophageal foreign body lodging sites.", "D": "These are stomach regions, not the listed esophageal narrow points."}}, {"id": 30, "stem": "A 38-year-old has acute food impaction in the esophagus. Airway is stable and no battery or sharp object is present. Which medication listed may relax the LES and help the bolus pass", "topic": "Food impaction management", "options": {"A": "Octreotide", "B": "Glucagon", "C": "Chlorpromazine", "D": "Fresh frozen plasma"}, "correct": "B", "explanation": "For esophageal food impaction, glucagon may relax the LES; other options listed include endoscopic removal, Foley catheter, nifedipine, and carbonated beverages, while meat tenderizers should be avoided.", "optionExplanations": {"A": "Octreotide is used for variceal bleeding to reduce portal pressures.", "B": "Correct. Glucagon can relax the LES and may help a food bolus pass into the stomach.", "C": "Chlorpromazine is the board drug association for hiccups.", "D": "FFP may be used in variceal bleeding with cirrhosis-related coagulopathy, not routine food impaction."}}];
+
+let currentIndex = 0;
+let answers = {};
+
+function renderProgress() {
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'segment' + (answers[q.id] ? ' answered' : '') + (idx === currentIndex ? ' active' : '');
+    btn.title = q.topic || `Question ${idx + 1}`;
+    btn.onclick = () => { currentIndex = idx; render(); };
+    progress.appendChild(btn);
+  });
+}
+
+function renderScore() {
+  let right = 0;
+  let wrong = 0;
+  Object.entries(answers).forEach(([id, selected]) => {
+    const q = questions.find(item => item.id === Number(id));
+    if (!q) return;
+    if (selected === q.correct) right++;
+    else wrong++;
+  });
+  document.getElementById('rightCount').textContent = right;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${questions.length}`;
+}
+
+function render() {
+  const q = questions[currentIndex];
+  const selected = answers[q.id] || null;
+  document.getElementById('questionNumber').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('topic').textContent = q.topic ? `Topic: ${q.topic}` : '';
+  document.getElementById('stem').textContent = q.stem + '?';
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  Object.entries(q.options).forEach(([letter, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    if (selected) {
+      if (letter === q.correct) btn.classList.add('correct');
+      else if (letter === selected) btn.classList.add('incorrect');
+    }
+    btn.innerHTML = `<strong>${letter}.</strong> ${text}`;
+    btn.onclick = () => {
+      answers[q.id] = letter;
+      render();
+    };
+    answersDiv.appendChild(btn);
+  });
+
+  const exp = document.getElementById('explanation');
+  if (selected) {
+    const correctness = selected === q.correct ? 'Nice job.' : 'Good attempt.';
+    const optionRows = Object.entries(q.optionExplanations).map(([letter, text]) =>
+      `<p><strong>${letter}.</strong> ${text}</p>`
+    ).join('');
+    exp.style.display = 'block';
+    exp.innerHTML = `
+      <p><strong>Correct answer: ${q.correct}</strong> (${q.options[q.correct]})</p>
+      <p>${correctness} ${q.explanation}</p>
+      <div class="option-exp">
+        <p><strong>Why each option is right or wrong:</strong></p>
+        ${optionRows}
+      </div>
+    `;
+  } else {
+    exp.style.display = 'none';
+    exp.innerHTML = '';
+  }
+
+  renderProgress();
+  renderScore();
+}
+
+function goNext() {
+  currentIndex = (currentIndex + 1) % questions.length;
+  render();
+}
+
+function goPrev() {
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  render();
+}
+
+function resetQuiz() {
+  answers = {};
+  currentIndex = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
